@@ -119,6 +119,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     setUser(null);
     setError({ text: "" });
+    setLanguage("");
     if (axiosInterceptor !== null) {
       axiosInstance.interceptors.request.eject(axiosInterceptor);
       setAxiosInterceptor(null);
@@ -126,7 +127,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     AsyncStorage.removeItem("access_token");
     AsyncStorage.removeItem(STORE_GUEST_KEY);
     AsyncStorage.clear();
-    router.replace("/(auth)/choose-language");
+    router.push("/(auth)/choose-language");
   };
 
   const handleChangeLanguage = async (lang: string) => {
