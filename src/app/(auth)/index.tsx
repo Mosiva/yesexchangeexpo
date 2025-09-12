@@ -138,10 +138,11 @@ const COLORS = {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: 25,
+    paddingTop: 100,
     backgroundColor: "#fff",
     flexGrow: 1,
-    justifyContent: "center",
+    justifyContent: "flex-start",
   },
   logo: {
     width: 122,
