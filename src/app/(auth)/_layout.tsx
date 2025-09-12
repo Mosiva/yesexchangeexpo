@@ -53,9 +53,7 @@ export default function Layout() {
       <Stack.Screen
         name="choose-language/index"
         options={{
-          header: () => (
-            <CustomHeader title="Выбор языка" showBackButton={false} />
-          ),
+          headerShown: false,
         }}
       />
     </Stack>
