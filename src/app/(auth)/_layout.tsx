@@ -16,7 +16,7 @@ function CustomHeader({
       {showBackButton && (
         <Pressable onPress={() => router.back()}>
           <Ionicons
-            name="chevron-back-circle-outline"
+            name="arrow-back"
             size={30}
             color="black"
           />
@@ -33,9 +33,7 @@ export default function Layout() {
       <Stack.Screen
         name="index"
         options={{
-          header: () => (
-            <CustomHeader title="Авторизация" showBackButton={false} />
-          ),
+          headerShown: false,
         }}
       />
       <Stack.Screen
@@ -52,6 +50,18 @@ export default function Layout() {
       />
       <Stack.Screen
         name="choose-language/index"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="sendcode/index"
+        options={{
+          header: () => <CustomHeader title="Введите код из смс" />,
+        }}
+      />
+      <Stack.Screen
+        name="register/index"
         options={{
           headerShown: false,
         }}
