@@ -15,11 +15,7 @@ function CustomHeader({
     <View style={styles.topBar}>
       {showBackButton && (
         <Pressable onPress={() => router.back()}>
-          <Ionicons
-            name="arrow-back"
-            size={30}
-            color="black"
-          />
+          <Ionicons name="arrow-back" size={30} color="black" />
         </Pressable>
       )}
       <Text style={styles.title}>{title}</Text>
@@ -34,18 +30,6 @@ export default function Layout() {
         name="index"
         options={{
           headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="resetpassword/index"
-        options={{
-          header: () => <CustomHeader title="Забыли пароль" />,
-        }}
-      />
-      <Stack.Screen
-        name="onboarding/index"
-        options={{
-          header: () => <CustomHeader title="Онбоурдинг" />,
         }}
       />
       <Stack.Screen
