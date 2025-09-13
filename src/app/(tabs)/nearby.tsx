@@ -39,7 +39,7 @@ export default function NearbyScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Бары</Text>
+      <Text style={styles.title}>Обменики</Text>
 
       <MapView style={styles.map} initialRegion={region} showsUserLocation>
         {mockPartners.map((place) => (

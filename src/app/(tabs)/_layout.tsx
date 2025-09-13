@@ -95,7 +95,7 @@ export default function Layout() {
         }}
       />
       <Tabs.Screen
-        name="reserve/index"
+        name="reserve"
         options={{
           tabBarLabel: "Бронь",
           tabBarIcon: ({ color, size }) => (
@@ -104,7 +104,7 @@ export default function Layout() {
         }}
       />
       <Tabs.Screen
-        name="profile/index"
+        name="profile"
         options={{
           tabBarLabel: "Профиль",
           tabBarIcon: ({ color, size }) => (

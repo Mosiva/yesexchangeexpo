@@ -4,7 +4,6 @@ import { useAuth } from "providers";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -57,13 +56,6 @@ export default function ReserveScreen() {
     >
       <View style={styles.topBar}>
         <Text style={styles.title}>yesexchange</Text>
-        <Pressable onPress={handlePress}>
-          <Text style={styles.login}>
-            {isClientError
-              ? t("mainpass.login")
-              : client?.first_name ?? t("mainpass.login")}
-          </Text>
-        </Pressable>
       </View>
     </ScrollView>
   );
@@ -177,8 +169,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: 60,
-    paddingBottom: 16,
     backgroundColor: "#fff",
   },
   title: {
