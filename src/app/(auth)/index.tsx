@@ -19,12 +19,15 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
-  const { login, error, isAuthenticated } = useAuth();
+  const { login, error, isAuthenticated, enterAsGuest, isGuest } = useAuth();
   const { t } = useTranslation();
 
+  // ⬇️ Навигация только после реальной аутентификации (не гостевой)
   useEffect(() => {
-    if (isAuthenticated) router.replace("/(tabs)/(main)");
-  }, [isAuthenticated]);
+    if (isAuthenticated && !isGuest) {
+      router.replace("/(tabs)/(main)");
+    }
+  }, [isAuthenticated, isGuest, router]);
 
   // format +7 (###) ###-##-##
   const formatKZ = (d: string) => {
@@ -122,6 +125,16 @@ export default function LoginScreen() {
       >
         <Text style={styles.registerText}>Зарегистрироваться</Text>
       </Pressable>
+      <TouchableOpacity
+        style={styles.enterButton}
+        onPress={() => {
+          enterAsGuest();
+          // Гостевой вход — навигация по кнопке (как и было)
+          router.replace("/(tabs)/(main)");
+        }}
+      >
+        <Text style={styles.buttonText}>{t("mainpass.logintosystem")}</Text>
+      </TouchableOpacity>
 
       {isLoading && <Loader />}
     </ScrollView>
@@ -188,5 +201,18 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: COLORS.text,
     textAlign: "center",
+  },
+  enterButton: {
+    backgroundColor: "#4F7942",
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 15,
+  },
+
+  buttonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
   },
 });

@@ -24,42 +24,6 @@ export default function Layout() {
           headerShown: false,
         }}
       />
-      <Stack.Screen
-        name="categories/index"
-        options={{
-          header: () => <CustomHeader title="Gastro | Pass" />,
-        }}
-      />
-      <Stack.Screen
-        name="categories/[id]"
-        options={{
-          header: () => <CustomHeader title="Gastro | Pass" />,
-        }}
-      />
-      <Stack.Screen
-        name="restaurants/index"
-        options={{
-          header: () => <CustomHeader title="Gastro | Pass" />,
-        }}
-      />
-      <Stack.Screen
-        name="restaurants/[id]"
-        options={{
-          header: () => <CustomHeader title="Gastro | Pass" />,
-        }}
-      />
-      <Stack.Screen
-        name="restaurants/[id]/reserve"
-        options={{
-          header: () => <CustomHeader title="Gastro | Pass" />,
-        }}
-      />
-      <Stack.Screen
-        name="(settings)"
-        options={{
-          headerShown: false,
-        }}
-      />
     </Stack>
   );
 }

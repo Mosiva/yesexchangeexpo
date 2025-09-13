@@ -15,7 +15,7 @@ import { clientApi } from "services";
 
 const { useGetClientQuery } = clientApi;
 
-export default function MainScreen() {
+export default function ProrifleScreen() {
   const { t, i18n } = useTranslation();
   const currentLanguage = i18n.language;
   const router = useRouter();
