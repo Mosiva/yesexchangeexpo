@@ -65,7 +65,7 @@ async function refreshAccessToken(): Promise<string | null> {
   const refresh = await AsyncStorage.getItem("refresh_token");
   if (!refresh) return null;
 
-  const resp = await rawAxios.post("/auth/token/refresh/", { refresh });
+  const resp = await rawAxios.post("/api/v1/auth/refresh", { refresh });
   const d = resp.data || {};
   const newAccess = d.access ?? d.access_token ?? null;
   const newRefresh = d.refresh ?? d.refresh_token ?? null;

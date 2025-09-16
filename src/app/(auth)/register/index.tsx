@@ -1,15 +1,33 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import {
-    Image,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+
+import { useRegisterMutation } from "../../../services/yesExchange";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
+
+// ---- Schema ----
+const schema = z.object({
+  firstName: z.string().trim().min(1, "Укажите имя"),
+  lastName: z.string().trim().optional(),
+  digits: z.string().regex(/^\d{10}$/, "Введите номер из 10 цифр"),
+  residentRK: z.literal(true, {
+    errorMap: () => ({ message: "Подтвердите, что вы резидент РК" }),
+  }),
+});
+
+type FormValues = z.infer<typeof schema>;
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -17,19 +35,38 @@ export default function RegisterScreen() {
     phone?: string | string[];
   }>();
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [digits, setDigits] = useState(""); // national 10 digits after +7
-  const [isResident, setIsResident] = useState(false);
+  const [doRegister, { isLoading }] = useRegisterMutation();
 
   const lastNameRef = useRef<TextInput>(null);
   const phoneRef = useRef<TextInput>(null);
 
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isValid, isSubmitting },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      digits: "",
+      residentRK: false,
+    },
+  });
+
+  const digits = watch("digits");
+  const residentRK = watch("residentRK");
+
   // Prefill if phone passed as +7XXXXXXXXXX
   useEffect(() => {
     const p = Array.isArray(rawPhone) ? rawPhone[0] : rawPhone;
-    if (p && p.startsWith("+7") && p.length === 12) setDigits(p.slice(2));
-  }, [rawPhone]);
+    if (p && p.startsWith("+7") && p.length === 12) {
+      setValue("digits", p.slice(2), { shouldValidate: true });
+    }
+  }, [rawPhone, setValue]);
 
   // ---- Phone mask helpers
   const formatKZ = (d: string) => {
@@ -45,26 +82,38 @@ export default function RegisterScreen() {
     let only = (text.match(/\d/g) || []).join("");
     if (only.startsWith("7") || only.startsWith("8")) only = only.slice(1);
     if (only.startsWith("77")) only = only.slice(2);
-    setDigits(only.slice(0, 10));
+    setValue("digits", only.slice(0, 10), { shouldValidate: true });
   };
 
-  const isPhoneValid = digits.length === 10;
-  const e164 = `+7${digits}`;
-  const canSubmit = firstName.trim().length > 0 && isPhoneValid && isResident;
-
-  const handleRegister = async () => {
-    if (!canSubmit) return;
-    // TODO: call your register API; for OTP flow push to code screen:
-    router.push({
-      pathname: "/(auth)/sendcode",
-      params: {
+  const onSubmit = async (values: FormValues) => {
+    const e164 = `+7${values.digits}`;
+    try {
+      await doRegister({
         phone: e164,
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        resident: String(isResident),
-      },
-    });
+        firstName: values.firstName.trim(),
+        lastName: values.lastName?.trim() || undefined,
+        residentRK: values.residentRK,
+      }).unwrap();
+
+      router.push({
+        pathname: "/(auth)/sendcode",
+        params: {
+          phone: e164,
+          firstName: values.firstName.trim(),
+          lastName: values.lastName?.trim() || "",
+          resident: String(values.residentRK),
+        },
+      });
+    } catch (err: any) {
+      const msg =
+        err?.data?.message ||
+        err?.error ||
+        "Не удалось зарегистрироваться. Попробуйте ещё раз.";
+      alert(msg);
+    }
   };
+
+  const disabled = !isValid || isLoading || isSubmitting;
 
   return (
     <ScrollView
@@ -83,59 +132,107 @@ export default function RegisterScreen() {
         <Text style={styles.discount}>скидку 5%</Text>
       </Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Ваше имя*"
-        value={firstName}
-        onChangeText={setFirstName}
-        returnKeyType="next"
-        onSubmitEditing={() => lastNameRef.current?.focus()}
+      {/* First Name */}
+      <Controller
+        control={control}
+        name="firstName"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <>
+            <TextInput
+              style={styles.input}
+              placeholder="Ваше имя*"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              returnKeyType="next"
+              onSubmitEditing={() => lastNameRef.current?.focus()}
+            />
+            {errors.firstName && (
+              <Text style={styles.error}>{errors.firstName.message}</Text>
+            )}
+          </>
+        )}
       />
 
-      <TextInput
-        ref={lastNameRef}
-        style={styles.input}
-        placeholder="Ваша фамилия"
-        value={lastName}
-        onChangeText={setLastName}
-        returnKeyType="next"
-        onSubmitEditing={() => phoneRef.current?.focus()}
+      {/* Last Name */}
+      <Controller
+        control={control}
+        name="lastName"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <>
+            <TextInput
+              ref={lastNameRef}
+              style={styles.input}
+              placeholder="Ваша фамилия"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              returnKeyType="next"
+              onSubmitEditing={() => phoneRef.current?.focus()}
+            />
+          </>
+        )}
       />
 
-      <TextInput
-        ref={phoneRef}
-        style={styles.input}
-        placeholder="+7 (___) ___-__-__ *"
-        value={formatKZ(digits)}
-        onChangeText={onPhoneChange}
-        keyboardType="phone-pad"
-        inputMode="numeric"
-        textContentType="telephoneNumber"
-        autoComplete="tel"
-        autoCorrect={false}
-        autoCapitalize="none"
-        maxLength={19}
+      {/* Phone */}
+      <Controller
+        control={control}
+        name="digits"
+        render={() => (
+          <>
+            <TextInput
+              ref={phoneRef}
+              style={styles.input}
+              placeholder="+7 (___) ___-__-__ *"
+              value={formatKZ(digits)}
+              onChangeText={onPhoneChange}
+              keyboardType="phone-pad"
+              inputMode="numeric"
+              textContentType="telephoneNumber"
+              autoComplete="tel"
+              autoCorrect={false}
+              autoCapitalize="none"
+              maxLength={19}
+            />
+            {errors.digits && (
+              <Text style={styles.error}>{errors.digits.message}</Text>
+            )}
+          </>
+        )}
       />
 
-      {/* RK Resident checkbox */}
-      <Pressable
-        style={styles.checkboxRow}
-        onPress={() => setIsResident((v) => !v)}
-      >
-        <View
-          style={[styles.checkboxBox, isResident && styles.checkboxBoxChecked]}
-        >
-          {isResident && <View style={styles.checkboxDot} />}
-        </View>
-        <Text style={styles.checkboxLabel}>Я являюсь резидентом РК</Text>
-      </Pressable>
+      {/* Resident RK (checkbox) */}
+      <Controller
+        control={control}
+        name="residentRK"
+        render={({ field: { value, onChange } }) => (
+          <>
+            <Pressable
+              style={styles.checkboxRow}
+              onPress={() => onChange(!value)}
+            >
+              <View
+                style={[styles.checkboxBox, value && styles.checkboxBoxChecked]}
+              >
+                {value && <View style={styles.checkboxDot} />}
+              </View>
+              <Text style={styles.checkboxLabel}>Я являюсь резидентом РК</Text>
+            </Pressable>
+            {errors.residentRK && (
+              <Text style={styles.error}>{errors.residentRK.message}</Text>
+            )}
+          </>
+        )}
+      />
 
       <TouchableOpacity
-        style={[styles.cta, !canSubmit && styles.ctaDisabled]}
-        disabled={!canSubmit}
-        onPress={handleRegister}
+        style={[styles.cta, disabled && styles.ctaDisabled]}
+        disabled={disabled}
+        onPress={handleSubmit(onSubmit)}
       >
-        <Text style={styles.ctaText}>Зарегистрироваться</Text>
+        <Text style={styles.ctaText}>
+          {isLoading || isSubmitting ? "Отправка..." : "Зарегистрироваться"}
+        </Text>
       </TouchableOpacity>
 
       <Pressable style={{ marginTop: 18 }} onPress={() => router.back()}>
@@ -151,6 +248,7 @@ const COLORS = {
   subtext: "#6B7280",
   inputBorder: "#E5E7EB",
   inputBg: "#FFFFFF",
+  error: "#DC2626",
 };
 
 const styles = StyleSheet.create({
@@ -183,7 +281,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   discount: { color: COLORS.orange, fontWeight: "800" },
-
   input: {
     borderWidth: 1,
     borderColor: COLORS.inputBorder,
@@ -194,7 +291,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 12,
   },
-
+  error: {
+    color: COLORS.error,
+    marginTop: 6,
+    fontSize: 13,
+  },
   checkboxRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -219,7 +320,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.orange,
   },
   checkboxLabel: { fontSize: 16, color: COLORS.text },
-
   cta: {
     backgroundColor: COLORS.orange,
     paddingVertical: 18,
@@ -229,7 +329,6 @@ const styles = StyleSheet.create({
   },
   ctaDisabled: { opacity: 0.5 },
   ctaText: { color: "#fff", fontWeight: "800", fontSize: 18 },
-
   loginText: {
     fontSize: 18,
     fontWeight: "700",
