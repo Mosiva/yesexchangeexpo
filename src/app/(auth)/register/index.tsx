@@ -22,9 +22,8 @@ const schema = z.object({
   firstName: z.string().trim().min(1, "Укажите имя"),
   lastName: z.string().trim().optional(),
   digits: z.string().regex(/^\d{10}$/, "Введите номер из 10 цифр"),
-  residentRK: z.literal(true, {
-    errorMap: () => ({ message: "Подтвердите, что вы резидент РК" }),
-  }),
+  // residentRK теперь не обязателен, может быть true или false
+  residentRK: z.boolean().default(false),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -58,7 +57,6 @@ export default function RegisterScreen() {
   });
 
   const digits = watch("digits");
-  const residentRK = watch("residentRK");
 
   // Prefill if phone passed as +7XXXXXXXXXX
   useEffect(() => {
@@ -95,15 +93,7 @@ export default function RegisterScreen() {
         residentRK: values.residentRK,
       }).unwrap();
 
-      router.push({
-        pathname: "/(auth)/sendcode",
-        params: {
-          phone: e164,
-          firstName: values.firstName.trim(),
-          lastName: values.lastName?.trim() || "",
-          resident: String(values.residentRK),
-        },
-      });
+      router.back();
     } catch (err: any) {
       const msg =
         err?.data?.message ||
@@ -159,18 +149,16 @@ export default function RegisterScreen() {
         control={control}
         name="lastName"
         render={({ field: { onChange, onBlur, value } }) => (
-          <>
-            <TextInput
-              ref={lastNameRef}
-              style={styles.input}
-              placeholder="Ваша фамилия"
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              returnKeyType="next"
-              onSubmitEditing={() => phoneRef.current?.focus()}
-            />
-          </>
+          <TextInput
+            ref={lastNameRef}
+            style={styles.input}
+            placeholder="Ваша фамилия"
+            value={value}
+            onChangeText={onChange}
+            onBlur={onBlur}
+            returnKeyType="next"
+            onSubmitEditing={() => phoneRef.current?.focus()}
+          />
         )}
       />
 
@@ -206,22 +194,17 @@ export default function RegisterScreen() {
         control={control}
         name="residentRK"
         render={({ field: { value, onChange } }) => (
-          <>
-            <Pressable
-              style={styles.checkboxRow}
-              onPress={() => onChange(!value)}
+          <Pressable
+            style={styles.checkboxRow}
+            onPress={() => onChange(!value)}
+          >
+            <View
+              style={[styles.checkboxBox, value && styles.checkboxBoxChecked]}
             >
-              <View
-                style={[styles.checkboxBox, value && styles.checkboxBoxChecked]}
-              >
-                {value && <View style={styles.checkboxDot} />}
-              </View>
-              <Text style={styles.checkboxLabel}>Я являюсь резидентом РК</Text>
-            </Pressable>
-            {errors.residentRK && (
-              <Text style={styles.error}>{errors.residentRK.message}</Text>
-            )}
-          </>
+              {value && <View style={styles.checkboxDot} />}
+            </View>
+            <Text style={styles.checkboxLabel}>Я являюсь резидентом РК</Text>
+          </Pressable>
         )}
       />
 
