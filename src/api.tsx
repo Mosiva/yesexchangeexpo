@@ -1,4 +1,4 @@
-// api.ts
+// src/api.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   type BaseQueryApi,
@@ -20,13 +20,6 @@ export const axiosInstance = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
 });
 
-// CSRF refresher (инжектируется из auth.ts)
-let csrfRefresher: null | (() => Promise<string | null>) = null;
-let csrfRefreshPromise: Promise<string | null> | null = null;
-export const setCsrfRefresher = (fn: () => Promise<string | null>) => {
-  csrfRefresher = fn;
-};
-
 // отдельный инстанс без интерсепторов — для refresh запроса
 const rawAxios = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
@@ -42,20 +35,13 @@ const setHeader = (cfg: any, key: string, val: string) => {
   }
 };
 
-// REQUEST: Bearer + Lang + CSRF (только для мутаций)
+// REQUEST: Bearer + Accept-Language
 axiosInstance.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem("access_token");
   if (token) setHeader(config, "Authorization", `Bearer ${token}`);
 
   const language = (await AsyncStorage.getItem(STORE_LANGUAGE_KEY)) || "ru";
   setHeader(config, "Accept-Language", language);
-
-  const method = (config.method || "get").toLowerCase();
-  const isMutating = ["post", "put", "patch", "delete"].includes(method);
-  if (isMutating) {
-    const csrftoken = await AsyncStorage.getItem("csrf_token");
-    if (csrftoken) setHeader(config, "X-CSRFToken", csrftoken);
-  }
 
   return config;
 });
@@ -79,7 +65,7 @@ async function refreshAccessToken(): Promise<string | null> {
   return newAccess;
 }
 
-// RESPONSE: 401 → refresh; 419/403(csrf) → обновить CSRF и ретрай
+// RESPONSE: 401 → refresh один раз
 axiosInstance.interceptors.response.use(
   (resp) => resp,
   async (error) => {
@@ -95,7 +81,7 @@ axiosInstance.interceptors.response.use(
       !String(original.url || "").includes("/auth/token/refresh/") &&
       !String(original.url || "").includes("/auth/login")
     ) {
-      original._retry = true;
+      (original as any)._retry = true;
 
       if (!accessRefreshPromise) {
         accessRefreshPromise = refreshAccessToken().finally(() => {
@@ -117,41 +103,14 @@ axiosInstance.interceptors.response.use(
 
       // рефреш не удался — чистим access_token (и дальше ошибка пойдёт наверх)
       await AsyncStorage.removeItem("access_token");
-    }
-
-    // --- 419/403 с CSRF: обновим CSRF и ретрай (один раз)
-    const isCsrfError =
-      status === 419 ||
-      (status === 403 &&
-        (typeof error?.response?.data === "string"
-          ? error.response.data.toLowerCase().includes("csrf")
-          : JSON.stringify(error?.response?.data || {})
-              .toLowerCase()
-              .includes("csrf")));
-
-    if (isCsrfError && original && !original._retry && csrfRefresher) {
-      original._retry = true;
-      if (!csrfRefreshPromise) {
-        csrfRefreshPromise = csrfRefresher().finally(() => {
-          csrfRefreshPromise = null;
-        });
-      }
-      const newCsrf = await csrfRefreshPromise;
-      if (newCsrf) {
-        if (original.headers?.set) original.headers.set("X-CSRFToken", newCsrf);
-        else {
-          original.headers = original.headers || {};
-          original.headers["X-CSRFToken"] = newCsrf;
-        }
-        return axiosInstance(original);
-      }
+      if (onAuthFailCallback) onAuthFailCallback();
     }
 
     throw error;
   }
 );
 
-// ===== типы и baseQuery (как у тебя)
+// ===== типы и baseQuery
 export declare namespace API {
   export type BaseResponse = { httpStatus: 200; created_at: string };
   export type TestResponse = { value: string };
@@ -200,7 +159,7 @@ const axiosBaseQuery = <
               api
             )
           : requestConfig.headers,
-        signal: api.signal,
+        signal: (api as any).signal,
         ...extraOptions,
       });
       return {
