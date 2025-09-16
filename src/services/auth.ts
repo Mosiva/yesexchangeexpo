@@ -1,40 +1,67 @@
+// services/auth.ts
 import { restApi } from "../api";
-import { Auth, Cridentials, User } from "@/types";
-import { RegisterData } from "@/types/auth";
+import type { Credentials, User } from "../types"; // ← было Cridentials
+
+type LoginResponse = {
+  access: string; // бэк сейчас так отдаёт
+  refresh: string;
+  user?: User;
+};
+type RefreshResponse = { access: string; refresh?: string };
+type CsrfResponse = { csrfToken: string };
 
 export const authApi = restApi.injectEndpoints({
   endpoints: (builder) => ({
-    login: builder.mutation<Auth, Cridentials>({
-      query: (cridentials) => ({
-        url: "/auth/login",
+    login: builder.mutation<LoginResponse, Credentials>({
+      query: (credentials) => ({
+        url: "/auth/login/", // ← трейлинг-слэш ОК
         method: "POST",
-        data: cridentials,
+        data: credentials,
       }),
     }),
 
-    register: builder.mutation<User, RegisterData>({
-      query: (cridentials) => ({
-        url: "/auth/register",
+    refreshToken: builder.mutation<RefreshResponse, { refresh: string }>({
+      query: (body) => ({
+        url: "/auth/token/refresh/", // ← трейлинг-слэш ОК
         method: "POST",
-        data: cridentials,
+        data: body, // { refresh: "<refresh_token>" }
       }),
     }),
 
     logout: builder.mutation<void, void>({
-      query: () => ({ url: "/auth/logout", method: "POST" }),
-    }),
-    verifycode: builder.mutation<void, void>({
-      query: (cridentials) => ({
-        url: "/auth/send-reset-code",
-        method: "POST",
-        data: cridentials,
+      query: () => ({
+        url: "/auth/logout/", // ← ДОБАВИЛ слэш
+        method: "POST", // CSRF придёт из интерсептора
       }),
     }),
-    resetpassword: builder.mutation<void, void>({
-      query: (cridentials) => ({
-        url: "/auth/reset-password",
+
+    getCSRF: builder.query<CsrfResponse, void>({
+      query: () => ({
+        url: "/auth/csrf/",
+        method: "GET",
+      }),
+    }),
+
+    sendcode: builder.mutation<void, any>({
+      query: (payload) => ({
+        url: "/auth/password/code/send/",
         method: "POST",
-        data: cridentials,
+        data: payload,
+      }),
+    }),
+    verifycode: builder.mutation<void, any>({
+      query: (payload) => ({
+        url: "/auth/password/code/verify/",
+        method: "POST",
+        data: payload,
+      }),
+    }),
+
+    resetpassword: builder.mutation<void, any>({
+      query: (payload) => ({
+        url: "/auth/password/reset/", // ← ОК
+        method: "POST",
+        data: payload,
       }),
     }),
   }),
