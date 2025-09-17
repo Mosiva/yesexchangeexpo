@@ -1,4 +1,3 @@
-// src/providers/auth.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setOnAuthFail } from "api";
 import { useRouter } from "expo-router";
@@ -7,7 +6,7 @@ import { useDispatch } from "react-redux";
 import { authApi } from "services";
 import i18n, { STORE_LANGUAGE_KEY } from "../local/i18n";
 
-import type { AuthCredentials, User } from "../types";
+import type { User } from "../types";
 
 const STORE_GUEST_KEY = "is_guest";
 const ACCESS_TOKEN_KEY = "access_token";
@@ -24,21 +23,25 @@ export interface AuthState {
 }
 
 export interface AuthContextProps extends AuthState {
-  login(credentials: AuthCredentials): Promise<string | undefined>;
+  // login(credentials) больше не нужен — логин через OTP
   logout(): void;
   changeLanguage(lang: string): Promise<void>;
   enterAsGuest(): Promise<void>;
+  finalizeLogin(payload: {
+    access: string;
+    refresh?: string | null;
+    user?: User | null;
+  }): Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextProps | null>(null);
 
-const { useLoginMutation, useLogoutMutation } = authApi;
+const { useLogoutMutation } = authApi;
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const [login] = useLoginMutation();
   const [logout] = useLogoutMutation();
 
   const [user, setUser] = useState<User | null>(null);
@@ -57,7 +60,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         (await AsyncStorage.getItem(STORE_LANGUAGE_KEY)) || "ru";
       const storedGuest = await AsyncStorage.getItem(STORE_GUEST_KEY);
 
-      // Debug
       console.log("Stored Access Token:", storedToken);
       console.log("Stored Refresh Token:", storedRefreshToken);
 
@@ -84,61 +86,42 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsGuest(true);
   };
 
-  const handleLogin = async (credentials: AuthCredentials) => {
-    try {
-      setIsLoading(true);
-
-      const {
-        access,
-        refresh,
-        user: company,
-      } = await login(credentials).unwrap();
-
-      // Debug
-      console.log("Access Token:", access);
-      console.log("Refresh Token:", refresh);
-
-      if (access) {
-        setToken(access);
-        setUser(company ?? null);
-        setIsAuthenticated(true);
-        setIsGuest(false);
-        setError({ text: "" });
-
-        await AsyncStorage.multiSet([
-          ["access_token", access],
-          ["refresh_token", refresh ?? ""],
-        ]);
-
-        return access;
-      }
-    } catch (err) {
-      setError({ text: JSON.stringify(err) });
-    } finally {
-      setIsLoading(false);
-    }
+  // вызывать после успешной верификации OTP
+  const finalizeLogin = async ({
+    access,
+    refresh,
+    user: company,
+  }: {
+    access: string;
+    refresh?: string | null;
+    user?: User | null;
+  }) => {
+    console.log("OTP finalize — access:", access, "refresh:", refresh);
+    setToken(access);
+    setUser(company ?? null);
+    setIsAuthenticated(true);
+    setIsGuest(false);
+    setError({ text: "" });
+    await AsyncStorage.multiSet([
+      ["access_token", access],
+      ["refresh_token", refresh ?? ""],
+    ]);
   };
 
-  const handleLogout = async () => {
-    console.log("Logging out - clearing tokens");
-    try {
-      await logout().unwrap(); // уведомляем бэк (если требуется)
-    } catch (e) {
-      console.warn("Server logout failed (возможно, токен истёк)", e);
-    }
+  const handleLogout = () => {
+    console.log("Logging out - clearing tokens (local only)");
 
-    // ✅ Чистим локально
     setIsAuthenticated(false);
     setIsGuest(false);
     setToken(null);
     setUser(null);
     setError({ text: "" });
 
-    await AsyncStorage.multiRemove([
+    AsyncStorage.multiRemove([
       "access_token",
       "refresh_token",
       STORE_GUEST_KEY,
-    ]);
+    ]).catch((e) => console.warn("Failed to clear storage", e));
 
     router.replace("/(auth)");
   };
@@ -167,12 +150,13 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         error,
         language,
-        login: handleLogin,
+        // login удалили
         logout: handleLogout,
         changeLanguage: handleChangeLanguage,
         isGuest,
         enterAsGuest,
         onAuthFail: handleAuthFail,
+        finalizeLogin,
       }}
     >
       {children}

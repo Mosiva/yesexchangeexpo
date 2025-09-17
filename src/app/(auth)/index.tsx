@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import MaskInput from "react-native-mask-input";
+import { useLoginMutation } from "../../services/yesExchange";
 
 export default function LoginScreen() {
   // только национальная часть: 10 цифр
@@ -22,8 +23,11 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
-  const { login, error, isAuthenticated, enterAsGuest, isGuest } = useAuth();
+  const { error, isAuthenticated, enterAsGuest, isGuest } = useAuth();
   const { t } = useTranslation();
+
+  // RTK mutation
+  const [doLogin] = useLoginMutation();
 
   // Навигация только после реальной аутентификации (не гостевой)
   useEffect(() => {
@@ -33,23 +37,31 @@ export default function LoginScreen() {
   }, [isAuthenticated, isGuest, router]);
 
   const isValid = digits.length === 10;
-  const e164 = `+7${digits}`; // отправляем это на бэкенд
+  const e164 = `+7${digits}`;
 
   const handleLogin = async () => {
     if (!isValid) return;
     setIsLoading(true);
     try {
-      // OTP-флоу — идём на экран кода
+      // ⚠️ тело LoginDto проверь по своей спеки.
+      // Часто это { login: string } или { phone: string }.
+      await doLogin({ phone: e164 }).unwrap();
+
+      // 200 OK → бэк выслал OTP → переходим на ввод кода
       router.push({ pathname: "/(auth)/sendcode", params: { phone: e164 } });
-      // Если будет классический логин паролем — раскомментируй и подставь креды:
-      // await login({ login: e164, password: "" });
-    } catch (e) {
-      Alert.alert("", t("common.errorInLgoin"));
+    } catch (err: any) {
+      const msg =
+        err?.data?.message ||
+        err?.data?.msg ||
+        err?.error ||
+        t("common.errorInLgoin");
+      Alert.alert("Ошибка", String(msg));
     } finally {
       setIsLoading(false);
     }
   };
 
+  // старые ошибки из провайдера, если где-то ещё всплывут
   useEffect(() => {
     if (error?.text) {
       let errorMessage = "";
@@ -108,10 +120,10 @@ export default function LoginScreen() {
         value={maskedPhone}
         onChangeText={(masked, unmasked) => {
           const next = (unmasked || "").replace(/\D/g, "").slice(0, 10);
-          setDigits(next); // храним чистые 10 цифр
-          setMaskedPhone(masked); // показываем отформатированно
+          setDigits(next);
+          setMaskedPhone(masked);
         }}
-        maxLength={19} // "+7 (###) ###-##-##"
+        maxLength={19}
       />
 
       <TouchableOpacity
@@ -122,7 +134,9 @@ export default function LoginScreen() {
         onPress={handleLogin}
         disabled={!isValid || isLoading}
       >
-        <Text style={styles.loginButtonText}>Войти</Text>
+        <Text style={styles.loginButtonText}>
+          {isLoading ? "Отправляем код..." : "Войти"}
+        </Text>
       </TouchableOpacity>
 
       <Pressable
@@ -136,7 +150,6 @@ export default function LoginScreen() {
         style={styles.enterButton}
         onPress={() => {
           enterAsGuest();
-          // Гостевой вход — навигация по кнопке (как и было)
           router.replace("/(tabs)/(main)");
         }}
       >

@@ -1,14 +1,19 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useAuth } from "providers";
 import React, { useEffect, useRef, useState } from "react";
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import {
+  useResendOtpMutation,
+  useVerifyOtpMutation,
+} from "../../../services/yesExchange";
 
 const RESEND_DELAY = 60;
 const BOX = 52;
@@ -24,6 +29,13 @@ export default function SendCodeScreen() {
   const inputsRef = useRef<(TextInput | null)[]>([]);
   const code = digits.join("");
   const isComplete = code.length === 6;
+
+  // RTK Query mutations
+  const [verifyOtp, { isLoading: isVerifying }] = useVerifyOtpMutation();
+  const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
+
+  // сохраняем токены/юзера после verify
+  const { finalizeLogin } = useAuth();
 
   // countdown
   const [secondsLeft, setSecondsLeft] = useState(RESEND_DELAY);
@@ -64,12 +76,46 @@ export default function SendCodeScreen() {
   };
 
   const handleContinue = async () => {
-    if (!isComplete) return;
+    if (!isComplete || isVerifying) return;
     try {
-      // TODO: verify with backend: await verifyOtp({ phone, code })
+      const resp = await verifyOtp({ phone, code }).unwrap();
+
+      // Пытаемся вытащить токены/юзера из разных возможных форматов ответа
+      const payload: any = resp?.data ?? resp ?? {};
+      const access =
+        payload.access ?? payload.access_token ?? payload.token ?? null;
+      const refresh = payload.refresh ?? payload.refresh_token ?? null;
+      const user = payload.user ?? null;
+
+      if (access) {
+        await finalizeLogin({ access, refresh, user });
+      }
+
       router.replace("/(tabs)/(main)");
-    } catch {
-      Alert.alert("Ошибка", "Неверный код, попробуйте ещё раз");
+    } catch (err: any) {
+      const msg =
+        err?.data?.message || err?.error || "Неверный код, попробуйте ещё раз";
+
+      // UX: очистим поля и сфокусируемся на первом
+      setDigits(["", "", "", "", "", ""]);
+      inputsRef.current[0]?.focus();
+
+      Alert.alert("Ошибка", String(msg));
+    }
+  };
+
+  const handleResend = async () => {
+    if (secondsLeft > 0 || isResending) return;
+    try {
+      await resendOtp({ phone }).unwrap();
+      setSecondsLeft(RESEND_DELAY);
+      Alert.alert("Готово", "Код отправлен повторно");
+    } catch (err: any) {
+      const msg =
+        err?.data?.message ||
+        err?.error ||
+        "Не удалось отправить код. Попробуйте позже.";
+      Alert.alert("Ошибка", String(msg));
     }
   };
 
@@ -80,6 +126,8 @@ export default function SendCodeScreen() {
           12
         )}`
       : p;
+
+  const confirmDisabled = !isComplete || isVerifying;
 
   return (
     <ScrollView
@@ -111,25 +159,29 @@ export default function SendCodeScreen() {
             placeholder="-"
             placeholderTextColor="#9CA3AF"
             returnKeyType={i === 5 ? "done" : "next"}
+            editable={!isVerifying && !isResending}
           />
         ))}
       </View>
 
       <TouchableOpacity
-        style={[styles.button, !isComplete && styles.buttonDisabled]}
-        disabled={!isComplete}
+        style={[styles.button, confirmDisabled && styles.buttonDisabled]}
+        disabled={confirmDisabled}
         onPress={handleContinue}
       >
         <Text
-          style={[styles.buttonText, !isComplete && styles.buttonTextDisabled]}
+          style={[
+            styles.buttonText,
+            confirmDisabled && styles.buttonTextDisabled,
+          ]}
         >
-          Потвердить код
+          {isVerifying ? "Проверяем..." : "Подтвердить код"}
         </Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        onPress={() => secondsLeft === 0 && setSecondsLeft(RESEND_DELAY)}
-        disabled={secondsLeft > 0}
+        onPress={handleResend}
+        disabled={secondsLeft > 0 || isResending}
         style={{ marginTop: 12 }}
       >
         {secondsLeft > 0 ? (
@@ -138,7 +190,7 @@ export default function SendCodeScreen() {
           </Text>
         ) : (
           <Text style={[styles.resendText, styles.resendActive]}>
-            Отправить код
+            {isResending ? "Отправляем..." : "Отправить код"}
           </Text>
         )}
       </TouchableOpacity>
@@ -161,8 +213,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   otpBox: {
-    width: 52,
-    height: 52,
+    width: BOX,
+    height: BOX,
     borderWidth: 1,
     borderColor: "#D1D5DB",
     borderRadius: 10,
