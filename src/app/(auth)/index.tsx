@@ -10,55 +10,39 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
 } from "react-native";
+import MaskInput from "react-native-mask-input";
 
 export default function LoginScreen() {
-  const [digits, setDigits] = useState(""); // only national part: 10 digits
+  // только национальная часть: 10 цифр
+  const [digits, setDigits] = useState("");
+  // маскированная строка для UI
+  const [maskedPhone, setMaskedPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
   const { login, error, isAuthenticated, enterAsGuest, isGuest } = useAuth();
   const { t } = useTranslation();
 
-  // ⬇️ Навигация только после реальной аутентификации (не гостевой)
+  // Навигация только после реальной аутентификации (не гостевой)
   useEffect(() => {
     if (isAuthenticated && !isGuest) {
       router.replace("/(tabs)/(main)");
     }
   }, [isAuthenticated, isGuest, router]);
 
-  // format +7 (###) ###-##-##
-  const formatKZ = (d: string) => {
-    const p = d.padEnd(10, "_").slice(0, 10);
-    const a = p.slice(0, 3);
-    const b = p.slice(3, 6);
-    const c = p.slice(6, 8);
-    const e = p.slice(8, 10);
-    return `+7 (${a}) ${b}-${c}-${e}`.replace(/_/g, "_");
-  };
-
-  const handleChange = (text: string) => {
-    let only = (text.match(/\d/g) || []).join(""); // keep digits
-    // allow users to type 7/8/+7 upfront; keep only national 10 digits
-    if (only.startsWith("7") || only.startsWith("8")) only = only.slice(1);
-    if (only.startsWith("77")) only = only.slice(2); // rare paste cases
-    setDigits(only.slice(0, 10));
-  };
-
   const isValid = digits.length === 10;
-  const e164 = `+7${digits}`; // send this to backend
+  const e164 = `+7${digits}`; // отправляем это на бэкенд
 
   const handleLogin = async () => {
     if (!isValid) return;
     setIsLoading(true);
     try {
-      // If you use OTP: navigate to the code screen
-      // router.push({ pathname: "/(auth)/sendcode", params: { phone: e164 } });
-      // If you actually log in with phone/password token, use:
-      // await login({ login: e164, password: "" });
+      // OTP-флоу — идём на экран кода
       router.push({ pathname: "/(auth)/sendcode", params: { phone: e164 } });
+      // Если будет классический логин паролем — раскомментируй и подставь креды:
+      // await login({ login: e164, password: "" });
     } catch (e) {
       Alert.alert("", t("common.errorInLgoin"));
     } finally {
@@ -94,17 +78,39 @@ export default function LoginScreen() {
         Войдите в свой аккаунт по номеру телефона
       </Text>
 
-      <TextInput
+      <MaskInput
         style={styles.input}
         placeholder="+7 (___) ___-__-__"
-        value={formatKZ(digits)}
-        onChangeText={handleChange}
-        keyboardType="phone-pad"
+        keyboardType="number-pad"
         inputMode="numeric"
-        textContentType="telephoneNumber"
-        autoComplete="tel"
         autoCorrect={false}
         autoCapitalize="none"
+        mask={[
+          "+",
+          "7",
+          " ",
+          "(",
+          /\d/,
+          /\d/,
+          /\d/,
+          ")",
+          " ",
+          /\d/,
+          /\d/,
+          /\d/,
+          "-",
+          /\d/,
+          /\d/,
+          "-",
+          /\d/,
+          /\d/,
+        ]}
+        value={maskedPhone}
+        onChangeText={(masked, unmasked) => {
+          const next = (unmasked || "").replace(/\D/g, "").slice(0, 10);
+          setDigits(next); // храним чистые 10 цифр
+          setMaskedPhone(masked); // показываем отформатированно
+        }}
         maxLength={19} // "+7 (###) ###-##-##"
       />
 
@@ -125,6 +131,7 @@ export default function LoginScreen() {
       >
         <Text style={styles.registerText}>Зарегистрироваться</Text>
       </Pressable>
+
       <TouchableOpacity
         style={styles.enterButton}
         onPress={() => {
@@ -209,7 +216,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 15,
   },
-
   buttonText: {
     color: "#fff",
     fontWeight: "600",
