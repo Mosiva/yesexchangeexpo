@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
+  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -93,7 +94,17 @@ export default function RegisterScreen() {
         residentRK: values.residentRK,
       }).unwrap();
 
-      router.back();
+      // ✅ уведомляем пользователя
+      Alert.alert(
+        "Регистрация успешна",
+        "Вы успешно зарегистрировались! Теперь войдите в свой аккаунт.",
+        [
+          {
+            text: "Ок",
+            onPress: () => router.back(), // вернуться на экран логина
+          },
+        ]
+      );
     } catch (err: any) {
       const msg =
         err?.data?.message ||
