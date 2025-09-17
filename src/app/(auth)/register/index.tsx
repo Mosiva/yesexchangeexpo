@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import MaskInput from "react-native-mask-input";
 
 import { useRegisterMutation } from "../../../services/yesExchange";
 
@@ -39,6 +40,8 @@ export default function RegisterScreen() {
 
   const lastNameRef = useRef<TextInput>(null);
   const phoneRef = useRef<TextInput>(null);
+  // локальный стейт для отображения маски
+  const [maskedPhone, setMaskedPhone] = React.useState("");
 
   const {
     control,
@@ -59,30 +62,19 @@ export default function RegisterScreen() {
 
   const digits = watch("digits");
 
-  // Prefill if phone passed as +7XXXXXXXXXX
   useEffect(() => {
     const p = Array.isArray(rawPhone) ? rawPhone[0] : rawPhone;
     if (p && p.startsWith("+7") && p.length === 12) {
-      setValue("digits", p.slice(2), { shouldValidate: true });
+      const d = p.slice(2); // 10 цифр
+      setValue("digits", d, { shouldValidate: true });
+      setMaskedPhone(
+        `+7 (${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6, 8)}-${d.slice(
+          8,
+          10
+        )}`
+      );
     }
   }, [rawPhone, setValue]);
-
-  // ---- Phone mask helpers
-  const formatKZ = (d: string) => {
-    const p = d.padEnd(10, "_").slice(0, 10);
-    const a = p.slice(0, 3);
-    const b = p.slice(3, 6);
-    const c = p.slice(6, 8);
-    const e = p.slice(8, 10);
-    return `+7 (${a}) ${b}-${c}-${e}`.replace(/_/g, "_");
-  };
-
-  const onPhoneChange = (text: string) => {
-    let only = (text.match(/\d/g) || []).join("");
-    if (only.startsWith("7") || only.startsWith("8")) only = only.slice(1);
-    if (only.startsWith("77")) only = only.slice(2);
-    setValue("digits", only.slice(0, 10), { shouldValidate: true });
-  };
 
   const onSubmit = async (values: FormValues) => {
     const e164 = `+7${values.digits}`;
@@ -177,20 +169,42 @@ export default function RegisterScreen() {
       <Controller
         control={control}
         name="digits"
-        render={() => (
+        render={({ field: { value, onChange } }) => (
           <>
-            <TextInput
+            <MaskInput
               ref={phoneRef}
               style={styles.input}
               placeholder="+7 (___) ___-__-__ *"
-              value={formatKZ(digits)}
-              onChangeText={onPhoneChange}
-              keyboardType="phone-pad"
+              keyboardType="number-pad"
               inputMode="numeric"
-              textContentType="telephoneNumber"
-              autoComplete="tel"
               autoCorrect={false}
               autoCapitalize="none"
+              mask={[
+                "+",
+                "7",
+                " ",
+                "(",
+                /\d/,
+                /\d/,
+                /\d/,
+                ")",
+                " ",
+                /\d/,
+                /\d/,
+                /\d/,
+                "-",
+                /\d/,
+                /\d/,
+                "-",
+                /\d/,
+                /\d/,
+              ]}
+              value={maskedPhone}
+              onChangeText={(masked, unmasked) => {
+                const digits = (unmasked || "").replace(/\D/g, "").slice(0, 10);
+                onChange(digits); // сохраняем только цифры в react-hook-form
+                setMaskedPhone(masked); // отображаем красиво
+              }}
               maxLength={19}
             />
             {errors.digits && (
