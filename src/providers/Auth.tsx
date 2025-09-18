@@ -107,21 +107,32 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       ["refresh_token", refresh ?? ""],
     ]);
   };
+  const handleLogout = async () => {
+    console.log("Logging out - clearing tokens (server + local)");
 
-  const handleLogout = () => {
-    console.log("Logging out - clearing tokens (local only)");
+    try {
+      // уведомляем бэк
+      await logout().unwrap();
+    } catch (e) {
+      console.warn("Server logout failed (возможно, токен истёк)", e);
+    }
 
+    // чистим локально в любом случае
     setIsAuthenticated(false);
     setIsGuest(false);
     setToken(null);
     setUser(null);
     setError({ text: "" });
 
-    AsyncStorage.multiRemove([
-      "access_token",
-      "refresh_token",
-      STORE_GUEST_KEY,
-    ]).catch((e) => console.warn("Failed to clear storage", e));
+    try {
+      await AsyncStorage.multiRemove([
+        "access_token",
+        "refresh_token",
+        STORE_GUEST_KEY,
+      ]);
+    } catch (e) {
+      console.warn("Failed to clear storage", e);
+    }
 
     router.replace("/(auth)");
   };
