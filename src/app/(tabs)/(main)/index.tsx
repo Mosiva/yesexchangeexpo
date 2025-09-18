@@ -1,14 +1,16 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useAuth } from "providers";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
+  StatusBar,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 import { clientApi } from "services";
@@ -55,14 +57,20 @@ export default function MainScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      <View style={styles.topBar}>
-        <Text style={styles.title}>yesexchange</Text>
-        <Pressable onPress={handlePress}>
-          <Text style={styles.login}>
-            {isClientError
-              ? t("mainpass.login")
-              : client?.first_name ?? t("mainpass.login")}
-          </Text>
+      <StatusBar barStyle="light-content" />
+      {/* === Header === */}
+      <View style={styles.header}>
+        <Image
+          source={require("../../../../assets/images/white-icon.png")} // ← put your white logo here
+          style={styles.headerLogo}
+          resizeMode="contain"
+        />
+        <Pressable
+          hitSlop={12}
+          accessibilityLabel="Настройки"
+          onPress={handlePress}
+        >
+          <Ionicons name="settings" size={22} color="#fff" />
         </Pressable>
       </View>
     </ScrollView>
@@ -73,7 +81,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    paddingHorizontal: 0, // header spans edge-to-edge
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#F79633",
+    paddingTop: 56, // or use safe area if you prefer
+    paddingBottom: 14,
     paddingHorizontal: 20,
+  },
+  headerLogo: {
+    height: 60, // tweak to your asset
+    width: 101,
   },
   categoryScroll: {
     marginBottom: 20,
