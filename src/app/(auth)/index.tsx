@@ -146,7 +146,7 @@ export default function LoginScreen() {
         <Text style={styles.registerText}>Зарегистрироваться</Text>
       </Pressable>
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.enterButton}
         onPress={() => {
           enterAsGuest();
@@ -154,7 +154,7 @@ export default function LoginScreen() {
         }}
       >
         <Text style={styles.buttonText}>{t("mainpass.logintosystem")}</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {isLoading && <Loader />}
     </ScrollView>
