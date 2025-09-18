@@ -1,12 +1,12 @@
 import { AxiosRequestConfig } from "axios";
 
-import { restApi } from "../api";
 import { Client, UpdateClientData } from "@/types";
+import { restApi } from "../api";
 
 export const clientApi = restApi.injectEndpoints({
   endpoints: (builder) => ({
     getClient: builder.query<Client, AxiosRequestConfig<Client>>({
-      query: (config) => ({ url: "user/me", ...config }),
+      query: (config) => ({ url: "/api/v1/me", ...config }),
       providesTags: ["Client"],
     }),
     updateClient: builder.mutation<Client, UpdateClientData>({

@@ -24,7 +24,6 @@ const schema = z.object({
   firstName: z.string().trim().min(1, "Укажите имя"),
   lastName: z.string().trim().optional(),
   digits: z.string().regex(/^\d{10}$/, "Введите номер из 10 цифр"),
-  // residentRK теперь не обязателен, может быть true или false
   residentRK: z.boolean().default(false),
 });
 
@@ -40,7 +39,6 @@ export default function RegisterScreen() {
 
   const lastNameRef = useRef<TextInput>(null);
   const phoneRef = useRef<TextInput>(null);
-  // локальный стейт для отображения маски
   const [maskedPhone, setMaskedPhone] = React.useState("");
 
   const {
@@ -86,23 +84,17 @@ export default function RegisterScreen() {
         residentRK: values.residentRK,
       }).unwrap();
 
-      // ✅ уведомляем пользователя
-      Alert.alert(
-        "Регистрация успешна",
-        "Вы успешно зарегистрировались! Теперь войдите в свой аккаунт.",
-        [
-          {
-            text: "Ок",
-            onPress: () => router.back(), // вернуться на экран логина
-          },
-        ]
-      );
+      // ✅ сразу ведём на экран кода с этим номером
+      router.push({
+        pathname: "/(auth)/sendcode",
+        params: { phone: e164 },
+      });
     } catch (err: any) {
       const msg =
         err?.data?.message ||
         err?.error ||
         "Не удалось зарегистрироваться. Попробуйте ещё раз.";
-      alert(msg);
+      Alert.alert("Ошибка", String(msg));
     }
   };
 
@@ -202,8 +194,8 @@ export default function RegisterScreen() {
               value={maskedPhone}
               onChangeText={(masked, unmasked) => {
                 const digits = (unmasked || "").replace(/\D/g, "").slice(0, 10);
-                onChange(digits); // сохраняем только цифры в react-hook-form
-                setMaskedPhone(masked); // отображаем красиво
+                onChange(digits);
+                setMaskedPhone(masked);
               }}
               maxLength={19}
             />
@@ -214,7 +206,7 @@ export default function RegisterScreen() {
         )}
       />
 
-      {/* Resident RK (checkbox) */}
+      {/* Resident RK */}
       <Controller
         control={control}
         name="residentRK"

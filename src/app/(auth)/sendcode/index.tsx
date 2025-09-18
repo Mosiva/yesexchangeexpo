@@ -83,8 +83,16 @@ export default function SendCodeScreen() {
       // Пытаемся вытащить токены/юзера из разных возможных форматов ответа
       const payload: any = resp?.data ?? resp ?? {};
       const access =
-        payload.access ?? payload.access_token ?? payload.token ?? null;
-      const refresh = payload.refresh ?? payload.refresh_token ?? null;
+        payload.accessToken ??
+        payload.access ??
+        payload.access_token ??
+        payload.token ??
+        null;
+      const refresh =
+        payload.refreshToken ??
+        payload.refresh ??
+        payload.refresh_token ??
+        null;
       const user = payload.user ?? null;
 
       if (access) {
