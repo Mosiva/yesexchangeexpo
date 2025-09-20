@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import {
   RefreshControl,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   View,
@@ -54,6 +55,7 @@ export default function ProrifleScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
+      <StatusBar barStyle="dark-content" />
       <View style={styles.topBar}>
         <Text style={styles.title}>yesexchange</Text>
       </View>

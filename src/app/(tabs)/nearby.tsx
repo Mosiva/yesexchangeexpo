@@ -1,12 +1,9 @@
-import {
-  StyleSheet,
-  Text,
-  View
-} from "react-native";
+import { StatusBar, StyleSheet, Text, View } from "react-native";
 
 export default function NearbyScreen() {
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
       <Text style={styles.title}>Обменики</Text>
     </View>
   );
