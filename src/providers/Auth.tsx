@@ -116,8 +116,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.warn("Server logout failed (возможно, токен истёк)", e);
     }
-
-    // чистим локально в любом случае
     setIsAuthenticated(false);
     setIsGuest(false);
     setToken(null);
@@ -133,8 +131,9 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.warn("Failed to clear storage", e);
     }
+    AsyncStorage.clear();
 
-    router.replace("/(auth)");
+    router.push("/(auth)/choose-language");
   };
 
   const handleChangeLanguage = async (lang: string) => {
