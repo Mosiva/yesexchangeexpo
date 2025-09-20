@@ -1,96 +1,13 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
 import {
-  FlatList,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+  View
 } from "react-native";
-import MapView, { Marker } from "react-native-maps";
-
-const mockPartners = [
-  {
-    id: "1",
-    name: "Cynic",
-    latitude: 51.126,
-    longitude: 71.43,
-    distance: "1.2 km",
-    address: "Мангилик ел 8",
-  },
-  {
-    id: "2",
-    name: "Lyric",
-    latitude: 51.13,
-    longitude: 71.44,
-    distance: "2.5 km",
-    address: "Достык 20",
-  },
-];
 
 export default function NearbyScreen() {
-  const [region] = useState({
-    latitude: 51.13,
-    longitude: 71.44,
-    latitudeDelta: 0.03,
-    longitudeDelta: 0.03,
-  });
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Обменики</Text>
-
-      <MapView style={styles.map} initialRegion={region} showsUserLocation>
-        {mockPartners.map((place) => (
-          <Marker
-            key={place.id}
-            coordinate={{
-              latitude: place.latitude,
-              longitude: place.longitude,
-            }}
-            title={place.name}
-            description={place.address}
-          />
-        ))}
-      </MapView>
-
-      <View style={styles.searchRow}>
-        <TextInput style={styles.searchInput} placeholder="Поиск баров" />
-        <TouchableOpacity style={styles.filterButton}>
-          <Text style={styles.filterText}>Фильтр</Text>
-        </TouchableOpacity>
-      </View>
-
-      <FlatList
-        data={mockPartners}
-        keyExtractor={(item) => item.id}
-        style={styles.list}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={styles.cardContent}>
-              <View>
-                <Text style={styles.cardTitle}>{item.name}</Text>
-                <Text>{item.address}</Text>
-                <Text style={styles.distance}>{item.distance}</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.iconWrapper}
-                onPress={() => {
-                  // Optional: Link to maps or focus the marker
-                  console.log("Navigate to:", item.name);
-                }}
-              >
-                <Ionicons
-                  name="navigate-circle-outline"
-                  size={24}
-                  color="#4F7942"
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-      />
     </View>
   );
 }
