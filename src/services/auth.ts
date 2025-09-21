@@ -22,7 +22,7 @@ export const authApi = restApi.injectEndpoints({
 
     refreshToken: builder.mutation<RefreshResponse, { refresh: string }>({
       query: (body) => ({
-        url: "/auth/token/refresh/", // ← трейлинг-слэш ОК
+        url: "/api/v1/auth/token/refresh", // ← трейлинг-слэш ОК
         method: "POST",
         data: body, // { refresh: "<refresh_token>" }
       }),

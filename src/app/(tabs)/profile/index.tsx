@@ -1,185 +1,322 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
+import { Loader } from "components";
 import { useRouter } from "expo-router";
 import { useAuth } from "providers";
-import { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  RefreshControl,
+  Alert,
+  Pressable,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
+import MaskInput from "react-native-mask-input";
 import { clientApi } from "services";
+import { useLoginMutation } from "../../../services/yesExchange";
 
 const { useGetClientQuery } = clientApi;
 
-export default function ProrifleScreen() {
-  const { t, i18n } = useTranslation();
-  const currentLanguage = i18n.language;
+// +7XXXXXXXXXX → +7 707 777-77-77
+function formatPhoneE164ToPretty(p?: string) {
+  if (!p) return "";
+  const d = p.replace(/\D/g, "");
+  const ten = d.startsWith("7") ? d.slice(1) : d;
+  if (ten.length !== 10) return p;
+  const a = ten.slice(0, 3);
+  const b = ten.slice(3, 6);
+  const c = ten.slice(6, 8);
+  const e = ten.slice(8, 10);
+  return `+7 ${a} ${b}-${c}-${e}`;
+}
+
+export default function ProfileScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
-  const { logout } = useAuth();
+  const { logout, error, isAuthenticated, isGuest } = useAuth();
 
   const {
-    data: clientData,
+    data: rawClient,
     refetch: refetchClient,
     isLoading: isClientLoading,
     isError: isClientError,
   } = useGetClientQuery({});
 
+  // Normalize possible shapes: {data: client} or client
+  const client: any = (rawClient as any)?.data ?? rawClient ?? null;
+
   useFocusEffect(
     useCallback(() => {
-      refetchClient(); // Re-fetch when screen is focused
+      refetchClient();
     }, [refetchClient])
   );
 
-  const client = clientData?.data || null;
-  const handlePress = () => {
-    logout();
-  };
-  const [refreshing, setRefreshing] = useState(false);
+  // ---- Guest login (phone) state ----
+  const [digits, setDigits] = useState(""); // 10 digits national
+  const [maskedPhone, setMaskedPhone] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [doLogin] = useLoginMutation();
 
-  const onRefresh = async () => {
-    setRefreshing(true);
+  useEffect(() => {
+    if (error?.text) {
+      let msg = "";
+      try {
+        msg = JSON.parse(error.text)?.data?.msg;
+      } catch {
+        msg = t("common.errorInLgoin");
+      }
+      Alert.alert("", msg);
+    }
+  }, [error]);
+
+  const isValid = digits.length === 10;
+  const e164 = `+7${digits}`;
+
+  const handleSendCode = async () => {
+    if (!isValid) return;
+    setIsLoading(true);
     try {
-      await refetchClient();
+      await doLogin({ phone: e164 }).unwrap(); // backend should send OTP
+      router.push({ pathname: "/(auth)/sendcode", params: { phone: e164 } });
+    } catch (err: any) {
+      const msg =
+        err?.data?.message ||
+        err?.data?.msg ||
+        err?.error ||
+        t("common.errorInLgoin");
+      Alert.alert("Ошибка", String(msg));
     } finally {
-      setRefreshing(false);
+      setIsLoading(false);
     }
   };
+
+  // ========================= RENDER =========================
+  const isAuthed = !!client && !isClientError;
+
   return (
     <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
     >
-      <StatusBar barStyle="dark-content" />
-      <View style={styles.topBar}>
-        <Text style={styles.title}>yesexchange</Text>
-      </View>
+      {!isAuthed ? (
+        // -------------------- GUEST MODE --------------------
+        <>
+          <Text style={styles.subtitle}>
+            Войдите в аккаунт или создайте новый
+          </Text>
+
+          <MaskInput
+            style={styles.input}
+            placeholder="+7 (___) ___-__-__"
+            keyboardType="number-pad"
+            inputMode="numeric"
+            autoCorrect={false}
+            autoCapitalize="none"
+            mask={[
+              "+",
+              "7",
+              " ",
+              "(",
+              /\d/,
+              /\d/,
+              /\d/,
+              ")",
+              " ",
+              /\d/,
+              /\d/,
+              /\d/,
+              "-",
+              /\d/,
+              /\d/,
+              "-",
+              /\d/,
+              /\d/,
+            ]}
+            value={maskedPhone}
+            onChangeText={(masked, unmasked) => {
+              const next = (unmasked || "").replace(/\D/g, "").slice(0, 10);
+              setDigits(next);
+              setMaskedPhone(masked);
+            }}
+            maxLength={19}
+          />
+
+          <TouchableOpacity
+            style={[
+              styles.primaryBtn,
+              (!isValid || isLoading) && styles.primaryBtnDisabled,
+            ]}
+            onPress={handleSendCode}
+            disabled={!isValid || isLoading}
+          >
+            <Text style={styles.primaryBtnText}>
+              {isLoading ? "Отправляем код..." : "Войти"}
+            </Text>
+          </TouchableOpacity>
+
+          <Pressable
+            onPress={() => router.push("/(auth)/register")}
+            style={{ marginTop: 24 }}
+          >
+            <Text style={styles.linkText}>Зарегистрироваться</Text>
+          </Pressable>
+
+          {(isLoading || isClientLoading) && <Loader />}
+        </>
+      ) : (
+        // -------------------- USER MODE --------------------
+        <>
+          <View style={styles.nameRow}>
+            <Text style={styles.fullName} numberOfLines={1}>
+              {[client.firstName, client.lastName].filter(Boolean).join(" ")}
+            </Text>
+            <Pressable hitSlop={10} accessibilityLabel="Редактировать профиль">
+              <Ionicons name="pencil" size={30} color="#6B7280" />
+            </Pressable>
+          </View>
+
+          <Text style={styles.phoneText}>
+            {formatPhoneE164ToPretty(client.phone)}
+          </Text>
+
+          <Pressable
+            style={styles.cardRow}
+            accessibilityLabel="История бронирования"
+          >
+            <View style={styles.cardLeft}>
+              <Ionicons name="time-outline" size={20} color="#F58220" />
+            </View>
+            <Text style={styles.cardText}>История бронирования</Text>
+            <Ionicons name="chevron-forward" size={22} color="#9CA3AF" />
+          </Pressable>
+
+          <Pressable
+            onPress={logout}
+            style={styles.logoutRow}
+            accessibilityLabel="Выйти из профиля"
+          >
+            <Ionicons name="log-out-outline" size={20} color="#DC2626" />
+            <Text style={styles.logoutText}>Выйти из профиля</Text>
+          </Pressable>
+        </>
+      )}
     </ScrollView>
   );
 }
 
+const COLORS = {
+  orange: "#F58220",
+  text: "#111827",
+  subtext: "#6B7280",
+  border: "#E5E7EB",
+  bg: "#FFFFFF",
+};
+
 const styles = StyleSheet.create({
   container: {
+    padding: 20,
+    backgroundColor: COLORS.bg,
+    flexGrow: 1,
+  },
+
+  // Titles
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: COLORS.text,
+    marginBottom: 24,
+  },
+  fullName: {
+    fontSize: 26,
+    fontWeight: "800",
+    color: COLORS.text,
     flex: 1,
-    backgroundColor: "#fff",
-    paddingHorizontal: 20,
+    marginRight: 12,
   },
-  categoryScroll: {
-    marginBottom: 20,
-  },
-  categoryCard: {
-    borderRadius: 10,
-    padding: 10,
-    marginRight: 10,
-    alignItems: "center",
-  },
-  categoryIcon: {
-    width: 40,
-    height: 40,
-    marginBottom: 5,
-  },
-  categoryTitle: {
-    fontSize: 14,
-    color: "#4F7942",
-    fontWeight: "700",
-  },
-  promoScroll: {
-    marginBottom: 20,
-  },
-  promoCard: {
-    width: 280,
-    height: 140,
-    borderRadius: 12,
-    overflow: "hidden",
-    marginRight: 10,
-    backgroundColor: "#eee",
-  },
-  promoImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-  promoText: {
-    position: "absolute",
-    bottom: 10,
-    left: 10,
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  restaurantCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  restaurantImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
-    marginRight: 15,
-  },
-  restaurantName: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  restaurantDesc: {
-    fontSize: 14,
-    color: "#555",
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  viewAll: {
-    fontSize: 16,
-    color: "#D4AF37",
-    fontWeight: "bold",
-  },
-  restaurantInfoRow: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  discountText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333333",
-  },
-  subInfoRow: {
-    flexDirection: "row",
-    marginTop: 4,
-    gap: 12,
-  },
-  subInfoText: {
-    fontSize: 14,
-    color: "#888",
-  },
-  topBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#fff",
-  },
-  title: {
+  phoneText: {
     fontSize: 20,
-    fontWeight: "bold",
+    color: COLORS.text,
+    marginTop: 6,
+    marginBottom: 16,
   },
-  login: {
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  // Card row
+  cardRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingHorizontal: 14,
+    paddingVertical: 16,
+    marginTop: 20,
+  },
+  cardLeft: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  cardText: {
+    fontSize: 18,
+    color: COLORS.text,
+    flex: 1,
+  },
+
+  // Logout
+  logoutRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "center",
+    marginTop: 28,
+    gap: 8,
+  },
+  logoutText: {
+    color: "#DC2626",
+    fontWeight: "800",
+    fontSize: 18,
+  },
+
+  // Guest form styles
+  subtitle: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#4F7942",
+    lineHeight: 22,
+    color: COLORS.subtext,
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.bg,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    fontSize: 16,
+  },
+  primaryBtn: {
+    backgroundColor: COLORS.orange,
+    paddingVertical: 18,
+    borderRadius: 14,
+    alignItems: "center",
+    marginTop: 18,
+  },
+  primaryBtnDisabled: { opacity: 0.5 },
+  primaryBtnText: { color: "#fff", fontWeight: "800", fontSize: 18 },
+  linkText: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.text,
+    textAlign: "center",
   },
 });
