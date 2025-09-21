@@ -1,5 +1,7 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import {
     Alert,
@@ -12,40 +14,71 @@ import {
 } from "react-native";
 import MaskInput from "react-native-mask-input";
 import { clientApi } from "services";
+import { z } from "zod";
+import { useUpdateMeMutation } from "../../../../services/yesExchange";
 
 const { useGetClientQuery } = clientApi;
+
+// ---- Schema ----
+const schema = z.object({
+  firstName: z.string().trim().min(1, "Укажите имя"),
+  lastName: z.string().trim().optional(),
+  digits: z.string().regex(/^\d{10}$/, "Введите номер из 10 цифр"),
+});
+
+type FormValues = z.infer<typeof schema>;
 
 export default function EditProfileScreen() {
   const { t } = useTranslation();
   const router = useRouter();
 
-  // get current profile to prefill
-  const { data: rawClient } = useGetClientQuery({});
+  const { data: rawClient, isLoading } = useGetClientQuery({});
   const client: any = (rawClient as any)?.data ?? rawClient ?? null;
 
-  // helpers
-  const initialDigits = useMemo(() => {
-    const p = (client?.phone as string | undefined)?.replace(/\D/g, "") || "";
-    // expect +7XXXXXXXXXX → keep national 10 digits
-    return p.startsWith("7") ? p.slice(1, 11) : p.slice(0, 10);
-  }, [client]);
+  const [updateMe, { isLoading: isUpdating }] = useUpdateMeMutation();
 
-  const [firstName, setFirstName] = useState(client?.firstName ?? "");
-  const [lastName, setLastName] = useState(client?.lastName ?? "");
-  const [digits, setDigits] = useState(initialDigits);
-  const [maskedPhone, setMaskedPhone] = useState(""); // MaskInput will compute on first render
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      digits: "",
+    },
+  });
 
-  const isPhoneValid = digits.length === 10;
-  const isValid = firstName.trim().length > 0 && isPhoneValid;
+  // Заполняем при загрузке
+  useEffect(() => {
+    if (client) {
+      const d = (client.phone as string | undefined)?.replace(/\D/g, "") ?? "";
+      const ten = d.startsWith("7") ? d.slice(1) : d;
+      reset({
+        firstName: client.firstName ?? "",
+        lastName: client.lastName ?? "",
+        digits: ten,
+      });
+    }
+  }, [client, reset]);
 
-  const handleSave = async () => {
+  const onSubmit = async (values: FormValues) => {
     try {
-      // TODO: call your update API here
-      // await updateProfile({ firstName, lastName, phone: `+7${digits}` }).unwrap();
+      await updateMe({
+        firstName: values.firstName.trim(),
+        lastName: values.lastName?.trim() || undefined,
+        phone: `+7${values.digits}`,
+        residentRK: client?.residentRK ?? false,
+        role: client?.role ?? undefined,
+      }).unwrap();
+
       Alert.alert("Готово", "Данные сохранены");
       router.back();
-    } catch (e: any) {
-      Alert.alert("Ошибка", e?.data?.message || "Не удалось сохранить");
+    } catch (err: any) {
+      Alert.alert("Ошибка", err?.data?.message || "Не удалось сохранить");
     }
   };
 
@@ -55,82 +88,96 @@ export default function EditProfileScreen() {
       keyboardShouldPersistTaps="handled"
     >
       {/* First name */}
-      <Field label="Ваше имя">
-        <TextInput
-          style={styles.fieldInput}
-          placeholder="Азамат"
-          value={firstName}
-          onChangeText={setFirstName}
-          returnKeyType="next"
-        />
-      </Field>
+      <Controller
+        control={control}
+        name="firstName"
+        render={({ field: { value, onChange, onBlur } }) => (
+          <Field label="Ваше имя">
+            <TextInput
+              style={styles.fieldInput}
+              placeholder="Азамат"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+            />
+            {errors.firstName && (
+              <Text style={styles.error}>{errors.firstName.message}</Text>
+            )}
+          </Field>
+        )}
+      />
 
       {/* Last name */}
-      <Field label="Ваша фамилия" topGap={14}>
-        <TextInput
-          style={styles.fieldInput}
-          placeholder="Жунумбеков"
-          value={lastName}
-          onChangeText={setLastName}
-          returnKeyType="next"
-        />
-      </Field>
+      <Controller
+        control={control}
+        name="lastName"
+        render={({ field: { value, onChange, onBlur } }) => (
+          <Field label="Ваша фамилия" topGap={14}>
+            <TextInput
+              style={styles.fieldInput}
+              placeholder="Жунумбеков"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+            />
+          </Field>
+        )}
+      />
 
       {/* Phone */}
-      <Field label="Номер телефона" topGap={14}>
-        <MaskInput
-          style={styles.fieldInput}
-          placeholder="+7 707 777-77-77"
-          keyboardType="number-pad"
-          inputMode="numeric"
-          mask={[
-            "+",
-            "7",
-            " ",
-            /\d/,
-            /\d/,
-            /\d/,
-            " ",
-            /\d/,
-            /\d/,
-            /\d/,
-            "-",
-            /\d/,
-            /\d/,
-            "-",
-            /\d/,
-            /\d/,
-          ]}
-          value={maskedPhone}
-          onChangeText={(masked, unmasked) => {
-            const next = (unmasked || "").replace(/\D/g, "").slice(0, 10);
-            setDigits(next);
-            setMaskedPhone(masked);
-          }}
-          // initialize mask text on first render
-          onLayout={() => {
-            if (!maskedPhone && initialDigits) {
-              // create initial masked string via tiny hack:
-              const raw = `+7${initialDigits}`;
-              const formatted = `+7 ${initialDigits.slice(
-                0,
-                3
-              )} ${initialDigits.slice(3, 6)}-${initialDigits.slice(
-                6,
-                8
-              )}-${initialDigits.slice(8, 10)}`;
-              setMaskedPhone(formatted.length === 16 ? formatted : raw);
-            }
-          }}
-        />
-      </Field>
+      <Controller
+        control={control}
+        name="digits"
+        render={({ field: { value, onChange } }) => (
+          <Field label="Номер телефона" topGap={14}>
+            <MaskInput
+              style={styles.fieldInput}
+              placeholder="+7 707 777-77-77"
+              keyboardType="number-pad"
+              inputMode="numeric"
+              mask={[
+                "+",
+                "7",
+                " ",
+                /\d/,
+                /\d/,
+                /\d/,
+                " ",
+                /\d/,
+                /\d/,
+                /\d/,
+                "-",
+                /\d/,
+                /\d/,
+                "-",
+                /\d/,
+                /\d/,
+              ]}
+              value={value ? `+7${value}` : ""}
+              onChangeText={(masked, unmasked) => {
+                const next = (unmasked || "").replace(/\D/g, "").slice(0, 10);
+                onChange(next);
+              }}
+              maxLength={16}
+            />
+            {errors.digits && (
+              <Text style={styles.error}>{errors.digits.message}</Text>
+            )}
+          </Field>
+        )}
+      />
 
       <TouchableOpacity
-        style={[styles.saveBtn, !isValid && styles.saveBtnDisabled]}
-        disabled={!isValid}
-        onPress={handleSave}
+        style={[
+          styles.saveBtn,
+          (isSubmitting || isUpdating) && styles.saveBtnDisabled,
+        ]}
+        onPress={handleSubmit(onSubmit)}
+        disabled={isSubmitting || isUpdating}
       >
-        <Text style={styles.saveBtnText}>Сохранить изменения</Text>
+        <Text style={styles.saveBtnText}>
+          {isSubmitting || isUpdating ? "Сохраняем..." : "Сохранить изменения"}
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -172,16 +219,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bg,
     flexGrow: 1,
   },
-
-  pageTitle: {
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: "800",
-    color: COLORS.text,
-    marginBottom: 24,
-  },
-
-  // Field with floating label
   fieldWrap: {
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -190,6 +227,7 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
     paddingHorizontal: 16,
     position: "relative",
+    marginBottom: 8,
   },
   fieldLabelBadge: {
     position: "absolute",
@@ -207,7 +245,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.text,
   },
-
   saveBtn: {
     backgroundColor: COLORS.orange,
     borderRadius: 16,
@@ -224,4 +261,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "800",
   },
+  error: { color: "red", fontSize: 13, marginTop: 4 },
 });

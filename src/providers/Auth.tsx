@@ -121,7 +121,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       [STORE_GUEST_KEY, "false"],
     ]);
   };
-
   const handleLogout = async () => {
     console.log("🚪 Logging out - clearing tokens (server + local)");
 
@@ -129,8 +128,25 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       await logout().unwrap();
     } catch (e) {
       console.warn("Server logout failed (возможно, токен истёк)", e);
+
+      // если сервер уже вернул ошибку → чистим локально и сразу редиректим
+      await AsyncStorage.multiRemove([
+        "access_token",
+        "refresh_token",
+        STORE_GUEST_KEY,
+      ]).catch((err) => console.warn("Failed to clear storage", err));
+
+      setIsAuthenticated(false);
+      setIsGuest(false);
+      setToken(null);
+      setUser(null);
+      setError({ text: "" });
+
+      router.replace("/(auth)/choose-language");
+      return; // ⬅️ прерываем выполнение — дальше код не идёт
     }
 
+    // === обычный сценарий (сервер ответил 200) ===
     setIsAuthenticated(false);
     setIsGuest(false);
     setToken(null);
@@ -147,7 +163,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       console.warn("Failed to clear storage", e);
     }
 
-    // 🔄 возвращаем на экран выбора языка
     router.replace("/(auth)/choose-language");
   };
 
