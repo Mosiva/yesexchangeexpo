@@ -23,7 +23,6 @@ export interface AuthState {
 }
 
 export interface AuthContextProps extends AuthState {
-  // login(credentials) больше не нужен — логин через OTP
   logout(): void;
   changeLanguage(lang: string): Promise<void>;
   enterAsGuest(): Promise<void>;
@@ -47,7 +46,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState({ text: "" });
   const [language, setLanguage] = useState("ru");
   const [isGuest, setIsGuest] = useState(false);
@@ -62,17 +61,32 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
       console.log("Stored Access Token:", storedToken);
       console.log("Stored Refresh Token:", storedRefreshToken);
-
       i18n.changeLanguage(storedLang);
       setLanguage(storedLang);
 
       if (storedToken) {
         setToken(storedToken);
         setIsAuthenticated(true);
+        setIsGuest(false);
       } else if (storedGuest === "true") {
         setIsAuthenticated(true);
         setIsGuest(true);
+      } else {
+        // 🚀 первый запуск → сразу гость + русский язык
+        await AsyncStorage.multiSet([
+          [STORE_LANGUAGE_KEY, "ru"],
+          [STORE_GUEST_KEY, "true"],
+        ]);
+        setIsAuthenticated(true);
+        setIsGuest(true);
+        setLanguage("ru");
+        i18n.changeLanguage("ru");
+
+        // редиректим сразу в main
+        router.replace("/(tabs)/(main)");
       }
+
+      setIsLoading(false);
     };
 
     initialize();
@@ -86,7 +100,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsGuest(true);
   };
 
-  // вызывать после успешной верификации OTP
   const finalizeLogin = async ({
     access,
     refresh,
@@ -96,7 +109,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     refresh?: string | null;
     user?: User | null;
   }) => {
-    console.log("OTP finalize — access:", access, "refresh:", refresh);
+    console.log("✅ finalizeLogin — access:", access, "refresh:", refresh);
     setToken(access);
     setUser(company ?? null);
     setIsAuthenticated(true);
@@ -105,17 +118,19 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.multiSet([
       ["access_token", access],
       ["refresh_token", refresh ?? ""],
+      [STORE_GUEST_KEY, "false"],
     ]);
   };
+
   const handleLogout = async () => {
-    console.log("Logging out - clearing tokens (server + local)");
+    console.log("🚪 Logging out - clearing tokens (server + local)");
 
     try {
-      // уведомляем бэк
       await logout().unwrap();
     } catch (e) {
       console.warn("Server logout failed (возможно, токен истёк)", e);
     }
+
     setIsAuthenticated(false);
     setIsGuest(false);
     setToken(null);
@@ -131,9 +146,9 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.warn("Failed to clear storage", e);
     }
-    AsyncStorage.clear();
 
-    router.push("/(auth)/choose-language");
+    // 🔄 возвращаем на экран выбора языка
+    router.replace("/(auth)/choose-language");
   };
 
   const handleChangeLanguage = async (lang: string) => {
@@ -160,7 +175,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         error,
         language,
-        // login удалили
         logout: handleLogout,
         changeLanguage: handleChangeLanguage,
         isGuest,
