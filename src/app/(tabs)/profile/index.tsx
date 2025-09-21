@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useFocusEffect } from "@react-navigation/native";
 import { Loader } from "components";
 import { useRouter } from "expo-router";
@@ -173,8 +174,12 @@ export default function ProfileScreen() {
             <Text style={styles.fullName} numberOfLines={1}>
               {[client.firstName, client.lastName].filter(Boolean).join(" ")}
             </Text>
-            <Pressable hitSlop={10} accessibilityLabel="Редактировать профиль">
-              <Ionicons name="pencil" size={30} color="#6B7280" />
+            <Pressable
+              hitSlop={10}
+              accessibilityLabel="Редактировать профиль"
+              onPress={() => router.push("/(tabs)/profile/editprofile")}
+            >
+              <MaterialCommunityIcons name="pencil" size={24} color="#727376" />
             </Pressable>
           </View>
 
@@ -187,7 +192,11 @@ export default function ProfileScreen() {
             accessibilityLabel="История бронирования"
           >
             <View style={styles.cardLeft}>
-              <Ionicons name="time-outline" size={20} color="#F58220" />
+              <MaterialCommunityIcons
+                name="history"
+                size={24}
+                color="#F58220"
+              />
             </View>
             <Text style={styles.cardText}>История бронирования</Text>
             <Ionicons name="chevron-forward" size={22} color="#9CA3AF" />
@@ -230,17 +239,18 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   fullName: {
-    fontSize: 26,
-    fontWeight: "800",
+    fontSize: 20,
+    fontWeight: "700",
     color: COLORS.text,
     flex: 1,
     marginRight: 12,
   },
   phoneText: {
-    fontSize: 20,
+    fontSize: 16,
     color: COLORS.text,
     marginTop: 6,
     marginBottom: 16,
+    fontWeight: "400",
   },
   nameRow: {
     flexDirection: "row",
@@ -268,9 +278,10 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   cardText: {
-    fontSize: 18,
+    fontSize: 14,
     color: COLORS.text,
     flex: 1,
+    fontWeight: "400",
   },
 
   // Logout
@@ -283,8 +294,8 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     color: "#DC2626",
-    fontWeight: "800",
-    fontSize: 18,
+    fontSize: 14,
+    fontWeight: "700",
   },
 
   // Guest form styles

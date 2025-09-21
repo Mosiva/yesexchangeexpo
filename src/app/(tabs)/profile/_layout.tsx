@@ -39,6 +39,19 @@ export default function Layout() {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="editprofile/index"
+        options={{
+          // Hide back by default + disable iOS swipe-back
+          header: () => (
+            <CustomHeader
+              title="Редактирование личных данных"
+              showBackButton={true}
+            />
+          ),
+          gestureEnabled: false,
+        }}
+      />
     </Stack>
   );
 }
