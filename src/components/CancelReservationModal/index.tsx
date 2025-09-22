@@ -1,61 +1,47 @@
-import React, { useEffect, useRef } from "react";
-import {
-    Animated,
-    Dimensions,
-    Modal,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Modal from "react-native-modal";
 
-const { height } = Dimensions.get("window");
 const ORANGE = "#F58220";
+
+interface Props {
+  visible: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}
 
 export default function CancelReservationModal({
   visible,
   onClose,
   onConfirm,
-}: {
-  visible: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-}) {
-  const slideAnim = useRef(new Animated.Value(height)).current;
-
-  useEffect(() => {
-    if (visible) {
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      Animated.timing(slideAnim, {
-        toValue: height,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [visible]);
-
+}: Props) {
   return (
-    <Modal visible={visible} transparent animationType="none">
+    <Modal
+      isVisible={visible}
+      onBackdropPress={onClose}
+      onSwipeComplete={onClose}
+      swipeDirection="down"
+      style={styles.modal}
+    >
       <View style={styles.overlay}>
-        <TouchableOpacity style={styles.overlayBg} onPress={onClose} />
-        <Animated.View
-          style={[
-            styles.modal,
-            {
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          <Text style={styles.title}>Отмена брони</Text>
-          <Text style={styles.subtitle}>
+        <View style={styles.content}>
+          {/* Шторка */}
+          <View style={styles.handle} />
+
+          {/* Заголовок + крестик */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Отмена брони</Text>
+            <TouchableOpacity onPress={onClose} hitSlop={8}>
+              <Ionicons name="close" size={22} color="#111827" />
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.message}>
             Вы уверены, что хотите отменить бронь?
           </Text>
 
+          {/* Кнопки */}
           <View style={styles.actions}>
             <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
               <Text style={styles.cancelText}>Отмена</Text>
@@ -65,70 +51,75 @@ export default function CancelReservationModal({
               <Text style={styles.confirmText}>Да</Text>
             </TouchableOpacity>
           </View>
-        </Animated.View>
+        </View>
       </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
+  modal: {
+    justifyContent: "flex-end",
+    margin: 0, // во всю ширину
+  },
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
     backgroundColor: "rgba(0,0,0,0.4)",
   },
-  overlayBg: {
-    flex: 1,
-  },
-  modal: {
+  content: {
     backgroundColor: "#fff",
+    padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: 20,
-    paddingBottom: 32,
+    height: 185,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#E9ECEF",
+    alignSelf: "center",
+    marginBottom: 12,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "700",
-    marginBottom: 8,
     color: "#111827",
   },
-  subtitle: {
-    fontSize: 16,
+  message: {
+    fontSize: 14,
     color: "#6B7280",
-    marginBottom: 20,
-    fontWeight: "400",
+    textAlign: "left",
+    marginBottom: 16,
   },
   actions: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 20,
+    width: "100%",
+    gap: 12,
   },
   cancelBtn: {
     flex: 1,
-    height: 52,
+    borderRadius: 12,
+    height: 48,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 8,
-    backgroundColor: "#fff",
   },
+  cancelText: { fontSize: 16, fontWeight: "600", color: "#111827" },
   confirmBtn: {
     flex: 1,
-    height: 52,
     borderRadius: 12,
-    backgroundColor: ORANGE,
+    height: 48,
+    backgroundColor: "#F58220",
     alignItems: "center",
     justifyContent: "center",
-    marginLeft: 8,
   },
-  cancelText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "black",
-  },
-  confirmText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#fff",
-  },
+  confirmText: { fontSize: 16, fontWeight: "700", color: "#fff" },
 });
