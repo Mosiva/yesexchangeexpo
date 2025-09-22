@@ -1,0 +1,126 @@
+import React, { useEffect, useRef } from "react";
+import {
+    Animated,
+    Dimensions,
+    Modal,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+
+const { height } = Dimensions.get("window");
+const ORANGE = "#F58220";
+
+export default function CancelReservationModal({
+  visible,
+  onClose,
+  onConfirm,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  const slideAnim = useRef(new Animated.Value(height)).current;
+
+  useEffect(() => {
+    if (visible) {
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(slideAnim, {
+        toValue: height,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible]);
+
+  return (
+    <Modal visible={visible} transparent animationType="none">
+      <View style={styles.overlay}>
+        <TouchableOpacity style={styles.overlayBg} onPress={onClose} />
+        <Animated.View
+          style={[
+            styles.modal,
+            {
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          <Text style={styles.title}>Отмена брони</Text>
+          <Text style={styles.subtitle}>
+            Вы уверены, что хотите отменить бронь?
+          </Text>
+
+          <View style={styles.actions}>
+            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
+              <Text style={styles.cancelText}>Отмена</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.confirmBtn} onPress={onConfirm}>
+              <Text style={styles.confirmText}>Да</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  overlayBg: {
+    flex: 1,
+  },
+  modal: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 32,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 8,
+    color: "#111827",
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginBottom: 20,
+  },
+  actions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 12,
+  },
+  cancelBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  cancelText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  confirmBtn: {
+    backgroundColor: ORANGE,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  confirmText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#fff",
+  },
+});
