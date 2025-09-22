@@ -19,8 +19,6 @@ export const setOnAuthFail = (cb: () => void) => {
 export const axiosInstance = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
 });
-
-// отдельный инстанс без интерсепторов — для refresh запроса
 const rawAxios = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
 });
@@ -43,44 +41,61 @@ axiosInstance.interceptors.request.use(async (config) => {
   const language = (await AsyncStorage.getItem(STORE_LANGUAGE_KEY)) || "ru";
   setHeader(config, "Accept-Language", language);
 
+  console.log(
+    "➡️ Request:",
+    config.method?.toUpperCase(),
+    config.url,
+    "with token:",
+    token?.slice(0, 15)
+  );
+
   return config;
 });
 
-// helper: обновить access_token по refresh_token
+// helper: refresh
 async function refreshAccessToken(): Promise<string | null> {
   const refresh = await AsyncStorage.getItem("refresh_token");
   if (!refresh) return null;
 
-  const resp = await rawAxios.post("/api/v1/auth/token/refresh", { refresh });
-  const d = resp.data || {};
-  const newAccess = d.access ?? d.access_token ?? null;
-  const newRefresh = d.refresh ?? d.refresh_token ?? null;
+  console.log("🔄 Refreshing access token...");
+  try {
+    const resp = await rawAxios.post("/api/v1/auth/token/refresh", { refresh });
+    const d = resp.data || {};
+    const newAccess = d.access ?? d.access_token ?? null;
+    const newRefresh = d.refresh ?? d.refresh_token ?? null;
 
-  if (!newAccess) {
-    if (onAuthFailCallback) onAuthFailCallback();
+    if (!newAccess) return null;
+
+    await AsyncStorage.setItem("access_token", newAccess);
+    if (newRefresh) await AsyncStorage.setItem("refresh_token", newRefresh);
+
+    console.log("✅ Refresh success, newAccess:", newAccess.slice(0, 15));
+    return newAccess;
+  } catch (e: any) {
+    console.log("❌ Refresh failed:", e?.response?.status, e?.response?.data);
     return null;
   }
-  await AsyncStorage.setItem("access_token", newAccess);
-  if (newRefresh) await AsyncStorage.setItem("refresh_token", newRefresh);
-  return newAccess;
 }
 
-// RESPONSE: 401 → refresh один раз
+// RESPONSE: 401 → refresh + retry
 axiosInstance.interceptors.response.use(
-  (resp) => resp,
+  (resp) => {
+    console.log("⬅️ Response:", resp.status, resp.config.url);
+    return resp;
+  },
   async (error) => {
     const status = error?.response?.status;
     const original = error?.config;
 
-    // --- 401: пробуем авто-рефреш access_token один раз
     if (
       status === 401 &&
       original &&
       !original._retry &&
-      // не пытаемся рефрешить на самом вызове refresh/login
-      !String(original.url || "").includes("/auth/token/refresh/") &&
+      !String(original.url || "").includes("/auth/token/refresh") &&
       !String(original.url || "").includes("/auth/login")
     ) {
+      console.log("⚠️ Got 401 on:", original.url, "→ trying refresh");
+
       (original as any)._retry = true;
 
       if (!accessRefreshPromise) {
@@ -88,29 +103,29 @@ axiosInstance.interceptors.response.use(
           accessRefreshPromise = null;
         });
       }
+
       const newAccess = await accessRefreshPromise;
 
       if (newAccess) {
-        // проставим новый Bearer и повторим запрос
-        if (original.headers?.set)
-          original.headers.set("Authorization", `Bearer ${newAccess}`);
-        else {
-          original.headers = original.headers || {};
-          original.headers["Authorization"] = `Bearer ${newAccess}`;
-        }
+        console.log("🔁 Retrying request with new token:", original.url);
+        original.headers = {
+          ...(original.headers || {}),
+          Authorization: `Bearer ${newAccess}`,
+        };
         return axiosInstance(original);
+      } else {
+        console.log("🚪 Refresh failed → logging out");
+        await AsyncStorage.multiRemove(["access_token", "refresh_token"]);
+        if (onAuthFailCallback) onAuthFailCallback();
       }
-
-      // рефреш не удался — чистим access_token (и дальше ошибка пойдёт наверх)
-      await AsyncStorage.removeItem("access_token");
-      if (onAuthFailCallback) onAuthFailCallback();
     }
 
-    throw error;
+    console.log("❌ Response error:", status, original?.url);
+    return Promise.reject(error);
   }
 );
 
-// ===== типы и baseQuery
+// ===== baseQuery
 export declare namespace API {
   export type BaseResponse = { httpStatus: 200; created_at: string };
   export type TestResponse = { value: string };
