@@ -23,6 +23,10 @@ export default function CancelReservationModal({
       onSwipeComplete={onClose}
       swipeDirection="down"
       style={styles.modal}
+      animationIn="slideInUp"
+      animationOut="slideOutDown"
+      animationInTiming={250}
+      animationOutTiming={250}
     >
       <View style={styles.overlay}>
         <View style={styles.content}>
