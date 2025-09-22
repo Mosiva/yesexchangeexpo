@@ -258,8 +258,8 @@ const styles = StyleSheet.create({
   },
   saveBtnText: {
     color: "#fff",
-    fontSize: 18,
-    fontWeight: "800",
+    fontSize: 16,
+    fontWeight: "700",
   },
   error: { color: "red", fontSize: 13, marginTop: 4 },
 });
