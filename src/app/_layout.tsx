@@ -9,28 +9,12 @@ import Toast from "react-native-toast-message";
 import { Provider as ReduxProvider } from "react-redux";
 import store from "store";
 
-import { useFonts } from "expo-font";
-import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
-
-// Prevent auto-hide so we can control it
-SplashScreen.preventAutoHideAsync();
+import useCachedResources from "../hooks/useCachedResources";
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    SpaceMono: require("../../assets/fonts/SpaceMono-Regular.ttf"),
-    // Add other fonts here if needed
-  });
+  const isReady = useCachedResources();
 
-  // Hide splash when fonts are loaded
-  useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
-
-  // Optionally return null to hold UI while loading
-  if (!fontsLoaded) {
+  if (!isReady) {
     return null;
   }
 
@@ -38,7 +22,7 @@ export default function RootLayout() {
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <ReduxProvider store={store}>
         <AuthProvider>
-          <Slot /> {/* Will render (auth)/ or (tabs)/ routes */}
+          <Slot />
           <Toast />
         </AuthProvider>
       </ReduxProvider>
