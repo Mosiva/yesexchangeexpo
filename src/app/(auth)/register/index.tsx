@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Image,
@@ -40,8 +40,33 @@ export default function RegisterScreen() {
   const lastNameRef = useRef<TextInput>(null);
   const phoneRef = useRef<TextInput>(null);
 
-  // по умолчанию сразу "+7 ("
-  const [maskedPhone, setMaskedPhone] = React.useState("+7");
+  // по умолчанию сразу "+7"
+  const [maskedPhone, setMaskedPhone] = useState("+7");
+  const [showResidentError, setShowResidentError] = useState(false);
+  const [digits, setDigits] = React.useState("");
+
+  // допустимые коды операторов РК
+  const validPrefixes = [
+    "700",
+    "701",
+    "702",
+    "703",
+    "704",
+    "705",
+    "706",
+    "707",
+    "708",
+    "709",
+    "747",
+    "771",
+    "775",
+    "776",
+    "777",
+    "778",
+  ];
+  const prefix = digits.slice(0, 3);
+  const isPrefixValid =
+    digits.length >= 3 ? validPrefixes.includes(prefix) : true;
 
   const {
     control,
@@ -74,6 +99,12 @@ export default function RegisterScreen() {
   }, [rawPhone, setValue]);
 
   const onSubmit = async (values: FormValues) => {
+    if (!values.residentRK) {
+      setShowResidentError(true);
+      return;
+    }
+    setShowResidentError(false);
+
     const e164 = `+7${values.digits}`;
     try {
       await doRegister({
@@ -157,7 +188,7 @@ export default function RegisterScreen() {
       <Controller
         control={control}
         name="digits"
-        render={({ field: { value, onChange } }) => (
+        render={({ field: { onChange } }) => (
           <>
             <MaskInput
               ref={phoneRef}
@@ -189,14 +220,22 @@ export default function RegisterScreen() {
               ]}
               value={maskedPhone}
               onChangeText={(masked, unmasked) => {
-                const digits = (unmasked || "").replace(/\D/g, "").slice(0, 10);
-                onChange(digits);
+                const digitsOnly = (unmasked || "")
+                  .replace(/\D/g, "")
+                  .slice(0, 10);
+                onChange(digitsOnly);
+                setDigits(digitsOnly);
                 setMaskedPhone(masked);
               }}
               maxLength={19}
             />
             {errors.digits && (
               <Text style={styles.error}>{errors.digits.message}</Text>
+            )}
+            {digits.length >= 3 && !isPrefixValid && (
+              <Text style={styles.error}>
+                Доступны только коды операторов Казахстана
+              </Text>
             )}
           </>
         )}
@@ -210,7 +249,10 @@ export default function RegisterScreen() {
           <>
             <Pressable
               style={styles.checkboxRow}
-              onPress={() => onChange(!value)}
+              onPress={() => {
+                setShowResidentError(false);
+                onChange(!value);
+              }}
             >
               <View
                 style={[styles.checkboxBox, value && styles.checkboxBoxChecked]}
@@ -220,8 +262,7 @@ export default function RegisterScreen() {
               <Text style={styles.checkboxLabel}>Я являюсь резидентом РК</Text>
             </Pressable>
 
-            {/* ✅ Сообщение всегда видно, если чекбокс не выбран */}
-            {!value && (
+            {showResidentError && !value && (
               <Text style={styles.error}>
                 Регистрация доступна только для граждан РК
               </Text>
