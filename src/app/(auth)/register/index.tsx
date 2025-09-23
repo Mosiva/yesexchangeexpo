@@ -3,6 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -128,163 +130,178 @@ export default function RegisterScreen() {
   const disabled = !isValid || isLoading || isSubmitting;
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      keyboardShouldPersistTaps="handled"
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0} // отступ под хедер
     >
-      <Image
-        source={require("../../../../assets/images/icon.png")}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-
-      <Text style={styles.title}>Добро пожаловать{"\n"}в Yes Exchange!</Text>
-      <Text style={styles.subtitle}>
-        Создайте свой аккаунт и получите{" "}
-        <Text style={styles.discount}>скидку 5%</Text>
-      </Text>
-
-      {/* First Name */}
-      <Controller
-        control={control}
-        name="firstName"
-        render={({ field: { onChange, onBlur, value } }) => (
-          <>
-            <TextInput
-              style={styles.input}
-              placeholder="Ваше имя*"
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              returnKeyType="next"
-              onSubmitEditing={() => lastNameRef.current?.focus()}
-            />
-            {errors.firstName && (
-              <Text style={styles.error}>{errors.firstName.message}</Text>
-            )}
-          </>
-        )}
-      />
-
-      {/* Last Name */}
-      <Controller
-        control={control}
-        name="lastName"
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            ref={lastNameRef}
-            style={styles.input}
-            placeholder="Ваша фамилия"
-            value={value}
-            onChangeText={onChange}
-            onBlur={onBlur}
-            returnKeyType="next"
-            onSubmitEditing={() => phoneRef.current?.focus()}
+      <View style={styles.viewcontainer}>
+        <ScrollView
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Image
+            source={require("../../../../assets/images/icon.png")}
+            style={styles.logo}
+            resizeMode="contain"
           />
-        )}
-      />
 
-      {/* Phone */}
-      <Controller
-        control={control}
-        name="digits"
-        render={({ field: { onChange } }) => (
-          <>
-            <MaskInput
-              ref={phoneRef}
-              style={styles.input}
-              placeholder="+7 (___) ___-__-__ *"
-              keyboardType="number-pad"
-              inputMode="numeric"
-              autoCorrect={false}
-              autoCapitalize="none"
-              mask={[
-                "+",
-                "7",
-                " ",
-                "(",
-                /\d/,
-                /\d/,
-                /\d/,
-                ")",
-                " ",
-                /\d/,
-                /\d/,
-                /\d/,
-                "-",
-                /\d/,
-                /\d/,
-                "-",
-                /\d/,
-                /\d/,
-              ]}
-              value={maskedPhone}
-              onChangeText={(masked, unmasked) => {
-                const digitsOnly = (unmasked || "")
-                  .replace(/\D/g, "")
-                  .slice(0, 10);
-                onChange(digitsOnly);
-                setDigits(digitsOnly);
-                setMaskedPhone(masked);
-              }}
-              maxLength={19}
-            />
-            {errors.digits && (
-              <Text style={styles.error}>{errors.digits.message}</Text>
+          <Text style={styles.title}>
+            Добро пожаловать{"\n"}в Yes Exchange!
+          </Text>
+          <Text style={styles.subtitle}>
+            Создайте свой аккаунт и получите{" "}
+            <Text style={styles.discount}>скидку 5%</Text>
+          </Text>
+
+          {/* First Name */}
+          <Controller
+            control={control}
+            name="firstName"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Ваше имя*"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  returnKeyType="next"
+                  onSubmitEditing={() => lastNameRef.current?.focus()}
+                />
+                {errors.firstName && (
+                  <Text style={styles.error}>{errors.firstName.message}</Text>
+                )}
+              </>
             )}
-            {digits.length >= 3 && !isPrefixValid && (
-              <Text style={styles.error}>
-                Доступны только коды операторов Казахстана
-              </Text>
+          />
+
+          {/* Last Name */}
+          <Controller
+            control={control}
+            name="lastName"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                ref={lastNameRef}
+                style={styles.input}
+                placeholder="Ваша фамилия"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                returnKeyType="next"
+                onSubmitEditing={() => phoneRef.current?.focus()}
+              />
             )}
-          </>
-        )}
-      />
+          />
 
-      {/* Resident RK */}
-      <Controller
-        control={control}
-        name="residentRK"
-        render={({ field: { value, onChange } }) => (
-          <>
-            <Pressable
-              style={styles.checkboxRow}
-              onPress={() => {
-                setShowResidentError(false);
-                onChange(!value);
-              }}
-            >
-              <View
-                style={[styles.checkboxBox, value && styles.checkboxBoxChecked]}
-              >
-                {value && <View style={styles.checkboxDot} />}
-              </View>
-              <Text style={styles.checkboxLabel}>Я являюсь резидентом РК</Text>
-            </Pressable>
-
-            {showResidentError && !value && (
-              <Text style={styles.error}>
-                Регистрация доступна только для граждан РК
-              </Text>
+          {/* Phone */}
+          <Controller
+            control={control}
+            name="digits"
+            render={({ field: { onChange } }) => (
+              <>
+                <MaskInput
+                  ref={phoneRef}
+                  style={styles.input}
+                  placeholder="+7 (___) ___-__-__ *"
+                  keyboardType="number-pad"
+                  inputMode="numeric"
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                  mask={[
+                    "+",
+                    "7",
+                    " ",
+                    "(",
+                    /\d/,
+                    /\d/,
+                    /\d/,
+                    ")",
+                    " ",
+                    /\d/,
+                    /\d/,
+                    /\d/,
+                    "-",
+                    /\d/,
+                    /\d/,
+                    "-",
+                    /\d/,
+                    /\d/,
+                  ]}
+                  value={maskedPhone}
+                  onChangeText={(masked, unmasked) => {
+                    const digitsOnly = (unmasked || "")
+                      .replace(/\D/g, "")
+                      .slice(0, 10);
+                    onChange(digitsOnly);
+                    setDigits(digitsOnly);
+                    setMaskedPhone(masked);
+                  }}
+                  maxLength={19}
+                />
+                {errors.digits && (
+                  <Text style={styles.error}>{errors.digits.message}</Text>
+                )}
+                {digits.length >= 3 && !isPrefixValid && (
+                  <Text style={styles.error}>
+                    Доступны только коды операторов Казахстана
+                  </Text>
+                )}
+              </>
             )}
-          </>
-        )}
-      />
+          />
 
-      <TouchableOpacity
-        style={[styles.cta, disabled && styles.ctaDisabled]}
-        disabled={disabled}
-        onPress={handleSubmit(onSubmit)}
-      >
-        <Text style={styles.ctaText}>
-          {isLoading || isSubmitting ? "Отправка..." : "Зарегистрироваться"}
-        </Text>
-      </TouchableOpacity>
+          {/* Resident RK */}
+          <Controller
+            control={control}
+            name="residentRK"
+            render={({ field: { value, onChange } }) => (
+              <>
+                <Pressable
+                  style={styles.checkboxRow}
+                  onPress={() => {
+                    setShowResidentError(false);
+                    onChange(!value);
+                  }}
+                >
+                  <View
+                    style={[
+                      styles.checkboxBox,
+                      value && styles.checkboxBoxChecked,
+                    ]}
+                  >
+                    {value && <View style={styles.checkboxDot} />}
+                  </View>
+                  <Text style={styles.checkboxLabel}>
+                    Я являюсь резидентом РК
+                  </Text>
+                </Pressable>
 
-      <Pressable style={{ marginTop: 18 }} onPress={() => router.back()}>
-        <Text style={styles.loginText}>Войти</Text>
-      </Pressable>
-    </ScrollView>
+                {showResidentError && !value && (
+                  <Text style={styles.error}>
+                    Регистрация доступна только для граждан РК
+                  </Text>
+                )}
+              </>
+            )}
+          />
+
+          <TouchableOpacity
+            style={[styles.cta, disabled && styles.ctaDisabled]}
+            disabled={disabled}
+            onPress={handleSubmit(onSubmit)}
+          >
+            <Text style={styles.ctaText}>
+              {isLoading || isSubmitting ? "Отправка..." : "Зарегистрироваться"}
+            </Text>
+          </TouchableOpacity>
+
+          <Pressable style={{ marginTop: 18 }} onPress={() => router.back()}>
+            <Text style={styles.loginText}>Войти</Text>
+          </Pressable>
+        </ScrollView>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -298,6 +315,10 @@ const COLORS = {
 };
 
 const styles = StyleSheet.create({
+  viewcontainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
   container: {
     padding: 25,
     paddingTop: 100,

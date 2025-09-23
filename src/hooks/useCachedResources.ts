@@ -10,7 +10,7 @@ export default function useCachedResources() {
   const [isReady, setIsReady] = useState(false);
 
   const [fontsLoaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    SpaceMono: require("../../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
   useEffect(() => {
@@ -18,9 +18,9 @@ export default function useCachedResources() {
       try {
         // ⚡️ preload картинок (логотипы, иконки)
         await Asset.loadAsync([
-          require("../assets/images/icon.png"),
-          require("../assets/images/logo.png"),
-          require("../assets/images/adaptive-icon.png"),
+          require("../../assets/images/icon.png"),
+          require("../../assets/images/logo.png"),
+          require("../../assets/images/adaptive-icon.png"),
         ]);
       } catch (e) {
         console.warn("Failed to preload assets", e);

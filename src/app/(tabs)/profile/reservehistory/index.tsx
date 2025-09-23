@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import CancelReservationModal from "../../../../components/CancelReservationModal";
 import ReservationCard, {
-    Reservation,
+  Reservation,
 } from "../../../../components/ReservationCard";
 
 // ---- Demo data (замени на данные из API) ----
@@ -22,6 +22,94 @@ const initialData: Reservation[] = [
     currency: "USD",
     address: "Астана, Аэропорт",
     status: "received",
+  },
+  {
+    id: 12358,
+    date: "2025-08-11",
+    amount: 1000,
+    currency: "USD",
+    address: "Астана, Аэропорт",
+    status: "rejected",
+  },
+  {
+    id: 12358,
+    date: "2025-08-11",
+    amount: 1000,
+    currency: "USD",
+    address: "Астана, Аэропорт",
+    status: "rejected",
+  },
+  {
+    id: 12358,
+    date: "2025-08-11",
+    amount: 1000,
+    currency: "USD",
+    address: "Астана, Аэропорт",
+    status: "rejected",
+  },
+  {
+    id: 12358,
+    date: "2025-08-11",
+    amount: 1000,
+    currency: "USD",
+    address: "Астана, Аэропорт",
+    status: "rejected",
+  },
+  {
+    id: 12358,
+    date: "2025-08-11",
+    amount: 1000,
+    currency: "USD",
+    address: "Астана, Аэропорт",
+    status: "rejected",
+  },
+  {
+    id: 12358,
+    date: "2025-08-11",
+    amount: 1000,
+    currency: "USD",
+    address: "Астана, Аэропорт",
+    status: "rejected",
+  },
+  {
+    id: 12358,
+    date: "2025-08-11",
+    amount: 1000,
+    currency: "USD",
+    address: "Астана, Аэропорт",
+    status: "rejected",
+  },
+  {
+    id: 12358,
+    date: "2025-08-11",
+    amount: 1000,
+    currency: "USD",
+    address: "Астана, Аэропорт",
+    status: "rejected",
+  },
+  {
+    id: 12358,
+    date: "2025-08-11",
+    amount: 1000,
+    currency: "USD",
+    address: "Астана, Аэропорт",
+    status: "rejected",
+  },
+  {
+    id: 12358,
+    date: "2025-08-11",
+    amount: 1000,
+    currency: "USD",
+    address: "Астана, Аэропорт",
+    status: "rejected",
+  },
+  {
+    id: 12358,
+    date: "2025-08-11",
+    amount: 1000,
+    currency: "USD",
+    address: "Астана, Аэропорт",
+    status: "rejected",
   },
   {
     id: 12358,

@@ -11,6 +11,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  View,
 } from "react-native";
 import MaskInput from "react-native-mask-input";
 import { useLoginMutation } from "../../services/yesExchange";
@@ -93,86 +94,88 @@ export default function LoginScreen() {
   }, [error]);
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Image
-        source={require("../../../assets/images/icon.png")}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-
-      <Text style={styles.title}>Добро пожаловать в Yes Exchange!</Text>
-      <Text style={styles.subtitle}>
-        Войдите в свой аккаунт по номеру телефона
-      </Text>
-
-      <MaskInput
-        style={styles.input}
-        placeholder="+7 (___) ___-__-__"
-        keyboardType="number-pad"
-        inputMode="numeric"
-        autoCorrect={false}
-        autoCapitalize="none"
-        mask={[
-          "+",
-          "7",
-          " ",
-          "(",
-          /\d/,
-          /\d/,
-          /\d/,
-          ")",
-          " ",
-          /\d/,
-          /\d/,
-          /\d/,
-          "-",
-          /\d/,
-          /\d/,
-          "-",
-          /\d/,
-          /\d/,
-        ]}
-        value={maskedPhone}
-        onChangeText={(masked, unmasked) => {
-          const next = (unmasked || "").replace(/\D/g, "").slice(0, 10);
-          setDigits(next);
-          setMaskedPhone(masked);
-        }}
-        maxLength={19}
-      />
-
-      {/* Ошибка при неверном коде */}
-      {digits.length >= 3 && !validPrefixes.includes(prefix) && (
-        <Text style={styles.error}>
-          Доступны только коды операторов Казахстана
-        </Text>
-      )}
-
-      <TouchableOpacity
-        style={[
-          styles.loginButton,
-          (!isValid || isLoading) && styles.loginButtonDisabled,
-        ]}
-        onPress={handleLogin}
-        disabled={!isValid || isLoading}
+    <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.loginButtonText}>
-          {isLoading ? "Отправляем код..." : "Войти"}
+        <Image
+          source={require("../../../assets/images/icon.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+
+        <Text style={styles.title}>Добро пожаловать в Yes Exchange!</Text>
+        <Text style={styles.subtitle}>
+          Войдите в свой аккаунт по номеру телефона
         </Text>
-      </TouchableOpacity>
 
-      <Pressable
-        onPress={() => router.push("/(auth)/register")}
-        style={{ marginTop: 24 }}
-      >
-        <Text style={styles.registerText}>Зарегистрироваться</Text>
-      </Pressable>
+        <MaskInput
+          style={styles.input}
+          placeholder="+7 (___) ___-__-__"
+          keyboardType="number-pad"
+          inputMode="numeric"
+          autoCorrect={false}
+          autoCapitalize="none"
+          mask={[
+            "+",
+            "7",
+            " ",
+            "(",
+            /\d/,
+            /\d/,
+            /\d/,
+            ")",
+            " ",
+            /\d/,
+            /\d/,
+            /\d/,
+            "-",
+            /\d/,
+            /\d/,
+            "-",
+            /\d/,
+            /\d/,
+          ]}
+          value={maskedPhone}
+          onChangeText={(masked, unmasked) => {
+            const next = (unmasked || "").replace(/\D/g, "").slice(0, 10);
+            setDigits(next);
+            setMaskedPhone(masked);
+          }}
+          maxLength={19}
+        />
 
-      {isLoading && <Loader />}
-    </ScrollView>
+        {/* Ошибка при неверном коде */}
+        {digits.length >= 3 && !validPrefixes.includes(prefix) && (
+          <Text style={styles.error}>
+            Доступны только коды операторов Казахстана
+          </Text>
+        )}
+
+        <TouchableOpacity
+          style={[
+            styles.loginButton,
+            (!isValid || isLoading) && styles.loginButtonDisabled,
+          ]}
+          onPress={handleLogin}
+          disabled={!isValid || isLoading}
+        >
+          <Text style={styles.loginButtonText}>
+            {isLoading ? "Отправляем код..." : "Войти"}
+          </Text>
+        </TouchableOpacity>
+
+        <Pressable
+          onPress={() => router.push("/(auth)/register")}
+          style={{ marginTop: 24 }}
+        >
+          <Text style={styles.registerText}>Зарегистрироваться</Text>
+        </Pressable>
+
+        {isLoading && <Loader />}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -186,9 +189,13 @@ const COLORS = {
 };
 
 const styles = StyleSheet.create({
+  viewcontainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
   container: {
-    padding: 25,
-    paddingTop: 100,
+    padding: 15,
+    paddingTop: 50,
     backgroundColor: "#fff",
     flexGrow: 1,
     justifyContent: "flex-start",
