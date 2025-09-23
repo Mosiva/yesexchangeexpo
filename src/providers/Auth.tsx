@@ -1,3 +1,4 @@
+// src/providers/AuthProvider.tsx
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setOnAuthFail } from "api";
 import { useRouter } from "expo-router";
@@ -5,7 +6,6 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { authApi } from "services";
 import i18n, { STORE_LANGUAGE_KEY } from "../local/i18n";
-
 import type { User } from "../types";
 
 const STORE_GUEST_KEY = "is_guest";
@@ -59,20 +59,28 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         (await AsyncStorage.getItem(STORE_LANGUAGE_KEY)) || "ru";
       const storedGuest = await AsyncStorage.getItem(STORE_GUEST_KEY);
 
-      console.log("Stored Access Token:", storedToken);
-      console.log("Stored Refresh Token:", storedRefreshToken);
+      console.log("🔑 Init AuthProvider");
+      console.log("   stored access:", storedToken?.slice(0, 20) + "...");
+      console.log(
+        "   stored refresh:",
+        storedRefreshToken?.slice(0, 20) + "..."
+      );
+      console.log("   stored guest:", storedGuest);
+
       i18n.changeLanguage(storedLang);
       setLanguage(storedLang);
 
       if (storedToken) {
+        console.log("✅ Found access token → authenticated user mode");
         setToken(storedToken);
         setIsAuthenticated(true);
         setIsGuest(false);
       } else if (storedGuest === "true") {
+        console.log("👤 Guest mode restored");
         setIsAuthenticated(true);
         setIsGuest(true);
       } else {
-        // 🚀 первый запуск → сразу гость + русский язык
+        console.log("🚀 First launch → guest mode + RU");
         await AsyncStorage.multiSet([
           [STORE_LANGUAGE_KEY, "ru"],
           [STORE_GUEST_KEY, "true"],
@@ -82,7 +90,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         setLanguage("ru");
         i18n.changeLanguage("ru");
 
-        // редиректим сразу в main
         router.replace("/(tabs)/(main)");
       }
 
@@ -95,6 +102,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const enterAsGuest = async () => {
+    console.log("👤 Entering guest mode");
     await AsyncStorage.setItem(STORE_GUEST_KEY, "true");
     setIsAuthenticated(true);
     setIsGuest(true);
@@ -109,7 +117,12 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     refresh?: string | null;
     user?: User | null;
   }) => {
-    console.log("✅ finalizeLogin — access:", access, "refresh:", refresh);
+    console.log(
+      "✅ finalizeLogin — access:",
+      access.slice(0, 20) + "...",
+      "refresh:",
+      refresh?.slice(0, 20) + "..."
+    );
     setToken(access);
     setUser(company ?? null);
     setIsAuthenticated(true);
@@ -121,6 +134,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       [STORE_GUEST_KEY, "false"],
     ]);
   };
+
   const handleLogout = async () => {
     console.log("🚪 Logging out - clearing tokens (server + local)");
 
@@ -128,15 +142,19 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (access) {
       try {
-        await logout().unwrap(); // запрос к API /auth/logout
+        console.log(
+          "➡️ API /auth/logout with token:",
+          access.slice(0, 20) + "..."
+        );
+        await logout().unwrap();
+        console.log("⬅️ Logout success");
       } catch (e) {
-        console.warn("Server logout failed (возможно, токен истёк)", e);
+        console.warn("⚠️ Server logout failed (maybe token expired)", e);
       }
     } else {
-      console.log("ℹ️ No access token, skip server logout");
+      console.log("ℹ️ No access token, skipping server logout");
     }
 
-    // чистим локально
     setIsAuthenticated(false);
     setIsGuest(false);
     setToken(null);
@@ -149,26 +167,27 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         "refresh_token",
         STORE_GUEST_KEY,
       ]);
+      console.log("🗑 Cleared AsyncStorage tokens");
     } catch (e) {
-      console.warn("Failed to clear storage", e);
+      console.warn("⚠️ Failed to clear storage", e);
     }
 
-    // редиректим на экран выбора языка
     router.replace("/(auth)/choose-language");
   };
 
   const handleChangeLanguage = async (lang: string) => {
+    console.log("🌐 Changing language →", lang);
     try {
       await AsyncStorage.setItem(STORE_LANGUAGE_KEY, lang);
       setLanguage(lang);
       i18n.changeLanguage(lang);
     } catch (e) {
-      console.error("Language change failed", e);
+      console.error("❌ Language change failed", e);
     }
   };
 
   const handleAuthFail = () => {
-    console.log("❌ Refresh token invalid — redirecting to login...");
+    console.log("❌ Refresh token invalid — forcing logout");
     handleLogout();
   };
 

@@ -35,10 +35,26 @@ const setHeader = (cfg: any, key: string, val: string) => {
   }
 };
 
-// REQUEST: Bearer + Accept-Language
+// REQUEST INTERCEPTOR
 axiosInstance.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem("access_token");
-  if (token) setHeader(config, "Authorization", `Bearer ${token}`);
+  if (token) {
+    setHeader(config, "Authorization", `Bearer ${token}`);
+    console.log(
+      "➡️ Request:",
+      config.method?.toUpperCase(),
+      config.url,
+      "with token:",
+      token.slice(0, 20) + "..."
+    );
+  } else {
+    console.log(
+      "➡️ Request:",
+      config.method?.toUpperCase(),
+      config.url,
+      "(no token)"
+    );
+  }
 
   const language = (await AsyncStorage.getItem(STORE_LANGUAGE_KEY)) || "ru";
   setHeader(config, "Accept-Language", language);
@@ -53,33 +69,43 @@ async function refreshAccessToken(): Promise<string | null> {
 
   console.log("🔄 Refreshing access token...");
 
-  const resp = await rawAxios.post("/api/v1/auth/token/refresh", { refresh });
-  const d = resp.data || {};
+  try {
+    const resp = await rawAxios.post("/api/v1/auth/token/refresh", { refresh });
+    const d = resp.data || {};
 
-  const newAccess = d.access ?? d.access_token ?? d.accessToken ?? null;
+    const newAccess = d.access ?? d.access_token ?? d.accessToken ?? null;
+    const newRefresh = d.refresh ?? d.refresh_token ?? d.refreshToken ?? null;
 
-  const newRefresh = d.refresh ?? d.refresh_token ?? d.refreshToken ?? null;
+    if (!newAccess) {
+      console.log("❌ Refresh response invalid:", d);
+      if (onAuthFailCallback) onAuthFailCallback();
+      return null;
+    }
 
-  if (!newAccess) {
-    console.log("❌ Refresh response invalid:", d);
-    if (onAuthFailCallback) onAuthFailCallback();
+    await AsyncStorage.setItem("access_token", newAccess);
+    if (newRefresh) await AsyncStorage.setItem("refresh_token", newRefresh);
+
+    console.log("✅ Saved new tokens:", {
+      access: newAccess.slice(0, 20) + "...",
+      refresh: newRefresh ? newRefresh.slice(0, 20) + "..." : null,
+    });
+
+    return newAccess;
+  } catch (err: any) {
+    console.log(
+      "❌ Refresh request failed:",
+      err?.response?.data || err?.message
+    );
     return null;
   }
-
-  await AsyncStorage.setItem("access_token", newAccess);
-  if (newRefresh) await AsyncStorage.setItem("refresh_token", newRefresh);
-
-  console.log("✅ Saved new tokens:", {
-    access: newAccess.slice(0, 20) + "...",
-    refresh: newRefresh ? newRefresh.slice(0, 20) + "..." : null,
-  });
-
-  return newAccess;
 }
 
-// RESPONSE: 401 → refresh один раз
+// RESPONSE INTERCEPTOR
 axiosInstance.interceptors.response.use(
-  (resp) => resp,
+  (resp) => {
+    console.log("⬅️ Response:", resp.status, resp.config.url);
+    return resp;
+  },
   async (error) => {
     const status = error?.response?.status;
     const original = error?.config;
@@ -88,9 +114,11 @@ axiosInstance.interceptors.response.use(
       status === 401 &&
       original &&
       !original._retry &&
-      !String(original.url || "").includes("/auth/token/refresh/") &&
+      !String(original.url || "").includes("/auth/token/refresh") &&
       !String(original.url || "").includes("/auth/login")
     ) {
+      console.log("⚠️ Got 401 on:", original.url, "→ trying refresh");
+
       (original as any)._retry = true;
 
       if (!accessRefreshPromise) {
@@ -101,19 +129,22 @@ axiosInstance.interceptors.response.use(
       const newAccess = await accessRefreshPromise;
 
       if (newAccess) {
+        console.log("🔁 Retrying:", original.url);
         if (original.headers?.set)
           original.headers.set("Authorization", `Bearer ${newAccess}`);
         else {
           original.headers = original.headers || {};
           original.headers["Authorization"] = `Bearer ${newAccess}`;
         }
-        return axiosInstance(original); // 🔄 повторяем запрос
+        return axiosInstance(original);
       }
 
-      await AsyncStorage.removeItem("access_token");
+      console.log("🚪 Refresh failed → logging out");
+      await AsyncStorage.multiRemove(["access_token", "refresh_token"]);
       if (onAuthFailCallback) onAuthFailCallback();
     }
 
+    console.log("❌ Response error:", status, original?.url);
     throw error;
   }
 );
