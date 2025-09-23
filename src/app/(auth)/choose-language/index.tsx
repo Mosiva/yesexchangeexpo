@@ -177,13 +177,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     lineHeight: 34,
-    fontWeight: "800",
+    fontWeight: "700",
     color: COLORS.text,
     textAlign: "center",
   },
   subtitle: {
     marginTop: 10,
     fontSize: 16,
+    fontWeight: "400",
     lineHeight: 22,
     color: COLORS.subtext,
     textAlign: "center",
@@ -233,5 +234,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginHorizontal: 4,
   },
-  ctaText: { color: "#fff", fontWeight: "800", fontSize: 18 },
+  ctaText: { color: "#fff", fontWeight: "400", fontSize: 16 },
 });
