@@ -24,7 +24,7 @@ const schema = z.object({
   firstName: z.string().trim().min(1, "Укажите имя"),
   lastName: z.string().trim().optional(),
   digits: z.string().regex(/^\d{10}$/, "Введите номер из 10 цифр"),
-  residentRK: z.boolean().default(false),
+  residentRK: z.boolean(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -45,7 +45,6 @@ export default function RegisterScreen() {
     control,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -57,8 +56,6 @@ export default function RegisterScreen() {
       residentRK: false,
     },
   });
-
-  const digits = watch("digits");
 
   useEffect(() => {
     const p = Array.isArray(rawPhone) ? rawPhone[0] : rawPhone;

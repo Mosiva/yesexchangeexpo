@@ -60,7 +60,7 @@ export default function ChooseLanguageScreen() {
       }
     };
     init();
-  }, []);
+  });
 
   useEffect(() => {
     if (lng && i18n) i18n.changeLanguage(lng);

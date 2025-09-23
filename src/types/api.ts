@@ -108,12 +108,13 @@ export type UserDto = {
   firstName: string;
   lastName?: string | Record<string, unknown>;
   residentRK: boolean;
+  role?: string;
   createdAt?: string;
   updatedAt?: string;
 };
 
 export type UpdateUserDto = Partial<
-  Pick<UserDto, "phone" | "firstName" | "lastName" | "residentRK">
+  Pick<UserDto, "phone" | "firstName" | "lastName" | "residentRK" | "role">
 >;
 
 // --- Branches DTOs ---

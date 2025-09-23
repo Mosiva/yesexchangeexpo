@@ -81,7 +81,7 @@ export default function SendCodeScreen() {
       const resp = await verifyOtp({ phone, code }).unwrap();
 
       // Пытаемся вытащить токены/юзера из разных возможных форматов ответа
-      const payload: any = resp?.data ?? resp ?? {};
+      const payload: any = resp ?? {};
       const access =
         payload.accessToken ??
         payload.access ??
