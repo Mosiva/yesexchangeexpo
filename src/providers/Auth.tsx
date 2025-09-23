@@ -172,7 +172,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       console.warn("⚠️ Failed to clear storage", e);
     }
 
-    router.replace("/(auth)/choose-language");
+    router.replace("/(auth)");
   };
 
   const handleChangeLanguage = async (lang: string) => {

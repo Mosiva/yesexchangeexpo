@@ -39,7 +39,9 @@ export default function RegisterScreen() {
 
   const lastNameRef = useRef<TextInput>(null);
   const phoneRef = useRef<TextInput>(null);
-  const [maskedPhone, setMaskedPhone] = React.useState("");
+
+  // по умолчанию сразу "+7 ("
+  const [maskedPhone, setMaskedPhone] = React.useState("+7");
 
   const {
     control,
@@ -81,11 +83,8 @@ export default function RegisterScreen() {
         residentRK: values.residentRK,
       }).unwrap();
 
-      // ✅ сразу ведём на экран кода с этим номером
-      router.push({
-        pathname: "/(auth)/sendcode",
-        params: { phone: e164 },
-      });
+      // ✅ сразу ведём на экран кода
+      router.push({ pathname: "/(auth)/sendcode", params: { phone: e164 } });
     } catch (err: any) {
       const msg =
         err?.data?.message ||
@@ -208,17 +207,26 @@ export default function RegisterScreen() {
         control={control}
         name="residentRK"
         render={({ field: { value, onChange } }) => (
-          <Pressable
-            style={styles.checkboxRow}
-            onPress={() => onChange(!value)}
-          >
-            <View
-              style={[styles.checkboxBox, value && styles.checkboxBoxChecked]}
+          <>
+            <Pressable
+              style={styles.checkboxRow}
+              onPress={() => onChange(!value)}
             >
-              {value && <View style={styles.checkboxDot} />}
-            </View>
-            <Text style={styles.checkboxLabel}>Я являюсь резидентом РК</Text>
-          </Pressable>
+              <View
+                style={[styles.checkboxBox, value && styles.checkboxBoxChecked]}
+              >
+                {value && <View style={styles.checkboxDot} />}
+              </View>
+              <Text style={styles.checkboxLabel}>Я являюсь резидентом РК</Text>
+            </Pressable>
+
+            {/* ✅ Сообщение всегда видно, если чекбокс не выбран */}
+            {!value && (
+              <Text style={styles.error}>
+                Регистрация доступна только для граждан РК
+              </Text>
+            )}
+          </>
         )}
       />
 

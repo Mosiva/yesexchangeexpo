@@ -18,16 +18,39 @@ import { useLoginMutation } from "../../services/yesExchange";
 export default function LoginScreen() {
   // только национальная часть: 10 цифр
   const [digits, setDigits] = useState("");
-  // маскированная строка для UI
-  const [maskedPhone, setMaskedPhone] = useState("");
+  const [maskedPhone, setMaskedPhone] = useState("+7"); // сразу +7
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
-  const { error, isAuthenticated, enterAsGuest, isGuest } = useAuth();
+  const { error, isAuthenticated, isGuest } = useAuth();
   const { t } = useTranslation();
 
   // RTK mutation
   const [doLogin] = useLoginMutation();
+
+  // Допустимые коды операторов Казахстана
+  const validPrefixes = [
+    "700",
+    "701",
+    "702",
+    "703",
+    "704",
+    "705",
+    "706",
+    "707",
+    "708",
+    "709",
+    "747",
+    "771",
+    "775",
+    "776",
+    "777",
+    "778",
+  ];
+
+  const prefix = digits.slice(0, 3);
+  const isValid = digits.length === 10 && validPrefixes.includes(prefix);
+  const e164 = `+7${digits}`;
 
   // Навигация только после реальной аутентификации (не гостевой)
   useEffect(() => {
@@ -36,15 +59,10 @@ export default function LoginScreen() {
     }
   }, [isAuthenticated, isGuest, router]);
 
-  const isValid = digits.length === 10;
-  const e164 = `+7${digits}`;
-
   const handleLogin = async () => {
     if (!isValid) return;
     setIsLoading(true);
     try {
-      // ⚠️ тело LoginDto проверь по своей спеки.
-      // Часто это { login: string } или { phone: string }.
       await doLogin({ phone: e164 }).unwrap();
 
       // 200 OK → бэк выслал OTP → переходим на ввод кода
@@ -126,6 +144,13 @@ export default function LoginScreen() {
         maxLength={19}
       />
 
+      {/* Ошибка при неверном коде */}
+      {digits.length >= 3 && !validPrefixes.includes(prefix) && (
+        <Text style={styles.error}>
+          Доступны только коды операторов Казахстана
+        </Text>
+      )}
+
       <TouchableOpacity
         style={[
           styles.loginButton,
@@ -146,16 +171,6 @@ export default function LoginScreen() {
         <Text style={styles.registerText}>Зарегистрироваться</Text>
       </Pressable>
 
-      {/* <TouchableOpacity
-        style={styles.enterButton}
-        onPress={() => {
-          enterAsGuest();
-          router.replace("/(tabs)/(main)");
-        }}
-      >
-        <Text style={styles.buttonText}>{t("mainpass.logintosystem")}</Text>
-      </TouchableOpacity> */}
-
       {isLoading && <Loader />}
     </ScrollView>
   );
@@ -167,6 +182,7 @@ const COLORS = {
   subtext: "#6B7280",
   inputBorder: "#E5E7EB",
   inputBg: "#FFFFFF",
+  error: "#DC2626",
 };
 
 const styles = StyleSheet.create({
@@ -207,6 +223,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 16,
   },
+  error: {
+    color: COLORS.error,
+    marginTop: 6,
+    fontSize: 13,
+  },
   loginButton: {
     backgroundColor: COLORS.orange,
     paddingVertical: 18,
@@ -221,17 +242,5 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: COLORS.text,
     textAlign: "center",
-  },
-  enterButton: {
-    backgroundColor: "#4F7942",
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
-    marginTop: 15,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
   },
 });
