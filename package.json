@@ -20,6 +20,7 @@
     "@reduxjs/toolkit": "^2.8.2",
     "axios": "^1.10.0",
     "expo": "~53.0.23",
+    "expo-application": "^7.0.7",
     "expo-blur": "~14.1.5",
     "expo-checkbox": "~4.1.4",
     "expo-constants": "~17.1.6",

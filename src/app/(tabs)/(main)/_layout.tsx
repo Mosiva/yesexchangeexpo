@@ -8,7 +8,7 @@ function CustomHeader({ title }: { title: string }) {
   return (
     <View style={styles.topBar}>
       <Pressable onPress={() => router.back()}>
-        <Ionicons name="chevron-back-circle-outline" size={30} color="black" />
+        <Ionicons name="arrow-back" size={30} color="black" />
       </Pressable>
       <Text style={styles.title}>{title}</Text>
     </View>
@@ -22,6 +22,14 @@ export default function Layout() {
         name="index"
         options={{
           headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="settings/index"
+        options={{
+          // Hide back by default + disable iOS swipe-back
+          header: () => <CustomHeader title="Настройки" />,
+          gestureEnabled: false,
         }}
       />
     </Stack>

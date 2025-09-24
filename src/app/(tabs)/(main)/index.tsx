@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { useAuth } from "providers";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -21,7 +20,6 @@ export default function MainScreen() {
   const { t, i18n } = useTranslation();
   const currentLanguage = i18n.language;
   const router = useRouter();
-  const { logout } = useAuth();
 
   const {
     data: clientData,
@@ -38,7 +36,7 @@ export default function MainScreen() {
 
   const client = clientData?.data || null;
   const handlePress = () => {
-    logout();
+    router.push({ pathname: "/(tabs)/(main)/settings" });
   };
   const [refreshing, setRefreshing] = useState(false);
 
