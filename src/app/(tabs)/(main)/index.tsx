@@ -1,60 +1,25 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Image,
   Pressable,
-  RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet,
   View,
 } from "react-native";
-import { clientApi } from "services";
-
-const { useGetClientQuery } = clientApi;
 
 export default function MainScreen() {
   const { t, i18n } = useTranslation();
-  const currentLanguage = i18n.language;
   const router = useRouter();
 
-  const {
-    data: clientData,
-    refetch: refetchClient,
-    isLoading: isClientLoading,
-    isError: isClientError,
-  } = useGetClientQuery({});
-
-  useFocusEffect(
-    useCallback(() => {
-      refetchClient(); // Re-fetch when screen is focused
-    }, [refetchClient])
-  );
-
-  const client = clientData?.data || null;
   const handlePress = () => {
     router.push({ pathname: "/(tabs)/(main)/settings" });
   };
-  const [refreshing, setRefreshing] = useState(false);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    try {
-      await refetchClient();
-    } finally {
-      setRefreshing(false);
-    }
-  };
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
+    <ScrollView style={styles.container}>
       <StatusBar barStyle="light-content" />
       {/* === Header === */}
       <View style={styles.header}>
