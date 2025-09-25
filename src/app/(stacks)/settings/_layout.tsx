@@ -51,6 +51,26 @@ export default function Layout() {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="jointoteam/index"
+        options={{
+          // Hide back by default + disable iOS swipe-back
+          header: () => (
+            <CustomHeader title="Хочу в команду!" showBackButton={true} />
+          ),
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="feedbacks/index"
+        options={{
+          // Hide back by default + disable iOS swipe-back
+          header: () => (
+            <CustomHeader title="Хочу в команду!" showBackButton={true} />
+          ),
+          gestureEnabled: false,
+        }}
+      />
     </Stack>
   );
 }

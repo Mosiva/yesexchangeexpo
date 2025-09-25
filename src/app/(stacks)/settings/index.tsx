@@ -39,6 +39,7 @@ export default function SettingsScreen() {
         <ListItem
           icon="chatbox-ellipses-outline"
           label="Отзывы и предложения"
+          onPress={() => router.push("/(stacks)/settings/feedbacks")}
         />
         <ListItem
           icon="newspaper-outline"
@@ -47,7 +48,10 @@ export default function SettingsScreen() {
         />
 
         {/* CTA */}
-        <TouchableOpacity style={styles.cta}>
+        <TouchableOpacity
+          style={styles.cta}
+          onPress={() => router.push("/(stacks)/settings/jointoteam")}
+        >
           <Text style={styles.ctaText}>Хочу к вам в команду!</Text>
         </TouchableOpacity>
 
