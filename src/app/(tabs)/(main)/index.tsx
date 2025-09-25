@@ -15,7 +15,7 @@ export default function MainScreen() {
   const router = useRouter();
 
   const handlePress = () => {
-    router.push({ pathname: "/(tabs)/(main)/settings" });
+    router.push({ pathname: "/(stacks)/settings" });
   };
 
   return (
