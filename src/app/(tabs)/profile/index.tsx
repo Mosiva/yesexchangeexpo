@@ -95,7 +95,7 @@ export default function ProfileScreen() {
   };
 
   // ========================= RENDER =========================
-  const isAuthed = !!client && !isClientError;
+  const isAuthed = !!client && !isClientError && !isGuest;
 
   return (
     <ScrollView

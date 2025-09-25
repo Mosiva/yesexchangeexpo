@@ -117,6 +117,12 @@ axiosInstance.interceptors.response.use(
       !String(original.url || "").includes("/auth/token/refresh") &&
       !String(original.url || "").includes("/auth/login")
     ) {
+      const storedAccess = await AsyncStorage.getItem("access_token");
+      if (!storedAccess) {
+        console.log("ℹ️ No access token in storage → guest mode, skip refresh");
+        throw error; // ❌ сразу отдаём 401 в UI, refresh не делаем
+      }
+
       console.log("⚠️ Got 401 on:", original.url, "→ trying refresh");
 
       (original as any)._retry = true;

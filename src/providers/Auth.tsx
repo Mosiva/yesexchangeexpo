@@ -155,26 +155,24 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("ℹ️ No access token, skipping server logout");
     }
 
-    setIsAuthenticated(false);
-    setIsGuest(false);
+    // 👉 переводим в guest mode
+    setIsAuthenticated(true);
+    setIsGuest(true);
     setToken(null);
     setUser(null);
     setError({ text: "" });
 
     try {
-      await AsyncStorage.multiRemove([
-        "access_token",
-        "refresh_token",
-        STORE_GUEST_KEY,
-      ]);
-      console.log("🗑 Cleared AsyncStorage tokens");
+      await AsyncStorage.multiRemove(["access_token", "refresh_token"]);
+      await AsyncStorage.setItem(STORE_GUEST_KEY, "true");
+      console.log("🗑 Cleared tokens, set guest mode");
     } catch (e) {
       console.warn("⚠️ Failed to clear storage", e);
     }
 
-    router.replace("/(auth)");
+    // 🚀 сразу на main
+    router.replace("/(tabs)/(main)");
   };
-
   const handleChangeLanguage = async (lang: string) => {
     console.log("🌐 Changing language →", lang);
     try {

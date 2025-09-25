@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function AppSetScreen() {
-  const [lightTheme, setLightTheme] = useState(true);
+  const [lightTheme, setLightTheme] = useState(false);
   const nextTheme = lightTheme
     ? { label: "Тёмная", icon: "moon-outline" as const }
     : { label: "Светлая", icon: "sunny-outline" as const };
