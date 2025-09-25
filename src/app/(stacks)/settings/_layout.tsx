@@ -71,6 +71,16 @@ export default function Layout() {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="appset/index"
+        options={{
+          // Hide back by default + disable iOS swipe-back
+          header: () => (
+            <CustomHeader title="Настройки" showBackButton={true} />
+          ),
+          gestureEnabled: false,
+        }}
+      />
     </Stack>
   );
 }

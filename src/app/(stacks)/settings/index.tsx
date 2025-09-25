@@ -35,7 +35,11 @@ export default function SettingsScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {/* Rows */}
-        <ListItem icon="settings-outline" label="Настройки" />
+        <ListItem
+          icon="settings-outline"
+          label="Настройки"
+          onPress={() => router.push("/(stacks)/settings/appset")}
+        />
         <ListItem
           icon="chatbox-ellipses-outline"
           label="Отзывы и предложения"
