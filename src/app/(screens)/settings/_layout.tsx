@@ -2,14 +2,27 @@ import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-function CustomHeader({ title }: { title: string }) {
+function CustomHeader({
+  title,
+  showBackButton = false,
+}: {
+  title: string;
+  showBackButton?: boolean;
+}) {
   const router = useRouter();
+  const canGoBack =
+    typeof router.canGoBack === "function" ? router.canGoBack() : false;
 
   return (
     <View style={styles.topBar}>
-      <Pressable onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={30} color="black" />
-      </Pressable>
+      {showBackButton && canGoBack ? (
+        <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Ionicons name="arrow-back" size={28} color="#000" />
+        </Pressable>
+      ) : (
+        <View style={{ width: 28 }} />
+      )}
+
       <Text style={styles.title}>{title}</Text>
     </View>
   );
@@ -21,7 +34,10 @@ export default function Layout() {
       <Stack.Screen
         name="index"
         options={{
-          headerShown: false,
+          header: () => (
+            <CustomHeader title="Настройки" showBackButton={true} />
+          ),
+          gestureEnabled: false,
         }}
       />
     </Stack>
@@ -31,8 +47,8 @@ export default function Layout() {
 const styles = StyleSheet.create({
   topBar: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 16,
@@ -41,10 +57,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "bold",
-  },
-  login: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#4F7942",
+    textAlign: "center",
+    flexShrink: 1,
   },
 });

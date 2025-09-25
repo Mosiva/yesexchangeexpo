@@ -190,7 +190,7 @@ export default function ProfileScreen() {
           <Pressable
             style={styles.cardRow}
             accessibilityLabel="История бронирования"
-            onPress={() => router.push("/(tabs)/profile/reservehistory")}
+            onPress={() => router.push("/(screens)/reservehistory")}
           >
             <View style={styles.cardLeft}>
               <MaterialCommunityIcons

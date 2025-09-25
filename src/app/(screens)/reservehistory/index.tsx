@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
-import CancelReservationModal from "../../../../components/CancelReservationModal";
+import CancelReservationModal from "../../../components/CancelReservationModal";
 import ReservationCard, {
   Reservation,
-} from "../../../../components/ReservationCard";
+} from "../../../components/ReservationCard";
 
 // ---- Demo data (замени на данные из API) ----
 const initialData: Reservation[] = [
