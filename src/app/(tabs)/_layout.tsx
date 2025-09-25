@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { Tabs, usePathname } from "expo-router";
+import { Tabs } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -67,26 +67,14 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
 export default function Layout() {
   const { t } = useTranslation();
-  const pathname = usePathname();
-  
-  // Hide tab bar on specific pages
-  const pagesWithoutTabBar = ['/settings', '/editprofile', '/reservehistory'];
-  const shouldHideTabBar = pagesWithoutTabBar.some(page => pathname?.includes(page));
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarHideOnKeyboard: true,
-        tabBarStyle: shouldHideTabBar ? { 
-          display: 'none',
-          height: 0,
-          opacity: 0,
-          position: 'absolute',
-          bottom: -200
-        } : undefined,
       }}
-      tabBar={(props) => shouldHideTabBar ? <></> : <CustomTabBar {...props} />}
+      tabBar={(props) => <CustomTabBar {...props} />}
     >
       <Tabs.Screen
         name="(main)"
