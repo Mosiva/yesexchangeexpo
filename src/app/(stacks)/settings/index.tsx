@@ -2,13 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-    Alert,
-    ScrollView,
-    Share,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const ORANGE = "#F58220";
@@ -40,7 +40,11 @@ export default function SettingsScreen() {
           icon="chatbox-ellipses-outline"
           label="Отзывы и предложения"
         />
-        <ListItem icon="newspaper-outline" label="О компании" />
+        <ListItem
+          icon="newspaper-outline"
+          label="О компании"
+          onPress={() => router.push("/(stacks)/settings/aboutus")}
+        />
 
         {/* CTA */}
         <TouchableOpacity style={styles.cta}>

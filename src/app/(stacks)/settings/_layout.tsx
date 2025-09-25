@@ -41,6 +41,16 @@ export default function Layout() {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="aboutus/index"
+        options={{
+          // Hide back by default + disable iOS swipe-back
+          header: () => (
+            <CustomHeader title="О компании" showBackButton={true} />
+          ),
+          gestureEnabled: false,
+        }}
+      />
     </Stack>
   );
 }
