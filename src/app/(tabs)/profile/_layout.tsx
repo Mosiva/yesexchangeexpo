@@ -50,7 +50,6 @@ export default function Layout() {
             />
           ),
           gestureEnabled: false,
-          presentation: "fullScreenModal",
         }}
       />
       <Stack.Screen
@@ -61,7 +60,6 @@ export default function Layout() {
             <CustomHeader title="История брони" showBackButton={true} />
           ),
           gestureEnabled: false,
-          presentation: "fullScreenModal",
         }}
       />
     </Stack>
