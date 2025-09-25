@@ -66,7 +66,7 @@ export default function Layout() {
         options={{
           // Hide back by default + disable iOS swipe-back
           header: () => (
-            <CustomHeader title="Хочу в команду!" showBackButton={true} />
+            <CustomHeader title="Отзывы и предложения" showBackButton={true} />
           ),
           gestureEnabled: false,
         }}

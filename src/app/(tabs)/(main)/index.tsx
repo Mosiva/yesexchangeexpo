@@ -28,11 +28,7 @@ export default function MainScreen() {
           style={styles.headerLogo}
           resizeMode="contain"
         />
-        <Pressable
-          hitSlop={12}
-          accessibilityLabel="Настройки"
-          onPress={handlePress}
-        >
+        <Pressable hitSlop={12} accessibilityLabel="Настройки">
           <Ionicons name="settings" size={22} color="#fff" />
         </Pressable>
       </View>
