@@ -91,7 +91,7 @@ export default function LoginScreen() {
       }
       Alert.alert("", errorMessage);
     }
-  }, [error]);
+  }, [error, t]);
 
   return (
     <View style={styles.container}>

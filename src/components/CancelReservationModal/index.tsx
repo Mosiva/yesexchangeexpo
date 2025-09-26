@@ -3,8 +3,6 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Modal from "react-native-modal";
 
-const ORANGE = "#F58220";
-
 interface Props {
   visible: boolean;
   onClose: () => void;
