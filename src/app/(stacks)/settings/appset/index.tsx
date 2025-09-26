@@ -1,9 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import LanguageChooseModal from "../../../../components/LanguageModal";
 
 export default function AppSetScreen() {
   const [lightTheme, setLightTheme] = useState(false);
+  const [langModalVisible, setLangModalVisible] = useState(false);
+  const [currentLang, setCurrentLang] = useState<"kz" | "ru" | "en">("ru");
+
   const nextTheme = lightTheme
     ? { label: "Тёмная", icon: "moon-outline" as const }
     : { label: "Светлая", icon: "sunny-outline" as const };
@@ -52,9 +56,7 @@ export default function AppSetScreen() {
         {/* App language */}
         <Pressable
           style={styles.card}
-          onPress={() => {
-            /* navigate */
-          }}
+          onPress={() => setLangModalVisible(true)}
         >
           <View style={styles.leftIconWrap}>
             <Ionicons name="globe-outline" size={22} color={ORANGE} />
@@ -77,6 +79,16 @@ export default function AppSetScreen() {
           <Ionicons name="chevron-forward" size={22} color="#9CA3AF" />
         </Pressable>
       </ScrollView>
+      {/* Модалка выбора языка */}
+      <LanguageChooseModal
+        visible={langModalVisible}
+        value={currentLang}
+        onClose={() => setLangModalVisible(false)}
+        onConfirm={(next) => {
+          setCurrentLang(next);
+          setLangModalVisible(false);
+        }}
+      />
     </View>
   );
 }
