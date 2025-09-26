@@ -1,15 +1,19 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "providers";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Modal from "react-native-modal";
+import { STORE_LANGUAGE_KEY } from "../../local/i18n";
 
 type LangCode = "kz" | "ru" | "en";
 
 interface Props {
   visible: boolean;
-  value?: LangCode; // current language (preselected)
+  value?: LangCode; // текущий язык
   onClose: () => void;
-  onConfirm: (next: LangCode) => void; // called with selected language
+  onConfirm?: (next: LangCode) => void; // колбэк для родителя
 }
 
 export default function LanguageChooseModal({
@@ -18,32 +22,45 @@ export default function LanguageChooseModal({
   onClose,
   onConfirm,
 }: Props) {
+  const { t, i18n } = useTranslation();
+  const { changeLanguage, language: lng } = useAuth();
+
   const [choice, setChoice] = useState<LangCode>(value);
 
-  // sync when opened with a new value
+  // синхронизация при открытии
   useEffect(() => {
     if (visible) setChoice(value);
   }, [visible, value]);
 
+  // синхронизация с i18n при изменении в провайдере
+  useEffect(() => {
+    if (lng && i18n) i18n.changeLanguage(lng);
+  }, [lng, i18n]);
+
   const options: { code: LangCode; label: string; icon: any }[] = [
     {
       code: "kz",
-      label: "Казахский",
+      label: t("common.kz", "Казахский"),
       icon: require("../../../assets/icons/kz.png"),
     },
     {
       code: "ru",
-      label: "Русский",
+      label: t("common.ru", "Русский"),
       icon: require("../../../assets/icons/ru.png"),
     },
     {
       code: "en",
-      label: "Английский",
+      label: t("common.en", "Английский"),
       icon: require("../../../assets/icons/eng.png"),
     },
   ];
 
-  const handleSave = () => onConfirm(choice);
+  const handleSave = async () => {
+    await AsyncStorage.setItem(STORE_LANGUAGE_KEY, choice);
+    await changeLanguage(choice);
+    onConfirm?.(choice);
+    onClose();
+  };
 
   return (
     <Modal
@@ -64,7 +81,9 @@ export default function LanguageChooseModal({
 
           {/* Заголовок + крестик */}
           <View style={styles.header}>
-            <Text style={styles.title}>Язык приложения</Text>
+            <Text style={styles.title}>
+              {t("chooseLang.desc", "Язык приложения")}
+            </Text>
             <TouchableOpacity onPress={onClose} hitSlop={8}>
               <Ionicons name="close" size={22} color="#111827" />
             </TouchableOpacity>
@@ -94,7 +113,7 @@ export default function LanguageChooseModal({
 
           {/* Save */}
           <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-            <Text style={styles.saveText}>Сохранить</Text>
+            <Text style={styles.saveText}>{t("common.save", "Сохранить")}</Text>
           </TouchableOpacity>
         </View>
       </View>
