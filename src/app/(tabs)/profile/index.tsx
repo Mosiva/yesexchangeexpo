@@ -10,6 +10,7 @@ import {
   Alert,
   Pressable,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -102,6 +103,7 @@ export default function ProfileScreen() {
       contentContainerStyle={styles.container}
       keyboardShouldPersistTaps="handled"
     >
+      <StatusBar barStyle="dark-content" />
       {!isAuthed ? (
         // -------------------- GUEST MODE --------------------
         <>

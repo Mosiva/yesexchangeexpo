@@ -1,5 +1,5 @@
 import React from "react";
-import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Dimensions, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
 
 const { width } = Dimensions.get("window");
 const HERO_H = Math.round((width - 32) * 0.56); // 16:9-ish, minus horizontal padding
@@ -14,6 +14,7 @@ export default function AboutUsScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
         keyboardShouldPersistTaps="handled"

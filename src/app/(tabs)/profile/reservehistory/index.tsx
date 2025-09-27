@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
+import { RefreshControl, ScrollView, StatusBar, StyleSheet, View } from "react-native";
 import CancelReservationModal from "../../../../components/CancelReservationModal";
 import ReservationCard, {
   Reservation,
@@ -66,6 +66,7 @@ export default function ReserveHistoryScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" /> 
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
         refreshControl={

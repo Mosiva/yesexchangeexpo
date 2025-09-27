@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -71,6 +72,7 @@ export default function JoinToTeamScreen() {
 
   return (
     <View style={styles.root}>
+      <StatusBar barStyle="dark-content" />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[styles.container, { paddingBottom: 120 }]}

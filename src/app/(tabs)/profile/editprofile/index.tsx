@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import {
   Alert,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -87,6 +88,7 @@ export default function EditProfileScreen() {
       contentContainerStyle={styles.container}
       keyboardShouldPersistTaps="handled"
     >
+      <StatusBar barStyle="dark-content" />
       {/* First name */}
       <Controller
         control={control}

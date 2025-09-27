@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
 import CurrenciesModal from "../../../../components/CurrenciesModal"; // поправь путь
 import LanguageChooseModal from "../../../../components/LanguageModal";
 import NotificationsModal from "../../../../components/NotificationsModal"; // поправь путь
@@ -32,6 +32,7 @@ export default function AppSetScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
         keyboardShouldPersistTaps="handled"
