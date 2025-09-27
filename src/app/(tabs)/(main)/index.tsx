@@ -66,6 +66,7 @@ export default function MainScreen() {
             { code: "CNY", buy: "23,4", sell: "27,8", flagEmoji: "🇨🇳" },
             { code: "AED", buy: "12 453,4", sell: "12 455,8", flagEmoji: "🇦🇪" },
             { code: "TRY", buy: "12 453,4", sell: "12 455,8", flagEmoji: "🇹🇷" },
+            { code: "KZT", buy: "145,4", sell: "145,8", flagEmoji: "🇰🇿" },
           ]}
           onPressInfo={(code) => console.log("info", code)}
           onPressMore={() => console.log("more")}

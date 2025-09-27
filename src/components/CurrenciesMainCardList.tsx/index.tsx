@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import React, { useMemo, useState } from "react";
 import {
     Image,
     ImageSourcePropType,
@@ -20,7 +20,9 @@ type Rate = {
 type Props = {
   data: Rate[];
   onPressInfo?: (code: string) => void;
+  /** Optional: still called when user expands/collapses */
   onPressMore?: () => void;
+  /** Keep showing the “more” button (default true) */
   showMore?: boolean;
 };
 
@@ -35,22 +37,37 @@ const CELLS_GAP = 10;
 const CELL_HEIGHT = 48;
 const RADIUS = 10;
 
+const DEFAULT_VISIBLE = 6;
+
 export default function CurrenciesMainCardList({
   data,
   onPressMore,
   showMore = true,
 }: Props) {
+  const [expanded, setExpanded] = useState(false);
+
+  const canExpand = data.length > DEFAULT_VISIBLE;
+  const visibleData = useMemo(
+    () => (expanded ? data : data.slice(0, DEFAULT_VISIBLE)),
+    [expanded, data]
+  );
+
+  const handleToggle = () => {
+    setExpanded((v) => !v);
+    onPressMore?.();
+  };
+
   return (
     <View style={styles.container}>
       {/* Single header row aligned with the value columns */}
-      {data.length > 0 && (
+      {visibleData.length > 0 && (
         <View style={styles.labelsRow}>
           <Text style={styles.label}>Покупка</Text>
           <Text style={styles.label}>Продажа</Text>
         </View>
       )}
 
-      {data.map((r, idx) => (
+      {visibleData.map((r, idx) => (
         <View key={`${r.code}-${idx}`} style={styles.row}>
           <View style={styles.rowInner}>
             {/* Left: flag + code + small white dot */}
@@ -81,13 +98,16 @@ export default function CurrenciesMainCardList({
           </View>
 
           {/* Divider */}
-          {idx !== data.length - 1 && <View style={styles.divider} />}
+          {idx !== visibleData.length - 1 && <View style={styles.divider} />}
         </View>
       ))}
 
-      {showMore && (
-        <TouchableOpacity style={styles.moreBtn} onPress={onPressMore}>
-          <Text style={styles.moreText}>Показать больше</Text>
+      {/* Expand / Collapse */}
+      {showMore && canExpand && (
+        <TouchableOpacity style={styles.moreBtn} onPress={handleToggle}>
+          <Text style={styles.moreText}>
+            {expanded ? "Скрыть" : "Показать больше"}
+          </Text>
         </TouchableOpacity>
       )}
     </View>
@@ -127,7 +147,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  flagImg: { width: 32, height: 32, borderRadius: 16 },
+  flagImg: { width: 32, height: 32, borderRadius: 16, marginRight: 8 },
   flagEmoji: { fontSize: 24, marginRight: 8 },
   code: { color: WHITE, fontSize: 24, fontWeight: "800" },
 
