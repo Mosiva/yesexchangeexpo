@@ -1,14 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo, useState } from "react";
 import {
-    InputAccessoryView,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 import Modal from "react-native-modal";
 
@@ -30,8 +29,6 @@ interface Props {
   toSymbol?: string;
   flagEmoji?: string;
 }
-
-const ACCESSORY_ID = "hide-ios-done-toolbar";
 
 export default function CurrencyExchangeModal({
   visible,
@@ -121,9 +118,6 @@ export default function CurrencyExchangeModal({
                   returnKeyType="done"
                   style={styles.input}
                   placeholder="0"
-                  inputAccessoryViewID={
-                    Platform.OS === "ios" ? ACCESSORY_ID : undefined
-                  }
                 />
                 <View style={styles.suffix}>
                   <Text style={styles.suffixText}>{fromSymbol}</Text>
@@ -140,9 +134,6 @@ export default function CurrencyExchangeModal({
                   editable={false}
                   value={receiveText}
                   style={styles.input}
-                  inputAccessoryViewID={
-                    Platform.OS === "ios" ? ACCESSORY_ID : undefined
-                  }
                 />
                 <View style={styles.suffix}>
                   <Text style={styles.suffixText}>{toSymbol}</Text>
@@ -159,13 +150,6 @@ export default function CurrencyExchangeModal({
           >
             <Text style={styles.ctaText}>{ctaLabel}</Text>
           </TouchableOpacity>
-
-          {/* Empty accessory view to HIDE iOS grey "Done" bar */}
-          {Platform.OS === "ios" && (
-            <InputAccessoryView nativeID={ACCESSORY_ID}>
-              <View style={{ height: 0 }} />
-            </InputAccessoryView>
-          )}
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -209,7 +193,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
   },
-  title: { fontSize: 24, fontWeight: "800", color: "#111827" },
+  title: { fontSize: 20, fontWeight: "700", color: "#111827" },
 
   cardRow: {
     flexDirection: "row",
@@ -230,14 +214,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  codeText: { fontSize: 20, fontWeight: "800", color: "#111827" },
-  nameText: { fontSize: 14, color: "#6B7280", marginTop: 2 },
+  codeText: { fontSize: 16, fontWeight: "400", color: "#111827" },
+  nameText: { fontSize: 12, color: "#6B7280", marginTop: 2, fontWeight: "400" },
   right: { alignItems: "flex-end" },
-  rateText: { fontSize: 22, fontWeight: "800", color: "#111827" },
-  rateHint: { fontSize: 14, color: "#6B7280", marginTop: 2 },
+  rateText: { fontSize: 16, fontWeight: "700", color: "#111827" },
+  rateHint: { fontSize: 12, color: "#6B7280", marginTop: 2, fontWeight: "400" },
 
   inputsRow: { flexDirection: "row", marginBottom: 16 },
-  label: { fontSize: 18, fontWeight: "700", color: "#111827", marginBottom: 8 },
+  label: { fontSize: 14, fontWeight: "400", color: "#111827", marginBottom: 8 },
   inputWrap: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
