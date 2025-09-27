@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import CurrenciesMainCardList from "../../../components/CurrenciesMainCardList.tsx";
 import CurrencyExchangeModal from "../../../components/CurrencyExchangeModal";
+import LineUpDownChartCard from "../../../components/LineUpDownChartCard";
 
 // Отдельный компонент для локального времени
 function LocalTime() {
@@ -151,6 +152,15 @@ export default function MainScreen() {
           </Text>
         </Pressable>
       </View>
+      <LineUpDownChartCard
+        items={[
+          { code: "USD", value: 533.4, delta: +23.2, flagEmoji: "🇺🇸" },
+          { code: "RUB", value: 1533.4, delta: -23.2, flagEmoji: "🇷🇺" },
+          { code: "EUR", value: 533.4, delta: +23.2, flagEmoji: "🇪🇺" },
+
+          // …more
+        ]}
+      />
       {exchangeData && (
         <CurrencyExchangeModal
           visible={exchangeVisible}
