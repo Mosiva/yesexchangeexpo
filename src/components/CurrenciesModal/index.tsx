@@ -1,13 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-    FlatList,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Modal from "react-native-modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 12,
   },
-  title: { fontSize: 22, fontWeight: "800", color: "#111827" },
+  title: { fontSize: 20, fontWeight: "700", color: "#111827" },
 
   searchWrap: {
     flexDirection: "row",
@@ -212,15 +212,15 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   flag: { fontSize: 24, marginRight: 10 },
-  code: { fontSize: 18, fontWeight: "800", color: "#111827" },
-  name: { fontSize: 15, color: "#6B7280", marginTop: 2 },
+  code: { fontSize: 16, fontWeight: "700", color: "#111827" },
+  name: { fontSize: 12, color: "#6B7280", marginTop: 2, fontWeight: "400" },
 
   sep: { height: 1, backgroundColor: "#ECECEC" },
 
   // Custom switch
   switchTrack: {
-    width: 62,
-    height: 32,
+    width: 36,
+    height: 20,
     borderRadius: 16,
     padding: 3,
     marginLeft: 12,
@@ -229,8 +229,8 @@ const styles = StyleSheet.create({
   trackOn: { backgroundColor: ORANGE },
   trackOff: { backgroundColor: "#6B6B6B" },
   switchThumb: {
-    width: 26,
-    height: 26,
+    width: 16,
+    height: 16,
     borderRadius: 13,
     backgroundColor: "#fff",
   },
@@ -251,5 +251,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  saveText: { color: "#fff", fontSize: 18, fontWeight: "800" },
+  saveText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 });
