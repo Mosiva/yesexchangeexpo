@@ -1,12 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo, useState } from "react";
 import {
-    Image,
-    ImageSourcePropType,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  ImageSourcePropType,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 type Rate = {
@@ -30,7 +30,7 @@ const WHITE = "#FFFFFF";
 const DIVIDER = "#EBA25A";
 const CELL_TEXT = "#2B2B2B";
 
-const CELL_MIN_W = 120;
+const CELL_MIN_W = 110;
 const CELLS_GAP = 10;
 const CELL_HEIGHT = 48;
 const RADIUS = 10;
@@ -128,8 +128,8 @@ const styles = StyleSheet.create({
   },
   label: {
     color: "#FFD7B0",
-    fontSize: 16,
-    fontWeight: "800",
+    fontSize: 14,
+    fontWeight: "400",
     textAlign: "center",
     width: CELL_MIN_W,
   },
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   leftBlock: { flexDirection: "row", alignItems: "center" },
   flagImg: { width: 32, height: 32, borderRadius: 16, marginRight: 8 },
   flagEmoji: { fontSize: 24, marginRight: 8 },
-  code: { color: WHITE, fontSize: 24, fontWeight: "800" },
+  code: { color: WHITE, fontSize: 16, fontWeight: "700" },
   cellsRow: { marginLeft: "auto", flexDirection: "row", gap: CELLS_GAP },
   cell: {
     minWidth: CELL_MIN_W,
@@ -149,8 +149,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 12,
   },
-  cellText: { color: CELL_TEXT, fontSize: 18, fontWeight: "800" },
+  cellText: { color: CELL_TEXT, fontSize: 16, fontWeight: "700" },
   divider: { height: 2, backgroundColor: DIVIDER, marginTop: 8 },
   moreBtn: { alignItems: "center", paddingVertical: 16 },
-  moreText: { color: WHITE, fontSize: 18, fontWeight: "800" },
+  moreText: { color: WHITE, fontSize: 14, fontWeight: "700" },
 });

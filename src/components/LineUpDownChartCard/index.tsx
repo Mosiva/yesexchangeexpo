@@ -210,5 +210,5 @@ const styles = StyleSheet.create({
   },
 
   moreBtn: { alignItems: "center", paddingVertical: 16 },
-  moreText: { color: "#374151", fontSize: 20, fontWeight: "800" },
+  moreText: { color: "#374151", fontSize: 14, fontWeight: "700" },
 });
