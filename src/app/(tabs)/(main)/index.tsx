@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Image,
@@ -11,23 +12,37 @@ import {
   View,
 } from "react-native";
 import CurrenciesMainCardList from "../../../components/CurrenciesMainCardList.tsx";
+import CurrencyExchangeModal from "../../../components/CurrencyExchangeModal";
 
 export default function MainScreen() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
+
+  const [exchangeVisible, setExchangeVisible] = useState(false);
+  const [exchangeData, setExchangeData] = useState<{
+    type: "buy" | "sell";
+    rate: any;
+  } | null>(null);
 
   const handlePress = () => {
     router.push({ pathname: "/(stacks)/settings" });
   };
 
+  const handlePressExchange = (payload: {
+    type: "buy" | "sell";
+    rate: any;
+  }) => {
+    setExchangeData(payload);
+    setExchangeVisible(true);
+  };
+
   return (
     <ScrollView style={styles.container}>
       <StatusBar barStyle="light-content" />
-      {/* === Header === */}
       <View style={styles.headerContainer}>
         <View style={styles.header}>
           <Image
-            source={require("../../../../assets/images/white-icon.png")} // ← put your white logo here
+            source={require("../../../../assets/images/white-icon.png")}
             style={styles.headerLogo}
             resizeMode="contain"
           />
@@ -40,7 +55,6 @@ export default function MainScreen() {
           </Pressable>
         </View>
 
-        {/* === Address card (new) === */}
         <View style={styles.addressCard}>
           <Ionicons
             name="location-sharp"
@@ -53,25 +67,49 @@ export default function MainScreen() {
             <Text style={styles.addrValue}>Астана, Аэропорт</Text>
           </View>
         </View>
+
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-          <Text style={styles.localtime}>20 августа 2025 18:48</Text>{" "}
+          <Text style={styles.localtime}>20 августа 2025 18:48</Text>
         </View>
+
         <CurrenciesMainCardList
           data={[
-            { code: "USD", buy: "1 533,4", sell: "1 535,8", flagEmoji: "🇺🇸" },
-            { code: "EUR", buy: "1243,4", sell: "1245,8", flagEmoji: "🇪🇺" },
-            { code: "RUB", buy: "533,4", sell: "535,8", flagEmoji: "🇷🇺" },
-            { code: "CNY", buy: "23,4", sell: "27,8", flagEmoji: "🇨🇳" },
-            { code: "AED", buy: "12 453,4", sell: "12 455,8", flagEmoji: "🇦🇪" },
-            { code: "TRY", buy: "12 453,4", sell: "12 455,8", flagEmoji: "🇹🇷" },
-            { code: "KZT", buy: "145,4", sell: "145,8", flagEmoji: "🇰🇿" },
+            { code: "USD", buy: "544.36", sell: "549.36", flagEmoji: "🇺🇸" },
+            { code: "EUR", buy: "637.00", sell: "642.00", flagEmoji: "🇪🇺" },
+            { code: "RUB", buy: "6.53", sell: "11.53", flagEmoji: "🇷🇺" },
+            { code: "CNY", buy: "76.31", sell: "81.31", flagEmoji: "🇨🇳" },
+            { code: "AED", buy: "148.21", sell: "153.21", flagEmoji: "🇦🇪" },
+            { code: "TRY", buy: "13.06", sell: "18.06", flagEmoji: "🇹🇷" },
+            { code: "KZT", buy: "1.00", sell: "1.00", flagEmoji: "🇰🇿" },
           ]}
-          onPressInfo={(code) => console.log("info", code)}
+          onPressExchange={handlePressExchange}
           onPressMore={() => console.log("more")}
         />
       </View>
+      {exchangeData && (
+        <CurrencyExchangeModal
+          visible={exchangeVisible}
+          onClose={() => setExchangeVisible(false)}
+          onConfirm={(payload) => {
+            console.log("Бронь", payload);
+            setExchangeVisible(false);
+          }}
+          mode={exchangeData.type} // 👈 добавил
+          fromCode={exchangeData.rate.code}
+          fromName={exchangeData.rate.name ?? exchangeData.rate.code}
+          toCode="KZT"
+          rate={
+            exchangeData.type === "sell"
+              ? Number(exchangeData.rate.sell)
+              : Number(exchangeData.rate.buy)
+          }
+          fromSymbol={exchangeData.rate.code === "USD" ? "$" : "₽"} // 👈 пока грубо, потом можно маппинг сделать
+          toSymbol="₸"
+          flagEmoji={exchangeData.rate.flagEmoji}
+        />
+      )}
     </ScrollView>
   );
 }
@@ -83,136 +121,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingHorizontal: 0, // header spans edge-to-edge
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: "#F79633",
-    paddingTop: 56, // or use safe area if you prefer
+    paddingTop: 56,
     paddingBottom: 14,
     paddingHorizontal: 20,
   },
-  headerLogo: {
-    height: 60, // tweak to your asset
-    width: 101,
-  },
-  categoryScroll: {
-    marginBottom: 20,
-  },
-  categoryCard: {
-    borderRadius: 10,
-    padding: 10,
-    marginRight: 10,
-    alignItems: "center",
-  },
-  categoryIcon: {
-    width: 40,
-    height: 40,
-    marginBottom: 5,
-  },
-  categoryTitle: {
-    fontSize: 14,
-    color: "#4F7942",
-    fontWeight: "700",
-  },
-  promoScroll: {
-    marginBottom: 20,
-  },
-  promoCard: {
-    width: 280,
-    height: 140,
-    borderRadius: 12,
-    overflow: "hidden",
-    marginRight: 10,
-    backgroundColor: "#eee",
-  },
-  promoImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-  promoText: {
-    position: "absolute",
-    bottom: 10,
-    left: 10,
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  restaurantCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  restaurantImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
-    marginRight: 15,
-  },
-  restaurantName: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  restaurantDesc: {
-    fontSize: 14,
-    color: "#555",
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  viewAll: {
-    fontSize: 16,
-    color: "#D4AF37",
-    fontWeight: "bold",
-  },
-  restaurantInfoRow: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  discountText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333333",
-  },
-  subInfoRow: {
-    flexDirection: "row",
-    marginTop: 4,
-    gap: 12,
-  },
-  subInfoText: {
-    fontSize: 14,
-    color: "#888",
-  },
-  topBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingTop: 60,
-    paddingBottom: 16,
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  login: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#4F7942",
-  },
+  headerLogo: { height: 60, width: 101 },
   addressCard: {
     marginTop: 12,
     marginHorizontal: 16,
