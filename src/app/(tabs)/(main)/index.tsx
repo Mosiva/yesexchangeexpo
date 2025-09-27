@@ -39,6 +39,7 @@ function LocalTime() {
 export default function MainScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<"archive" | "news">("archive");
 
   const [exchangeVisible, setExchangeVisible] = useState(false);
   const [exchangeData, setExchangeData] = useState<{
@@ -111,6 +112,45 @@ export default function MainScreen() {
           onPressMore={() => console.log("more")}
         />
       </View>
+
+      {/* Tabs: Архив / Новости */}
+      <View style={styles.tabsRow}>
+        <Pressable
+          style={[styles.tab, activeTab === "archive" && styles.tabActive]}
+          onPress={() => {
+            setActiveTab("archive");
+            // router.push("/(stacks)/news-archive"); // <- optional navigation
+          }}
+        >
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "archive"
+                ? styles.tabTextActive
+                : styles.tabTextMuted,
+            ]}
+          >
+            Архив
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={[styles.tab, activeTab === "news" && styles.tabActive]}
+          onPress={() => {
+            setActiveTab("news");
+            // router.push("/(stacks)/news"); // <- optional navigation
+          }}
+        >
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "news" ? styles.tabTextActive : styles.tabTextMuted,
+            ]}
+          >
+            Новости
+          </Text>
+        </Pressable>
+      </View>
       {exchangeData && (
         <CurrencyExchangeModal
           visible={exchangeVisible}
@@ -140,6 +180,9 @@ export default function MainScreen() {
 const styles = StyleSheet.create({
   headerContainer: {
     backgroundColor: "#F79633",
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    overflow: "hidden",
   },
   container: {
     flex: 1,
@@ -181,5 +224,34 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginBottom: 12,
     textAlign: "center",
+  },
+  tabsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 24,
+    paddingHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  tab: {
+    flex: 1,
+    height: 56,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "transparent",
+  },
+  tabActive: {
+    backgroundColor: "#F9F9F9",
+  },
+  tabText: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  tabTextActive: {
+    color: "#2F2F2F",
+  },
+  tabTextMuted: {
+    color: "#8E8E93",
   },
 });
