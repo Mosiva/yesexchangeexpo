@@ -3,11 +3,16 @@ import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import CurrenciesModal from "../../../../components/CurrenciesModal"; // поправь путь
 import LanguageChooseModal from "../../../../components/LanguageModal";
+import NotificationsModal from "../../../../components/NotificationsModal"; // поправь путь
+
+const ORANGE = "#F58220";
 
 export default function AppSetScreen() {
   const [lightTheme, setLightTheme] = useState(false);
+
   const [langModalVisible, setLangModalVisible] = useState(false);
   const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
+  const [notifModalVisible, setNotifModalVisible] = useState(false);
 
   const [currentLang, setCurrentLang] = useState<"kz" | "ru" | "en">("ru");
   const [selectedCurrencies, setSelectedCurrencies] = useState<string[]>([
@@ -15,6 +20,11 @@ export default function AppSetScreen() {
     "RUB",
     "EUR",
   ]);
+  const [notifPrefs, setNotifPrefs] = useState({
+    rates: true,
+    finance: true,
+    yesNews: false,
+  });
 
   const nextTheme = lightTheme
     ? { label: "Тёмная", icon: "moon-outline" as const }
@@ -41,44 +51,36 @@ export default function AppSetScreen() {
           />
         </View>
 
-        {/* Currency on main board */}
-        <Pressable
-          style={styles.card}
+        {/* Currency */}
+        <SettingsCard
+          icon="cash-outline"
+          title="Валюта на главном табло"
+          subtitle={selectedCurrencies.join(", ")}
           onPress={() => setCurrencyModalVisible(true)}
-        >
-          <View style={styles.leftIconWrap}>
-            <Ionicons name="cash-outline" size={22} color={ORANGE} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle}>Валюта на главном табло</Text>
-            <Text style={styles.cardSub}>{selectedCurrencies.join(", ")}</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={22} color="#9CA3AF" />
-        </Pressable>
+        />
 
-        {/* App language */}
-        <Pressable
-          style={styles.card}
+        {/* Language */}
+        <SettingsCard
+          icon="globe-outline"
+          title="Язык приложения"
+          subtitle={currentLang.toUpperCase()}
           onPress={() => setLangModalVisible(true)}
-        >
-          <View style={styles.leftIconWrap}>
-            <Ionicons name="globe-outline" size={22} color={ORANGE} />
-          </View>
-          <Text style={[styles.cardTitle, { flex: 1 }]}>Язык приложения</Text>
-          <Ionicons name="chevron-forward" size={22} color="#9CA3AF" />
-        </Pressable>
+        />
 
         {/* Notifications */}
-        <Pressable style={styles.card} onPress={() => {}}>
-          <View style={styles.leftIconWrap}>
-            <Ionicons name="notifications-outline" size={22} color={ORANGE} />
-          </View>
-          <Text style={[styles.cardTitle, { flex: 1 }]}>Уведомления</Text>
-          <Ionicons name="chevron-forward" size={22} color="#9CA3AF" />
-        </Pressable>
+        <SettingsCard
+          icon="notifications-outline"
+          title="Уведомления"
+          subtitle={
+            notifPrefs.rates || notifPrefs.finance || notifPrefs.yesNews
+              ? "Включены"
+              : "Отключены"
+          }
+          onPress={() => setNotifModalVisible(true)}
+        />
       </ScrollView>
 
-      {/* Модалка выбора языка */}
+      {/* Modals */}
       <LanguageChooseModal
         visible={langModalVisible}
         value={currentLang}
@@ -89,7 +91,6 @@ export default function AppSetScreen() {
         }}
       />
 
-      {/* Модалка выбора валют */}
       <CurrenciesModal
         visible={currencyModalVisible}
         value={selectedCurrencies}
@@ -99,7 +100,42 @@ export default function AppSetScreen() {
           setCurrencyModalVisible(false);
         }}
       />
+
+      <NotificationsModal
+        visible={notifModalVisible}
+        value={notifPrefs}
+        onClose={() => setNotifModalVisible(false)}
+        onConfirm={(next) => {
+          setNotifPrefs(next);
+          setNotifModalVisible(false);
+        }}
+      />
     </View>
+  );
+}
+
+function SettingsCard({
+  icon,
+  title,
+  subtitle,
+  onPress,
+}: {
+  icon: string;
+  title: string;
+  subtitle?: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable style={styles.card} onPress={onPress}>
+      <View style={styles.leftIconWrap}>
+        <Ionicons name={icon as any} size={22} color={ORANGE} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.cardTitle}>{title}</Text>
+        {subtitle ? <Text style={styles.cardSub}>{subtitle}</Text> : null}
+      </View>
+      <Ionicons name="chevron-forward" size={22} color="#9CA3AF" />
+    </Pressable>
   );
 }
 
@@ -121,8 +157,6 @@ function SwitchPill({
     </Pressable>
   );
 }
-
-const ORANGE = "#F58220";
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
@@ -149,6 +183,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 14, fontWeight: "400", color: "#111827" },
   cardSub: { marginTop: 4, color: "#6B7280", fontSize: 14 },
 
+  // custom switch
   switchTrack: {
     width: 68,
     height: 32,
