@@ -14,6 +14,28 @@ import {
 import CurrenciesMainCardList from "../../../components/CurrenciesMainCardList.tsx";
 import CurrencyExchangeModal from "../../../components/CurrencyExchangeModal";
 
+// Отдельный компонент для локального времени
+function LocalTime() {
+  const [now, setNow] = useState(new Date());
+
+  React.useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60_000); // обновляем каждую минуту
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <Text style={styles.localtime}>
+      {now.toLocaleString("ru-RU", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })}
+    </Text>
+  );
+}
+
 export default function MainScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -68,10 +90,11 @@ export default function MainScreen() {
           </View>
         </View>
 
+        {/* текущее время */}
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-          <Text style={styles.localtime}>20 августа 2025 18:48</Text>
+          <LocalTime />
         </View>
 
         <CurrenciesMainCardList
@@ -96,7 +119,7 @@ export default function MainScreen() {
             console.log("Бронь", payload);
             setExchangeVisible(false);
           }}
-          mode={exchangeData.type} // 👈 добавил
+          mode={exchangeData.type}
           fromCode={exchangeData.rate.code}
           fromName={exchangeData.rate.name ?? exchangeData.rate.code}
           toCode="KZT"
@@ -105,7 +128,7 @@ export default function MainScreen() {
               ? Number(exchangeData.rate.sell)
               : Number(exchangeData.rate.buy)
           }
-          fromSymbol={exchangeData.rate.code === "USD" ? "$" : "₽"} // 👈 пока грубо, потом можно маппинг сделать
+          fromSymbol={exchangeData.rate.code === "USD" ? "$" : "₽"}
           toSymbol="₸"
           flagEmoji={exchangeData.rate.flagEmoji}
         />
