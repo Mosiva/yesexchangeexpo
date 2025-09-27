@@ -154,10 +154,10 @@ export default function MainScreen() {
       </View>
       <LineUpDownChartCard
         items={[
-          { code: "USD", value: 533.4, delta: +23.2, flagEmoji: "🇺🇸" },
-          { code: "RUB", value: 1533.4, delta: -23.2, flagEmoji: "🇷🇺" },
-          { code: "EUR", value: 533.4, delta: +23.2, flagEmoji: "🇪🇺" },
-
+          { code: "USD", value: 544.36, delta: +23.2, flagEmoji: "🇺🇸" },
+          { code: "RUB", value: 6.53, delta: -23.2, flagEmoji: "🇷🇺" },
+          { code: "EUR", value: 637.00, delta: +23.2, flagEmoji: "🇪🇺" },
+          { code: "KZT", value: 1.00, delta: +23.2, flagEmoji: "🇰🇿" },
           // …more
         ]}
       />

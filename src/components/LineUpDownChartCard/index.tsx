@@ -42,27 +42,27 @@ export default function LineUpDownChartCard({
   const [expanded, setExpanded] = useState(false);
   const visible = expanded ? items : items.slice(0, initial);
 
+  const handleToggle = () => {
+    setExpanded((v) => !v);
+    onMorePress?.();
+  };
+
   return (
     <View>
       {visible.map((it, idx) => (
         <RateCard key={`${it.code}-${idx}`} item={it} />
       ))}
 
-      {items.length > visible.length && (
-        <TouchableOpacity
-          style={styles.moreBtn}
-          onPress={() => {
-            setExpanded(true);
-            onMorePress?.();
-          }}
-        >
-          <Text style={styles.moreText}>Показать больше</Text>
+      {items.length > initial && (
+        <TouchableOpacity style={styles.moreBtn} onPress={handleToggle}>
+          <Text style={styles.moreText}>
+            {expanded ? "Скрыть" : "Показать больше"}
+          </Text>
         </TouchableOpacity>
       )}
     </View>
   );
 }
-
 /* ------------------------ subcomponents ------------------------ */
 
 function RateCard({ item }: { item: Item }) {
