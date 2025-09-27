@@ -7,8 +7,10 @@ import {
   ScrollView,
   StatusBar,
   StyleSheet,
+  Text,
   View,
 } from "react-native";
+import CurrenciesMainCardList from "../../../components/CurrenciesMainCardList.tsx";
 
 export default function MainScreen() {
   const { t, i18n } = useTranslation();
@@ -22,25 +24,61 @@ export default function MainScreen() {
     <ScrollView style={styles.container}>
       <StatusBar barStyle="light-content" />
       {/* === Header === */}
-      <View style={styles.header}>
-        <Image
-          source={require("../../../../assets/images/white-icon.png")} // ← put your white logo here
-          style={styles.headerLogo}
-          resizeMode="contain"
-        />
-        <Pressable
-          hitSlop={12}
-          accessibilityLabel="Настройки"
-          onPress={handlePress}
+      <View style={styles.headerContainer}>
+        <View style={styles.header}>
+          <Image
+            source={require("../../../../assets/images/white-icon.png")} // ← put your white logo here
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+          <Pressable
+            hitSlop={12}
+            accessibilityLabel="Настройки"
+            onPress={handlePress}
+          >
+            <Ionicons name="settings" size={22} color="#fff" />
+          </Pressable>
+        </View>
+
+        {/* === Address card (new) === */}
+        <View style={styles.addressCard}>
+          <Ionicons
+            name="location-sharp"
+            size={28}
+            color="#fff"
+            style={styles.addrIcon}
+          />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.addrLabel}>Адрес</Text>
+            <Text style={styles.addrValue}>Астана, Аэропорт</Text>
+          </View>
+        </View>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-          <Ionicons name="settings" size={22} color="#fff" />
-        </Pressable>
+          <Text style={styles.localtime}>20 августа 2025 18:48</Text>{" "}
+        </View>
+        <CurrenciesMainCardList
+          data={[
+            { code: "USD", buy: "1 533,4", sell: "1 535,8", flagEmoji: "🇺🇸" },
+            { code: "EUR", buy: "1243,4", sell: "1245,8", flagEmoji: "🇪🇺" },
+            { code: "RUB", buy: "533,4", sell: "535,8", flagEmoji: "🇷🇺" },
+            { code: "CNY", buy: "23,4", sell: "27,8", flagEmoji: "🇨🇳" },
+            { code: "AED", buy: "12 453,4", sell: "12 455,8", flagEmoji: "🇦🇪" },
+            { code: "TRY", buy: "12 453,4", sell: "12 455,8", flagEmoji: "🇹🇷" },
+          ]}
+          onPressInfo={(code) => console.log("info", code)}
+          onPressMore={() => console.log("more")}
+        />
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  headerContainer: {
+    backgroundColor: "#F79633",
+  },
   container: {
     flex: 1,
     backgroundColor: "#fff",
@@ -173,5 +211,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#4F7942",
+  },
+  addressCard: {
+    marginTop: 12,
+    marginHorizontal: 16,
+    borderRadius: 18,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F7AC61",
+    marginBottom: 12,
+  },
+  addrIcon: { marginRight: 12 },
+  addrLabel: {
+    color: "#fff",
+    fontSize: 14,
+    opacity: 0.95,
+    marginBottom: 4,
+    fontWeight: "400",
+  },
+  addrValue: { color: "#fff", fontSize: 16, fontWeight: "400" },
+  localtime: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 12,
+    textAlign: "center",
   },
 });
