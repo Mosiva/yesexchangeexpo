@@ -1,11 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
-    Pressable,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Modal from "react-native-modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -168,14 +168,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 8,
   },
-  title: { fontSize: 28, fontWeight: "800", color: "#111827" },
+  title: { fontSize: 20, fontWeight: "700", color: "#111827" },
 
   sep: { height: 1, backgroundColor: "#ECECEC", marginLeft: 0, marginRight: 0 },
 
   bottomBar: {
     marginTop: 16,
-    left: 16,
-    right: 16,
     bottom: 0,
   },
   saveBtn: {
@@ -186,7 +184,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 8,
   },
-  saveText: { color: "#fff", fontSize: 18, fontWeight: "800" },
+  saveText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 });
 
 const rowStyles = StyleSheet.create({
@@ -196,12 +194,12 @@ const rowStyles = StyleSheet.create({
     paddingVertical: 18,
     justifyContent: "space-between",
   },
-  label: { fontSize: 22, fontWeight: "800", color: "#111827" },
+  label: { fontSize: 16, fontWeight: "700", color: "#111827" },
 
   // switch styles
   track: {
-    width: 62,
-    height: 32,
+    width: 36,
+    height: 20,
     borderRadius: 16,
     padding: 3,
     justifyContent: "center",
@@ -209,8 +207,8 @@ const rowStyles = StyleSheet.create({
   trackOn: { backgroundColor: ORANGE },
   trackOff: { backgroundColor: "#6B6B6B" },
   thumb: {
-    width: 26,
-    height: 26,
+    width: 16,
+    height: 16,
     borderRadius: 13,
     backgroundColor: "#fff",
   },
