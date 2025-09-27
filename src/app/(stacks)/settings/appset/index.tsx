@@ -1,12 +1,20 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import CurrenciesModal from "../../../../components/CurrenciesModal"; // поправь путь
 import LanguageChooseModal from "../../../../components/LanguageModal";
 
 export default function AppSetScreen() {
   const [lightTheme, setLightTheme] = useState(false);
   const [langModalVisible, setLangModalVisible] = useState(false);
+  const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
+
   const [currentLang, setCurrentLang] = useState<"kz" | "ru" | "en">("ru");
+  const [selectedCurrencies, setSelectedCurrencies] = useState<string[]>([
+    "USD",
+    "RUB",
+    "EUR",
+  ]);
 
   const nextTheme = lightTheme
     ? { label: "Тёмная", icon: "moon-outline" as const }
@@ -21,16 +29,12 @@ export default function AppSetScreen() {
         {/* Theme */}
         <View style={styles.card}>
           <View style={styles.leftIconWrap}>
-            {/* show icon for the NEXT theme */}
             <Ionicons name={nextTheme.icon} size={22} color={ORANGE} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.cardTitle}>Тема приложения</Text>
-            {/* show label for the NEXT theme */}
             <Text style={styles.cardSub}>{nextTheme.label}</Text>
           </View>
-
-          {/* switch still reflects CURRENT theme (sun for light, moon for dark) */}
           <SwitchPill
             value={lightTheme}
             onToggle={() => setLightTheme((v) => !v)}
@@ -40,16 +44,15 @@ export default function AppSetScreen() {
         {/* Currency on main board */}
         <Pressable
           style={styles.card}
-          onPress={() => {
-            /* navigate */
-          }}
+          onPress={() => setCurrencyModalVisible(true)}
         >
           <View style={styles.leftIconWrap}>
             <Ionicons name="cash-outline" size={22} color={ORANGE} />
           </View>
-          <Text style={[styles.cardTitle, { flex: 1 }]}>
-            Валюта на главном табло
-          </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.cardTitle}>Валюта на главном табло</Text>
+            <Text style={styles.cardSub}>{selectedCurrencies.join(", ")}</Text>
+          </View>
           <Ionicons name="chevron-forward" size={22} color="#9CA3AF" />
         </Pressable>
 
@@ -66,12 +69,7 @@ export default function AppSetScreen() {
         </Pressable>
 
         {/* Notifications */}
-        <Pressable
-          style={styles.card}
-          onPress={() => {
-            /* navigate */
-          }}
-        >
+        <Pressable style={styles.card} onPress={() => {}}>
           <View style={styles.leftIconWrap}>
             <Ionicons name="notifications-outline" size={22} color={ORANGE} />
           </View>
@@ -79,6 +77,7 @@ export default function AppSetScreen() {
           <Ionicons name="chevron-forward" size={22} color="#9CA3AF" />
         </Pressable>
       </ScrollView>
+
       {/* Модалка выбора языка */}
       <LanguageChooseModal
         visible={langModalVisible}
@@ -87,6 +86,17 @@ export default function AppSetScreen() {
         onConfirm={(next) => {
           setCurrentLang(next);
           setLangModalVisible(false);
+        }}
+      />
+
+      {/* Модалка выбора валют */}
+      <CurrenciesModal
+        visible={currencyModalVisible}
+        value={selectedCurrencies}
+        onClose={() => setCurrencyModalVisible(false)}
+        onConfirm={(next) => {
+          setSelectedCurrencies(next);
+          setCurrencyModalVisible(false);
         }}
       />
     </View>
@@ -139,7 +149,6 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 14, fontWeight: "400", color: "#111827" },
   cardSub: { marginTop: 4, color: "#6B7280", fontSize: 14 },
 
-  // custom switch
   switchTrack: {
     width: 68,
     height: 32,
