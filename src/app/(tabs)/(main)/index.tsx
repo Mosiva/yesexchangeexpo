@@ -117,7 +117,6 @@ export default function MainScreen() {
       </View>
 
       {/* Tabs: Архив / Новости */}
-      {/* Tabs: Архив / Новости */}
       <View style={styles.tabsRow}>
         <Pressable
           style={[styles.tab, activeTab === "archive" && styles.tabActive]}
@@ -153,7 +152,7 @@ export default function MainScreen() {
       {/* Контент по вкладкам */}
       {activeTab === "news" ? (
         <NewsMainCardList
-          onDark={false} // set false if your background is light
+          onDark={false}
           items={[
             {
               id: 1,
@@ -164,29 +163,38 @@ export default function MainScreen() {
             },
             {
               id: 2,
-              title: "Информационное сообщение по валютному рынку",
+              title: "Курс тенге укрепился к доллару",
               summary:
-                "По итогам декабря курс тенге укрепился на 1,3% до 462,66 тенге за доллар США.",
-              date: "2024-12-24",
+                "Нацбанк сообщил об изменении коридора и повышении интереса к нотам.",
+              date: "2024-12-20",
             },
             {
               id: 3,
-              title: "Информационное сообщение по валютному рынку",
+              title: "Новые правила обмена валют",
               summary:
-                "По итогам декабря курс тенге укрепился на 1,3% до 462,66 тенге за доллар США.",
-              date: "2024-12-24",
+                "Обновлены лимиты наличных операций и требования идентификации клиентов.",
+              date: "2024-12-15",
             },
             {
-              id: 4,
-              title: "Информационное сообщение по валютному рынку",
+              id: 3,
+              title: "Новые правила обмена валют",
               summary:
-                "По итогам декабря курс тенге укрепился на 1,3% до 462,66 тенге за доллар США.",
-              date: "2024-12-24",
+                "Обновлены лимиты наличных операций и требования идентификации клиентов.",
+              date: "2024-12-15",
             },
-            // ...
           ]}
           initial={3}
-          onItemPress={(item) => console.log("Open news:", item.id)}
+          onItemPress={(item) =>
+            router.push({
+              pathname: "/(stacks)/news/[id]",
+              params: {
+                id: String(item.id),
+                title: item.title,
+                date: item.date.toString(),
+                content: item.summary, // пока контент = summary (или подтянешь полный текст)
+              },
+            })
+          }
           onMorePress={() => console.log("Expanded")}
         />
       ) : (
