@@ -162,7 +162,10 @@ export default function MainScreen() {
           // …more
         ]}
       />
-      <ReservePromoCard onPress={() => console.log("Reserve tapped")} />
+      <View style={{ marginBottom: 16, paddingHorizontal: 10 }}>
+        <ReservePromoCard onPress={() => console.log("Reserve tapped")} />
+      </View>
+
       {exchangeData && (
         <CurrencyExchangeModal
           visible={exchangeVisible}

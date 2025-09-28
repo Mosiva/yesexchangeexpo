@@ -28,7 +28,7 @@ export default function ReservePromoCard({
   // How wide the dark left side is
   const LEFT_PCT = Platform.select({ ios: "54%", android: "50%" })!;
   // Diagonal thickness
-  const TRI_W = 120;
+  const TRI_W = 36;
 
   return (
     <View style={styles.card}>
@@ -71,8 +71,8 @@ export default function ReservePromoCard({
   );
 }
 
-const CARD_H = 180;
-const R = 8;
+const CARD_H = 175;
+const R = 10;
 const DARK = "#2B2B2B";
 const ORANGE = "#F58220";
 
@@ -86,6 +86,7 @@ const styles = StyleSheet.create({
 
   photo: {
     position: "absolute",
+    height: 175,
     right: 0,
     top: 0,
     bottom: 0,
