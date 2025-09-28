@@ -14,6 +14,7 @@ import {
 import CurrenciesMainCardList from "../../../components/CurrenciesMainCardList.tsx";
 import CurrencyExchangeModal from "../../../components/CurrencyExchangeModal";
 import LineUpDownChartCard from "../../../components/LineUpDownChartCard";
+import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
 import ReservePromoCard from "../../../components/ReservePromoCard";
 
 // Отдельный компонент для локального времени
@@ -116,13 +117,11 @@ export default function MainScreen() {
       </View>
 
       {/* Tabs: Архив / Новости */}
+      {/* Tabs: Архив / Новости */}
       <View style={styles.tabsRow}>
         <Pressable
           style={[styles.tab, activeTab === "archive" && styles.tabActive]}
-          onPress={() => {
-            setActiveTab("archive");
-            // router.push("/(stacks)/news-archive"); // <- optional navigation
-          }}
+          onPress={() => setActiveTab("archive")}
         >
           <Text
             style={[
@@ -138,10 +137,7 @@ export default function MainScreen() {
 
         <Pressable
           style={[styles.tab, activeTab === "news" && styles.tabActive]}
-          onPress={() => {
-            setActiveTab("news");
-            // router.push("/(stacks)/news"); // <- optional navigation
-          }}
+          onPress={() => setActiveTab("news")}
         >
           <Text
             style={[
@@ -153,6 +149,58 @@ export default function MainScreen() {
           </Text>
         </Pressable>
       </View>
+
+      {/* Контент по вкладкам */}
+      {activeTab === "news" ? (
+        <NewsMainCardList
+          onDark={false} // set false if your background is light
+          items={[
+            {
+              id: 1,
+              title: "Информационное сообщение по валютному рынку",
+              summary:
+                "По итогам декабря курс тенге укрепился на 1,3% до 462,66 тенге за доллар США.",
+              date: "2024-12-24",
+            },
+            {
+              id: 2,
+              title: "Информационное сообщение по валютному рынку",
+              summary:
+                "По итогам декабря курс тенге укрепился на 1,3% до 462,66 тенге за доллар США.",
+              date: "2024-12-24",
+            },
+            {
+              id: 3,
+              title: "Информационное сообщение по валютному рынку",
+              summary:
+                "По итогам декабря курс тенге укрепился на 1,3% до 462,66 тенге за доллар США.",
+              date: "2024-12-24",
+            },
+            {
+              id: 4,
+              title: "Информационное сообщение по валютному рынку",
+              summary:
+                "По итогам декабря курс тенге укрепился на 1,3% до 462,66 тенге за доллар США.",
+              date: "2024-12-24",
+            },
+            // ...
+          ]}
+          initial={3}
+          onItemPress={(item) => console.log("Open news:", item.id)}
+          onMorePress={() => console.log("Expanded")}
+        />
+      ) : (
+        <LineUpDownChartCard
+          items={[
+            { code: "USD", value: 544.36, delta: +23.2, flagEmoji: "🇺🇸" },
+            { code: "RUB", value: 6.53, delta: -23.2, flagEmoji: "🇷🇺" },
+            { code: "EUR", value: 637.0, delta: +23.2, flagEmoji: "🇪🇺" },
+            { code: "KZT", value: 1.0, delta: +23.2, flagEmoji: "🇰🇿" },
+            // …more
+          ]}
+        />
+      )}
+
       <LineUpDownChartCard
         items={[
           { code: "USD", value: 544.36, delta: +23.2, flagEmoji: "🇺🇸" },
