@@ -42,9 +42,7 @@ export default function Layout() {
       <Stack.Screen
         name="news/[id]"
         options={{
-          // Hide back by default + disable iOS swipe-back
-          header: () => <CustomHeader title="Новость" showBackButton={true} />,
-          gestureEnabled: true,
+          headerShown: false,
         }}
       />
     </Stack>
