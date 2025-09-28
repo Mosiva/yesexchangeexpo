@@ -14,6 +14,7 @@ import {
 import CurrenciesMainCardList from "../../../components/CurrenciesMainCardList.tsx";
 import CurrencyExchangeModal from "../../../components/CurrencyExchangeModal";
 import LineUpDownChartCard from "../../../components/LineUpDownChartCard";
+import ReservePromoCard from "../../../components/ReservePromoCard";
 
 // Отдельный компонент для локального времени
 function LocalTime() {
@@ -156,11 +157,12 @@ export default function MainScreen() {
         items={[
           { code: "USD", value: 544.36, delta: +23.2, flagEmoji: "🇺🇸" },
           { code: "RUB", value: 6.53, delta: -23.2, flagEmoji: "🇷🇺" },
-          { code: "EUR", value: 637.00, delta: +23.2, flagEmoji: "🇪🇺" },
-          { code: "KZT", value: 1.00, delta: +23.2, flagEmoji: "🇰🇿" },
+          { code: "EUR", value: 637.0, delta: +23.2, flagEmoji: "🇪🇺" },
+          { code: "KZT", value: 1.0, delta: +23.2, flagEmoji: "🇰🇿" },
           // …more
         ]}
       />
+      <ReservePromoCard onPress={() => console.log("Reserve tapped")} />
       {exchangeData && (
         <CurrencyExchangeModal
           visible={exchangeVisible}
