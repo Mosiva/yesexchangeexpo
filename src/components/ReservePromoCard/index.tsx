@@ -26,9 +26,9 @@ export default function ReservePromoCard({
   // Slightly smaller image on Android
   const IMG_PCT = Platform.select({ ios: "54%", android: "50%" })!;
   // How wide the dark left side is
-  const LEFT_PCT = Platform.select({ ios: "54%", android: "50%" })!;
+  const LEFT_PCT = Platform.select({ ios: "50%", android: "50%" })!;
   // Diagonal thickness
-  const TRI_W = 36;
+  const TRI_W = 34;
 
   return (
     <View style={styles.card}>
