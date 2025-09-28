@@ -132,12 +132,8 @@ export default function NewsScreen() {
           items={items.map((n) => ({
             id: n.id,
             title: n.title,
-            excerpt: n.excerpt,
+            summary: n.excerpt, // 👈 теперь попадёт в нужное поле
             date: n.date,
-            onPress: () => {
-              // навигация или открытие браузера
-              // router.push({ pathname: "/news/[id]", params: { id: n.id } });
-            },
           }))}
           initial={3}
           onMorePress={() => {}}

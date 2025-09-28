@@ -20,7 +20,7 @@ type NewsItem = {
 type Props = {
   items: NewsItem[];
   initial?: number; // по умолчанию 3
-  onItemPress?: (item: NewsItem) => void;
+  onItemPress?: (item: NewsItem) => void; // если передан, используем кастомный хэндлер
   onMorePress?: () => void; // вызывается при разворачивании
   onDark?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -51,7 +51,22 @@ export default function NewsMainCardList({
               color: onDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
             }}
             style={styles.card}
-            onPress={() => onItemPress?.(it)}
+            onPress={() => {
+              if (onItemPress) {
+                onItemPress(it);
+              } else {
+                // 🔗 переход на карточку новости
+                router.push({
+                  pathname: "/news/[id]",
+                  params: {
+                    id: String(it.id),
+                    title: it.title,
+                    date: String(it.date),
+                    content: it.summary ?? "", // можно заменить на полный текст, если есть
+                  },
+                });
+              }
+            }}
           >
             <Text style={[styles.title, c.title]} numberOfLines={2}>
               {it.title}
@@ -114,13 +129,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: "400",
-    lineHeight: 26,
+    lineHeight: 22,
     marginBottom: 6,
   },
   summary: {
     fontSize: 14,
     fontWeight: "400",
-    lineHeight: 22,
+    lineHeight: 20,
     marginBottom: 10,
   },
   date: {

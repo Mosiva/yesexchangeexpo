@@ -18,7 +18,7 @@ import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
 import ReservePromoCard from "../../../components/ReservePromoCard";
 
 // Отдельный компонент для локального времени
-function LocalTime() {
+const LocalTime = () => {
   const [now, setNow] = useState(new Date());
 
   React.useEffect(() => {
@@ -37,7 +37,7 @@ function LocalTime() {
       })}
     </Text>
   );
-}
+};
 
 export default function MainScreen() {
   const { t } = useTranslation();
