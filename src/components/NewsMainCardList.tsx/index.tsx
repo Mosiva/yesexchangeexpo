@@ -1,4 +1,5 @@
 // components/NewsMainCardList.tsx
+import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
     Pressable,
@@ -33,6 +34,7 @@ export default function NewsMainCardList({
   onDark = true,
   style,
 }: Props) {
+  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const c = useMemo(() => palette(onDark), [onDark]);
 
@@ -72,11 +74,7 @@ export default function NewsMainCardList({
 
       {hasMore && (
         <Pressable
-          onPress={() => {
-            const next = !expanded;
-            setExpanded(next);
-            if (next) onMorePress?.(); // вызываем только при разворачивании
-          }}
+          onPress={() => router.push("/(stacks)/news")}
           style={styles.moreBtn}
           android_ripple={{
             color: onDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
