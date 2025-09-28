@@ -76,8 +76,8 @@ export default function CurrenciesMainCardList({
               )}
               <Text style={styles.code}>{r.code}</Text>
               <Ionicons
-                name="ellipse"
-                size={6}
+                name="information-circle"
+                size={16}
                 color={WHITE}
                 style={{ marginLeft: 8 }}
               />
