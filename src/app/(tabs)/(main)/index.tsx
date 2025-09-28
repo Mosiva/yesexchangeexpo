@@ -201,15 +201,6 @@ export default function MainScreen() {
         />
       )}
 
-      <LineUpDownChartCard
-        items={[
-          { code: "USD", value: 544.36, delta: +23.2, flagEmoji: "🇺🇸" },
-          { code: "RUB", value: 6.53, delta: -23.2, flagEmoji: "🇷🇺" },
-          { code: "EUR", value: 637.0, delta: +23.2, flagEmoji: "🇪🇺" },
-          { code: "KZT", value: 1.0, delta: +23.2, flagEmoji: "🇰🇿" },
-          // …more
-        ]}
-      />
       <View style={{ marginBottom: 16, paddingHorizontal: 10 }}>
         <ReservePromoCard onPress={() => console.log("Reserve tapped")} />
       </View>
