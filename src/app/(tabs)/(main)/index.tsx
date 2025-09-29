@@ -59,12 +59,12 @@ export default function MainScreen() {
     isError: isBranchesError,
   } = useBranchesQuery({});
 
-  const branches = rawBranches?.data || [];
+  const branches = React.useMemo(() => rawBranches?.data || [], [rawBranches?.data]);
 
   const { t } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"archive" | "news">("archive");
-  const [selectedBranch, setSelectedBranch] = useState(branches[1] || null);
+  const [selectedBranch, setSelectedBranch] = useState<any>(null);
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
   const [exchangeVisible, setExchangeVisible] = useState(false);
@@ -88,6 +88,13 @@ export default function MainScreen() {
   );
 
   const exchangeRates = rawExchangeRates?.data || [];
+
+  // Set default branch when branches are loaded
+  React.useEffect(() => {
+    if (branches.length > 0 && !selectedBranch) {
+      setSelectedBranch(branches[1]); // Set index 1 (Астана) as default
+    }
+  }, [branches, selectedBranch]);
 
   // Refetch all data function
   const refetchAllData = useCallback(async () => {
