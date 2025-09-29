@@ -21,7 +21,11 @@ import CurrencyExchangeModal from "../../../components/CurrencyExchangeModal";
 import LineUpDownChartCard from "../../../components/LineUpDownChartCard";
 import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
 import ReservePromoCard from "../../../components/ReservePromoCard";
-import { useBranchesQuery } from "../../../services/yesExchange";
+import { Skeleton } from "../../../components/skeleton";
+import {
+  useBranchesQuery,
+  useExchangeRatesCurrentQuery,
+} from "../../../services/yesExchange";
 
 // Отдельный компонент для локального времени
 const LocalTime = () => {
@@ -57,20 +61,6 @@ export default function MainScreen() {
 
   const branches = rawBranches?.data || [];
 
-  useFocusEffect(
-    useCallback(() => {
-      refetchBranches();
-    }, [refetchBranches])
-  );
-  const onRefresh = async () => {
-    setRefreshing(true);
-    try {
-      await refetchBranches();
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
   const { t } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"archive" | "news">("archive");
@@ -83,6 +73,39 @@ export default function MainScreen() {
     rate: any;
   } | null>(null);
 
+  const {
+    data: rawExchangeRates,
+    refetch: refetchExchangeRates,
+    isLoading: isExchangeRatesLoading,
+    isError: isExchangeRatesError,
+  } = useExchangeRatesCurrentQuery(
+    {
+      branchId: selectedBranch?.id.toString() || "",
+    },
+    {
+      skip: !selectedBranch?.id || isBranchesLoading,
+    }
+  );
+
+  const exchangeRates = rawExchangeRates?.data || [];
+
+  // Refetch all data function
+  const refetchAllData = useCallback(async () => {
+    await Promise.all([refetchBranches(), refetchExchangeRates()]);
+  }, [refetchBranches, , refetchExchangeRates]);
+
+  // Refetch data when the screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      refetchAllData();
+    }, [refetchAllData])
+  );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetchAllData();
+    setRefreshing(false);
+  };
   const handlePress = () => {
     router.push({ pathname: "/(stacks)/settings" });
   };
@@ -124,29 +147,65 @@ export default function MainScreen() {
           </Pressable>
         </View>
 
-        <TouchableOpacity 
-          style={styles.addressCard}
-          onPress={() => setDropdownVisible(true)}
-        >
-          <Ionicons
-            name="location-sharp"
-            size={28}
-            color="#fff"
-            style={styles.addrIcon}
-          />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.addrLabel}>Адрес</Text>
-            <Text style={styles.addrValue}>
-              {selectedBranch ? `${selectedBranch.city}, ${selectedBranch.address}` : "Выберите филиал"}
-            </Text>
+        {isBranchesLoading ? (
+          <View style={styles.addressCard}>
+            <Ionicons
+              name="location-sharp"
+              size={28}
+              color="#fff"
+              style={styles.addrIcon}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.addrLabel}>Адрес</Text>
+              <Skeleton width="90%" height={60} style={styles.skeletonItem} />
+            </View>
           </View>
-          <Ionicons
-            name="chevron-down"
-            size={20}
-            color="#fff"
-            style={styles.dropdownIcon}
-          />
-        </TouchableOpacity>
+        ) : isBranchesError ? (
+          <View style={styles.addressCard}>
+            <Ionicons
+              name="location-sharp"
+              size={28}
+              color="#fff"
+              style={styles.addrIcon}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.addrLabel}>Адрес</Text>
+              <Text style={styles.errorText}>Ошибка загрузки филиалов</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => refetchBranches()}
+              style={styles.retryButtonSmall}
+            >
+              <Ionicons name="refresh" size={16} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.addressCard}
+            onPress={() => setDropdownVisible(true)}
+          >
+            <Ionicons
+              name="location-sharp"
+              size={28}
+              color="#fff"
+              style={styles.addrIcon}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.addrLabel}>Адрес</Text>
+              <Text style={styles.addrValue}>
+                {selectedBranch
+                  ? `${selectedBranch.city}, ${selectedBranch.address}`
+                  : "Выберите филиал"}
+              </Text>
+            </View>
+            <Ionicons
+              name="chevron-down"
+              size={20}
+              color="#fff"
+              style={styles.dropdownIcon}
+            />
+          </TouchableOpacity>
+        )}
 
         {/* текущее время */}
         <View
@@ -155,19 +214,34 @@ export default function MainScreen() {
           <LocalTime />
         </View>
 
-        <CurrenciesMainCardList
-          data={[
-            { code: "USD", buy: "544.36", sell: "549.36", flagEmoji: "🇺🇸" },
-            { code: "EUR", buy: "637.00", sell: "642.00", flagEmoji: "🇪🇺" },
-            { code: "RUB", buy: "6.53", sell: "11.53", flagEmoji: "🇷🇺" },
-            { code: "CNY", buy: "76.31", sell: "81.31", flagEmoji: "🇨🇳" },
-            { code: "AED", buy: "148.21", sell: "153.21", flagEmoji: "🇦🇪" },
-            { code: "TRY", buy: "13.06", sell: "18.06", flagEmoji: "🇹🇷" },
-            { code: "KZT", buy: "1.00", sell: "1.00", flagEmoji: "🇰🇿" },
-          ]}
-          onPressExchange={handlePressExchange}
-          onPressMore={() => console.log("more")}
-        />
+        {isExchangeRatesLoading ? (
+          <View style={styles.skeletonContainer}>
+            <Skeleton width="90%" height={60} style={styles.skeletonItem} />
+            <Skeleton width="90%" height={60} style={styles.skeletonItem} />
+            <Skeleton width="90%" height={60} style={styles.skeletonItem} />
+          </View>
+        ) : isExchangeRatesError ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Ошибка загрузки курсов валют</Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => refetchExchangeRates()}
+            >
+              <Text style={styles.retryButtonText}>Повторить</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <CurrenciesMainCardList
+            data={exchangeRates.map((rate) => ({
+              code: rate.currency,
+              buy: rate.buy.toString(),
+              sell: rate.sell.toString(),
+              flagEmoji: "🇺🇸",
+            }))}
+            onPressExchange={handlePressExchange}
+            onPressMore={() => console.log("more")}
+          />
+        )}
       </View>
 
       {/* Tabs: Архив / Новости */}
@@ -311,14 +385,19 @@ export default function MainScreen() {
                 <TouchableOpacity
                   style={[
                     styles.dropdownItem,
-                    selectedBranch?.id === item.id && styles.dropdownItemSelected
+                    selectedBranch?.id === item.id &&
+                      styles.dropdownItemSelected,
                   ]}
                   onPress={() => handleBranchSelect(item)}
                 >
                   <View style={styles.dropdownItemContent}>
                     <Text style={styles.dropdownItemCity}>{item.city}</Text>
-                    <Text style={styles.dropdownItemAddress}>{item.address}</Text>
-                    <Text style={styles.dropdownItemPhone}>{item.contactPhone}</Text>
+                    <Text style={styles.dropdownItemAddress}>
+                      {item.address}
+                    </Text>
+                    <Text style={styles.dropdownItemPhone}>
+                      {item.contactPhone}
+                    </Text>
                   </View>
                   {selectedBranch?.id === item.id && (
                     <Ionicons name="checkmark" size={20} color="#F79633" />
@@ -466,5 +545,50 @@ const styles = StyleSheet.create({
   dropdownItemPhone: {
     fontSize: 12,
     color: "#9CA3AF",
+  },
+  skeletonContainer: {
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  skeletonItem: {
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  errorContainer: {
+    padding: 20,
+    alignItems: "center",
+    backgroundColor: "#FEF2F2",
+    marginHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#FECACA",
+  },
+  errorText: {
+    color: "#DC2626",
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  retryButton: {
+    backgroundColor: "#DC2626",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  branchSkeleton: {
+    marginTop: 4,
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
+  },
+  retryButtonSmall: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    padding: 8,
+    borderRadius: 6,
+    marginLeft: 8,
   },
 });
