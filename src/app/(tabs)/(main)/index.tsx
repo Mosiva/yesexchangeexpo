@@ -1,14 +1,19 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  FlatList,
   Image,
+  Modal,
   Pressable,
+  RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import CurrenciesMainCardList from "../../../components/CurrenciesMainCardList.tsx";
@@ -16,6 +21,7 @@ import CurrencyExchangeModal from "../../../components/CurrencyExchangeModal";
 import LineUpDownChartCard from "../../../components/LineUpDownChartCard";
 import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
 import ReservePromoCard from "../../../components/ReservePromoCard";
+import { useBranchesQuery } from "../../../services/yesExchange";
 
 // Отдельный компонент для локального времени
 const LocalTime = () => {
@@ -40,9 +46,36 @@ const LocalTime = () => {
 };
 
 export default function MainScreen() {
+  const [refreshing, setRefreshing] = useState(false);
+
+  const {
+    data: rawBranches,
+    refetch: refetchBranches,
+    isLoading: isBranchesLoading,
+    isError: isBranchesError,
+  } = useBranchesQuery({});
+
+  const branches = rawBranches?.data || [];
+
+  useFocusEffect(
+    useCallback(() => {
+      refetchBranches();
+    }, [refetchBranches])
+  );
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refetchBranches();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const { t } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"archive" | "news">("archive");
+  const [selectedBranch, setSelectedBranch] = useState(branches[0] || null);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
 
   const [exchangeVisible, setExchangeVisible] = useState(false);
   const [exchangeData, setExchangeData] = useState<{
@@ -62,8 +95,18 @@ export default function MainScreen() {
     setExchangeVisible(true);
   };
 
+  const handleBranchSelect = (branch: any) => {
+    setSelectedBranch(branch);
+    setDropdownVisible(false);
+  };
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <StatusBar barStyle="light-content" />
       <View style={styles.headerContainer}>
         <View style={styles.header}>
@@ -81,7 +124,10 @@ export default function MainScreen() {
           </Pressable>
         </View>
 
-        <View style={styles.addressCard}>
+        <TouchableOpacity 
+          style={styles.addressCard}
+          onPress={() => setDropdownVisible(true)}
+        >
           <Ionicons
             name="location-sharp"
             size={28}
@@ -90,9 +136,17 @@ export default function MainScreen() {
           />
           <View style={{ flex: 1 }}>
             <Text style={styles.addrLabel}>Адрес</Text>
-            <Text style={styles.addrValue}>Астана, Аэропорт</Text>
+            <Text style={styles.addrValue}>
+              {selectedBranch ? `${selectedBranch.city}, ${selectedBranch.address}` : "Выберите филиал"}
+            </Text>
           </View>
-        </View>
+          <Ionicons
+            name="chevron-down"
+            size={20}
+            color="#fff"
+            style={styles.dropdownIcon}
+          />
+        </TouchableOpacity>
 
         {/* текущее время */}
         <View
@@ -235,6 +289,46 @@ export default function MainScreen() {
           flagEmoji={exchangeData.rate.flagEmoji}
         />
       )}
+
+      {/* Branch Dropdown Modal */}
+      <Modal
+        visible={dropdownVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setDropdownVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setDropdownVisible(false)}
+        >
+          <View style={styles.dropdownContainer}>
+            <Text style={styles.dropdownTitle}>Выберите филиал</Text>
+            <FlatList
+              data={branches}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.dropdownItem,
+                    selectedBranch?.id === item.id && styles.dropdownItemSelected
+                  ]}
+                  onPress={() => handleBranchSelect(item)}
+                >
+                  <View style={styles.dropdownItemContent}>
+                    <Text style={styles.dropdownItemCity}>{item.city}</Text>
+                    <Text style={styles.dropdownItemAddress}>{item.address}</Text>
+                    <Text style={styles.dropdownItemPhone}>{item.contactPhone}</Text>
+                  </View>
+                  {selectedBranch?.id === item.id && (
+                    <Ionicons name="checkmark" size={20} color="#F79633" />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </ScrollView>
   );
 }
@@ -315,5 +409,62 @@ const styles = StyleSheet.create({
   },
   tabTextMuted: {
     color: "#8E8E93",
+  },
+  dropdownIcon: {
+    marginLeft: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  dropdownContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    margin: 20,
+    maxHeight: "70%",
+    minWidth: "80%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  dropdownTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111827",
+    padding: 20,
+    paddingBottom: 10,
+    textAlign: "center",
+  },
+  dropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6",
+  },
+  dropdownItemSelected: {
+    backgroundColor: "#FEF3E7",
+  },
+  dropdownItemContent: {
+    flex: 1,
+  },
+  dropdownItemCity: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 2,
+  },
+  dropdownItemAddress: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginBottom: 2,
+  },
+  dropdownItemPhone: {
+    fontSize: 12,
+    color: "#9CA3AF",
   },
 });
