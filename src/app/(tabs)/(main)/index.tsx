@@ -74,7 +74,7 @@ export default function MainScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"archive" | "news">("archive");
-  const [selectedBranch, setSelectedBranch] = useState(branches[0] || null);
+  const [selectedBranch, setSelectedBranch] = useState(branches[1] || null);
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
   const [exchangeVisible, setExchangeVisible] = useState(false);
