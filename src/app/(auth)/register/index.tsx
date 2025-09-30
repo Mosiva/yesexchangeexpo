@@ -296,9 +296,9 @@ export default function RegisterScreen() {
             </Text>
           </TouchableOpacity>
 
-          <Pressable style={{ marginTop: 18 }} onPress={() => router.back()}>
+          {/* <Pressable style={{ marginTop: 18 }} onPress={() => router.back()}>
             <Text style={styles.loginText}>Войти</Text>
-          </Pressable>
+          </Pressable> */}
         </ScrollView>
       </View>
     </KeyboardAvoidingView>
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 25,
-    paddingTop: 100,
+    paddingTop: 10,
     backgroundColor: "#fff",
     flexGrow: 1,
     justifyContent: "flex-start",

@@ -14,7 +14,7 @@ function CustomHeader({
   return (
     <View style={styles.topBar}>
       {showBackButton && (
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => router.replace("/(tabs)/profile")}>
           <Ionicons name="arrow-back" size={30} color="black" />
         </Pressable>
       )}
@@ -47,7 +47,7 @@ export default function Layout() {
       <Stack.Screen
         name="register/index"
         options={{
-          headerShown: false,
+          header: () => <CustomHeader title="Регистрация" />,
         }}
       />
     </Stack>

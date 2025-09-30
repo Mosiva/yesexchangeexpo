@@ -51,6 +51,25 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState("ru");
   const [isGuest, setIsGuest] = useState(false);
 
+  /* 👇 единая функция активации гостя */
+  const activateGuest = async (lang = "ru") => {
+    console.log("👤 Activating guest mode");
+    await AsyncStorage.multiSet([
+      [STORE_LANGUAGE_KEY, lang],
+      [STORE_GUEST_KEY, "true"],
+    ]);
+
+    setIsAuthenticated(true);
+    setIsGuest(true);
+    setToken(null);
+    setUser(null);
+    setError({ text: "" });
+    setLanguage(lang);
+    i18n.changeLanguage(lang);
+
+    router.replace("/(tabs)/(main)");
+  };
+
   useEffect(() => {
     const initialize = async () => {
       const storedToken = await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
@@ -77,20 +96,10 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsGuest(false);
       } else if (storedGuest === "true") {
         console.log("👤 Guest mode restored");
-        setIsAuthenticated(true);
-        setIsGuest(true);
+        await activateGuest(storedLang); // 👈 теперь редирект тоже есть
       } else {
         console.log("🚀 First launch → guest mode + RU");
-        await AsyncStorage.multiSet([
-          [STORE_LANGUAGE_KEY, "ru"],
-          [STORE_GUEST_KEY, "true"],
-        ]);
-        setIsAuthenticated(true);
-        setIsGuest(true);
-        setLanguage("ru");
-        i18n.changeLanguage("ru");
-
-        router.replace("/(tabs)/(main)");
+        await activateGuest("ru"); // 👈 сюда тоже
       }
 
       setIsLoading(false);
@@ -102,10 +111,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const enterAsGuest = async () => {
-    console.log("👤 Entering guest mode");
-    await AsyncStorage.setItem(STORE_GUEST_KEY, "true");
-    setIsAuthenticated(true);
-    setIsGuest(true);
+    await activateGuest(language);
   };
 
   const finalizeLogin = async ({
@@ -155,24 +161,16 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("ℹ️ No access token, skipping server logout");
     }
 
-    // 👉 переводим в guest mode
-    setIsAuthenticated(true);
-    setIsGuest(true);
-    setToken(null);
-    setUser(null);
-    setError({ text: "" });
-
     try {
       await AsyncStorage.multiRemove(["access_token", "refresh_token"]);
-      await AsyncStorage.setItem(STORE_GUEST_KEY, "true");
-      console.log("🗑 Cleared tokens, set guest mode");
     } catch (e) {
       console.warn("⚠️ Failed to clear storage", e);
     }
 
-    // 🚀 сразу на main
-    router.replace("/(tabs)/(main)");
+    // 👉 сразу переводим в гостя
+    await activateGuest(language);
   };
+
   const handleChangeLanguage = async (lang: string) => {
     console.log("🌐 Changing language →", lang);
     try {
