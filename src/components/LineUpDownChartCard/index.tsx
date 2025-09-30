@@ -3,14 +3,13 @@ import React, { useState } from "react";
 import {
   Image,
   ImageSourcePropType,
+  Pressable,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 
 /* ================== Types ================== */
-
 type Item = {
   code: string; // e.g. "USD"
   value: number | string; // e.g. 1533.4
@@ -23,20 +22,16 @@ type Item = {
 
 type Props = {
   items: Item[];
-  /** Show this many cards first; rest hidden behind "Показать больше" */
-  initial?: number; // default 3
+  initial?: number; // how many to show initially
   onMorePress?: () => void;
-  /** Whether to show all items initially (expanded state) */
-  expanded?: boolean; // default false
+  expanded?: boolean;
 };
 
 /* ================== Defaults ================== */
-/** Replace paths with your real assets */
 const DEFAULT_UP_IMG = require("../../../assets/images/upline.png");
 const DEFAULT_DOWN_IMG = require("../../../assets/images/downline.png");
 
 /* ================== Component ================== */
-
 export default function LineUpDownChartCard({
   items,
   initial = 3,
@@ -45,12 +40,6 @@ export default function LineUpDownChartCard({
 }: Props) {
   const [expanded, setExpanded] = useState(initialExpanded);
   const visible = expanded ? items : items.slice(0, initial);
-  const router = useRouter();
-
-  const handleToggle = () => {
-    setExpanded((v) => !v);
-    onMorePress?.();
-  };
 
   return (
     <View>
@@ -59,24 +48,33 @@ export default function LineUpDownChartCard({
       ))}
 
       {items.length > initial && !expanded && (
-        <TouchableOpacity
-          style={styles.moreBtn}
-          onPress={() => router.push("/(stacks)/archives")}
-        >
+        <Pressable style={styles.moreBtn} onPress={onMorePress}>
           <Text style={styles.moreText}>Показать больше</Text>
-        </TouchableOpacity>
+        </Pressable>
       )}
     </View>
   );
 }
-/* ------------------------ subcomponents ------------------------ */
 
+/* ------------------------ subcomponents ------------------------ */
 function RateCard({ item }: { item: Item }) {
   const up = item.delta >= 0;
+  const router = useRouter();
 
   return (
-    <View style={styles.card}>
-      {/* Left side: flag + label + value row */}
+    <Pressable
+      style={({ pressed }) => [
+        styles.card,
+        pressed && { opacity: 0.7 }, // эффект при нажатии
+      ]}
+      onPress={() =>
+        router.push({
+          pathname: "/(stacks)/archives/[id]",
+          params: { id: item.code },
+        })
+      }
+    >
+      {/* Left side */}
       <View style={styles.leftCol}>
         <View style={styles.flagWrap}>
           {item.flagSource ? (
@@ -102,9 +100,9 @@ function RateCard({ item }: { item: Item }) {
         </View>
       </View>
 
-      {/* Right side: image sparkline */}
+      {/* Right side */}
       <Sparkline up={up} chartSource={item.chartSource} />
-    </View>
+    </Pressable>
   );
 }
 
@@ -120,7 +118,6 @@ function Sparkline({
   return (
     <View style={styles.sparkWrap}>
       <Image source={src} style={styles.chartImg} resizeMode="cover" />
-      {/* End dot */}
       <View
         style={[
           styles.sparkDot,
@@ -132,7 +129,6 @@ function Sparkline({
 }
 
 /* ------------------------------ helpers ------------------------------ */
-
 function formatNum(n: number | string) {
   const num = typeof n === "number" ? n : Number(String(n).replace(/\s/g, ""));
   if (!isFinite(num)) return String(n);
@@ -140,7 +136,6 @@ function formatNum(n: number | string) {
 }
 
 /* ------------------------------- styles ------------------------------- */
-
 const CARD_BG = "#FFFFFF";
 const CARD_SHADOW = "rgba(0,0,0,0.06)";
 const TEXT_MAIN = "#111827";

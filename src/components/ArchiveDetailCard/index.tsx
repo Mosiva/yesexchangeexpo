@@ -2,9 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+type Row = { ts: string; buy: number; sell: number };
+
 type Props = {
-  // Optional: you can pass your own rows; otherwise demo data is shown
-  rows?: { ts: string; buy: number; sell: number }[];
+  rows?: Row[];
+  code?: string; // e.g. "USD"
+  name?: string; // e.g. "Доллар США"
+  flagEmoji?: string; // e.g. "🇺🇸"
 };
 
 const COLORS = {
@@ -23,7 +27,12 @@ const COLORS = {
   red: "#DC2626",
 };
 
-export default function ArchiveDetailCard({ rows }: Props) {
+export default function ArchiveDetailCard({
+  rows,
+  code = "USD",
+  name = "Доллар США",
+  flagEmoji = "🇺🇸",
+}: Props) {
   const [source, setSource] = useState<"yes" | "nbrk">("yes");
   const [period, setPeriod] = useState<"day" | "week" | "month">("day");
 
@@ -31,8 +40,6 @@ export default function ArchiveDetailCard({ rows }: Props) {
     () =>
       rows ?? [
         { ts: "21.08.2025 11:11", buy: 533.4, sell: 533.4 },
-        { ts: "21.08.2025 10:54", buy: 533.4, sell: 533.4 },
-        { ts: "21.08.2025 10:54", buy: 533.4, sell: 533.4 },
         { ts: "21.08.2025 10:54", buy: 533.4, sell: 533.4 },
         { ts: "21.08.2025 10:54", buy: 533.4, sell: 533.4 },
       ],
@@ -59,11 +66,11 @@ export default function ArchiveDetailCard({ rows }: Props) {
       <View style={styles.fxCard}>
         <View style={styles.fxHead}>
           <View style={styles.flagWrap}>
-            <Text style={{ fontSize: 20 }}>🇺🇸</Text>
+            <Text style={{ fontSize: 20 }}>{flagEmoji}</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.fxTitle}>USD</Text>
-            <Text style={styles.fxSubtitle}>Доллар США</Text>
+            <Text style={styles.fxTitle}>{code}</Text>
+            <Text style={styles.fxSubtitle}>{name}</Text>
           </View>
           <Ionicons name="chevron-down" size={22} color="#111827" />
         </View>
@@ -130,7 +137,6 @@ export default function ArchiveDetailCard({ rows }: Props) {
     </ScrollView>
   );
 }
-
 /* ---------- small UI pieces ---------- */
 
 function Pill({

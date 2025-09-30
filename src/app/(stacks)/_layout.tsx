@@ -39,6 +39,12 @@ export default function Layout() {
         }}
       />
       <Stack.Screen
+        name="archives/[id]"
+        options={{
+          header: () => <CustomHeader title="Архив" showBackButton={true} />,
+        }}
+      />
+      <Stack.Screen
         name="news/index"
         options={{
           // Hide back by default + disable iOS swipe-back
