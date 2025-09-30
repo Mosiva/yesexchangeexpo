@@ -32,6 +32,13 @@ export default function Layout() {
   return (
     <Stack>
       <Stack.Screen
+        name="archives/index"
+        options={{
+          header: () => <CustomHeader title="Архив" showBackButton={true} />,
+          gestureEnabled: true,
+        }}
+      />
+      <Stack.Screen
         name="news/index"
         options={{
           // Hide back by default + disable iOS swipe-back

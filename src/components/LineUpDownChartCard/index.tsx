@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Image,
@@ -22,9 +23,11 @@ type Item = {
 
 type Props = {
   items: Item[];
-  /** Show this many cards first; rest hidden behind “Показать больше” */
+  /** Show this many cards first; rest hidden behind "Показать больше" */
   initial?: number; // default 3
   onMorePress?: () => void;
+  /** Whether to show all items initially (expanded state) */
+  expanded?: boolean; // default false
 };
 
 /* ================== Defaults ================== */
@@ -38,9 +41,11 @@ export default function LineUpDownChartCard({
   items,
   initial = 3,
   onMorePress,
+  expanded: initialExpanded = false,
 }: Props) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(initialExpanded);
   const visible = expanded ? items : items.slice(0, initial);
+  const router = useRouter();
 
   const handleToggle = () => {
     setExpanded((v) => !v);
@@ -53,11 +58,12 @@ export default function LineUpDownChartCard({
         <RateCard key={`${it.code}-${idx}`} item={it} />
       ))}
 
-      {items.length > initial && (
-        <TouchableOpacity style={styles.moreBtn} onPress={handleToggle}>
-          <Text style={styles.moreText}>
-            {expanded ? "Скрыть" : "Показать больше"}
-          </Text>
+      {items.length > initial && !expanded && (
+        <TouchableOpacity
+          style={styles.moreBtn}
+          onPress={() => router.push("/(stacks)/archives")}
+        >
+          <Text style={styles.moreText}>Показать больше</Text>
         </TouchableOpacity>
       )}
     </View>
