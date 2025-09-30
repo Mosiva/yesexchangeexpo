@@ -35,13 +35,6 @@ export const authApi = restApi.injectEndpoints({
       }),
     }),
 
-    getCSRF: builder.query<CsrfResponse, void>({
-      query: () => ({
-        url: "/auth/csrf/",
-        method: "GET",
-      }),
-    }),
-
     sendcode: builder.mutation<void, any>({
       query: (payload) => ({
         url: "/auth/password/code/send/",
