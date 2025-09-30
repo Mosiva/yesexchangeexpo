@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   Image,
   ImageSourcePropType,
@@ -15,7 +15,7 @@ type Rate = {
   sell: string | number;
   flagEmoji?: string;
   flagSource?: ImageSourcePropType;
-  name?: string;
+  name?: string; // ← used for tooltip
 };
 
 type Props = {
@@ -45,6 +45,10 @@ export default function CurrenciesMainCardList({
 }: Props) {
   const [expanded, setExpanded] = useState(false);
 
+  // which row's tooltip is visible (null = none)
+  const [hintIdx, setHintIdx] = useState<number | null>(null);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const canExpand = data.length > DEFAULT_VISIBLE;
   const visibleData = useMemo(
     () => (expanded ? data : data.slice(0, DEFAULT_VISIBLE)),
@@ -54,6 +58,18 @@ export default function CurrenciesMainCardList({
   const handleToggle = () => {
     setExpanded((v) => !v);
     onPressMore?.();
+  };
+
+  const showHint = (idx: number) => {
+    // toggle if the same row is pressed again
+    const next = hintIdx === idx ? null : idx;
+    setHintIdx(next);
+
+    // clear any previous timer
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    if (next !== null) {
+      hideTimerRef.current = setTimeout(() => setHintIdx(null), 2000);
+    }
   };
 
   return (
@@ -68,21 +84,34 @@ export default function CurrenciesMainCardList({
       {visibleData.map((r, idx) => (
         <View key={`${r.code}-${idx}`} style={styles.row}>
           <View style={styles.rowInner}>
+            {/* left side */}
             <View style={styles.leftBlock}>
               {r.flagSource ? (
                 <Image source={r.flagSource} style={styles.flagImg} />
               ) : (
                 <Text style={styles.flagEmoji}>{r.flagEmoji ?? "🏳️"}</Text>
               )}
+
               <Text style={styles.code}>{r.code}</Text>
-              <Ionicons
-                name="information-circle"
-                size={16}
-                color={WHITE}
+
+              {/* Info icon + tooltip */}
+              <TouchableOpacity
+                onPress={() => showHint(idx)}
+                hitSlop={8}
                 style={{ marginLeft: 8 }}
-              />
+              >
+                <Ionicons name="information-circle" size={16} color={WHITE} />
+              </TouchableOpacity>
+
+              {hintIdx === idx && !!(r.name || r.code) && (
+                <View style={styles.tooltip}>
+                  <Text style={styles.tooltipText}>{r.name ?? r.code}</Text>
+                  <View style={styles.tooltipTail} />
+                </View>
+              )}
             </View>
 
+            {/* right side values */}
             <View style={styles.cellsRow}>
               <TouchableOpacity
                 style={styles.cell}
@@ -135,10 +164,39 @@ const styles = StyleSheet.create({
   },
   row: { paddingVertical: 8 },
   rowInner: { flexDirection: "row", alignItems: "center" },
-  leftBlock: { flexDirection: "row", alignItems: "center" },
+
+  leftBlock: {
+    flexDirection: "row",
+    alignItems: "center",
+    position: "relative", // so tooltip positions relative to this block
+  },
   flagImg: { width: 32, height: 32, borderRadius: 16, marginRight: 8 },
   flagEmoji: { fontSize: 24, marginRight: 8 },
   code: { color: WHITE, fontSize: 16, fontWeight: "700" },
+
+  // tooltip bubble
+  tooltip: {
+    position: "absolute",
+    top: -40, // above the row
+    left: 0,
+    backgroundColor: "rgba(90, 60, 30, 0.9)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    zIndex: 5,
+  },
+  tooltipText: { color: "#fff", fontSize: 14, fontWeight: "700" },
+  tooltipTail: {
+    position: "absolute",
+    bottom: -6,
+    left: 18,
+    width: 12,
+    height: 12,
+    backgroundColor: "rgba(90, 60, 30, 0.9)",
+    transform: [{ rotate: "45deg" }],
+    borderRadius: 2,
+  },
+
   cellsRow: { marginLeft: "auto", flexDirection: "row", gap: CELLS_GAP },
   cell: {
     minWidth: CELL_MIN_W,
@@ -150,7 +208,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   cellText: { color: CELL_TEXT, fontSize: 16, fontWeight: "700" },
+
   divider: { height: 2, backgroundColor: DIVIDER, marginTop: 8 },
+
   moreBtn: { alignItems: "center", paddingVertical: 16 },
   moreText: { color: WHITE, fontSize: 14, fontWeight: "700" },
 });
