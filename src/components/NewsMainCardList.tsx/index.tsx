@@ -2,12 +2,12 @@
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
-    Pressable,
-    StyleProp,
-    StyleSheet,
-    Text,
-    View,
-    ViewStyle,
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
 } from "react-native";
 
 type NewsItem = {
@@ -89,7 +89,7 @@ export default function NewsMainCardList({
 
       {hasMore && (
         <Pressable
-          onPress={() => router.push("/(stacks)/news")}
+          // onPress={() => router.push("/(stacks)/news")}
           style={styles.moreBtn}
           android_ripple={{
             color: onDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",

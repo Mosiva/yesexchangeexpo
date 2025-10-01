@@ -38,6 +38,7 @@ export default function LineUpDownChartCard({
   onMorePress,
   expanded: initialExpanded = false,
 }: Props) {
+  const router = useRouter();
   const [expanded, setExpanded] = useState(initialExpanded);
   const visible = expanded ? items : items.slice(0, initial);
 
@@ -48,7 +49,10 @@ export default function LineUpDownChartCard({
       ))}
 
       {items.length > initial && !expanded && (
-        <Pressable style={styles.moreBtn} onPress={onMorePress}>
+        <Pressable
+          style={styles.moreBtn}
+          // onPress={() => router.push("/(stacks)/archives")}
+        >
           <Text style={styles.moreText}>Показать больше</Text>
         </Pressable>
       )}

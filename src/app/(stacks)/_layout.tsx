@@ -31,6 +31,12 @@ function CustomHeader({
 export default function Layout() {
   return (
     <Stack>
+         <Stack.Screen
+        name="settings"
+        options={{
+          headerShown: false,
+        }}
+      />
       <Stack.Screen
         name="archives/index"
         options={{
