@@ -7,6 +7,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -136,6 +137,7 @@ export default function RegisterScreen() {
       keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0} // отступ под хедер
     >
       <View style={styles.viewcontainer}>
+        <StatusBar barStyle="dark-content" />
         <ScrollView
           contentContainerStyle={styles.container}
           keyboardShouldPersistTaps="handled"
