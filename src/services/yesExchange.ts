@@ -1,19 +1,19 @@
 // src/services/yesExchange.ts
 import { restApi } from "../api";
 import type {
-    BranchDto,
-    CurrencyCode,
-    ExchangeRateDto,
-    ExchangeRateHistoryRecordDto,
-    LoginDto,
-    MessageResponseDto,
-    NbkExchangeRateDto,
-    Paginated,
-    RegisterDto,
-    ResendOtpDto,
-    UpdateUserDto,
-    UserDto,
-    VerifyOtpDto,
+  BranchDto,
+  CurrencyCode,
+  ExchangeRateDto,
+  ExchangeRateHistoryRecordDto,
+  LoginDto,
+  MessageResponseDto,
+  NbkExchangeRateDto,
+  Paginated,
+  RegisterDto,
+  ResendOtpDto,
+  UpdateUserDto,
+  UserDto,
+  VerifyOtpDto,
 } from "../types/api";
 
 export const yesExchangeApi = restApi.injectEndpoints({
@@ -134,7 +134,14 @@ export const yesExchangeApi = restApi.injectEndpoints({
     // --- НБК (Нацбанк) ---
     nbkAverage: build.query<
       NbkExchangeRateDto[],
-      { from: string; to: string; currencies?: CurrencyCode[]; limit?: number }
+      {
+        from?: string;
+        to?: string;
+        currencies?: CurrencyCode[];
+        limit?: number;
+        page?: number;
+        deltaPeriod?: string;
+      }
     >({
       query: (params) => ({
         url: "/api/v1/nbk/exchange-rates/average",

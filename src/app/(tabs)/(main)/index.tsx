@@ -25,7 +25,18 @@ import { Skeleton } from "../../../components/skeleton";
 import {
   useBranchesQuery,
   useExchangeRatesCurrentQuery,
+  useNbkAverageQuery,
 } from "../../../services/yesExchange";
+
+// Функция для получения вчерашней даты в формате YYYY-MM-DD
+const getYesterdayDate = () => {
+  const now = new Date();
+  now.setDate(now.getDate() - 1); // Subtract one day
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${day}-${month}`;
+};
 
 // Отдельный компонент для локального времени
 const LocalTime = () => {
@@ -59,7 +70,24 @@ export default function MainScreen() {
     isError: isBranchesError,
   } = useBranchesQuery({});
 
-  const branches = React.useMemo(() => rawBranches?.data || [], [rawBranches?.data]);
+  const yesterdayDate = getYesterdayDate();
+
+  const {
+    data: rawNbkAverage,
+    refetch: refetchNbkAverage,
+    isLoading: isNbkAverageLoading,
+    isError: isNbkAverageError,
+  } = useNbkAverageQuery({
+    from: yesterdayDate,
+    to: yesterdayDate,
+    limit: 48,
+    page: 1,
+  });
+
+  const branches = React.useMemo(
+    () => rawBranches?.data || [],
+    [rawBranches?.data]
+  );
 
   const { t } = useTranslation();
   const router = useRouter();
@@ -81,6 +109,8 @@ export default function MainScreen() {
   } = useExchangeRatesCurrentQuery(
     {
       branchId: selectedBranch?.id.toString() || "",
+      page: 1,
+      limit: 48,
     },
     {
       skip: !selectedBranch?.id || isBranchesLoading,
@@ -88,6 +118,8 @@ export default function MainScreen() {
   );
 
   const exchangeRates = rawExchangeRates?.data || [];
+
+  const nbkAverage = rawNbkAverage || [];
 
   // Set default branch when branches are loaded
   React.useEffect(() => {
@@ -98,8 +130,12 @@ export default function MainScreen() {
 
   // Refetch all data function
   const refetchAllData = useCallback(async () => {
-    await Promise.all([refetchBranches(), refetchExchangeRates()]);
-  }, [refetchBranches, , refetchExchangeRates]);
+    await Promise.all([
+      refetchBranches(),
+      refetchNbkAverage(),
+      refetchExchangeRates(),
+    ]);
+  }, [refetchBranches, refetchNbkAverage, refetchExchangeRates]);
 
   // Refetch data when the screen gains focus
   useFocusEffect(
