@@ -136,8 +136,8 @@ export default function RegisterScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0} // отступ под хедер
     >
+      <StatusBar barStyle="dark-content" />
       <View style={styles.viewcontainer}>
-        <StatusBar barStyle="dark-content" />
         <ScrollView
           contentContainerStyle={styles.container}
           keyboardShouldPersistTaps="handled"

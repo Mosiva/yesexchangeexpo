@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -142,6 +143,7 @@ export default function SendCodeScreen() {
       contentContainerStyle={styles.container}
       keyboardShouldPersistTaps="handled"
     >
+      <StatusBar barStyle="dark-content" />
       <Text style={styles.helperText}>
         Код отправлен на{" "}
         <Text style={styles.helperEmail}>{formatPhone(phone)}</Text>
