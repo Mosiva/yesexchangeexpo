@@ -227,6 +227,7 @@ export default function ReserveNoRateScreen() {
           setShowToModal(false);
         }}
         value={[toCode]}
+        buttonText="Выбрать"
       />
     </KeyboardAvoidingView>
   );
