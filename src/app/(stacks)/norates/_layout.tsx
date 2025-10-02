@@ -2,7 +2,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-
 function CustomHeader({
   title,
   showBackButton = false,
@@ -33,40 +32,19 @@ export default function Layout() {
   return (
     <Stack>
       <Stack.Screen
-        name="settings"
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="norates"
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="archives/index"
-        options={{
-          header: () => <CustomHeader title="Архив" showBackButton={true} />,
-          gestureEnabled: true,
-        }}
-      />
-      <Stack.Screen
-        name="archives/[id]"
-        options={{
-          header: () => <CustomHeader title="Архив" showBackButton={true} />,
-        }}
-      />
-      <Stack.Screen
-        name="news/index"
+        name="index"
         options={{
           // Hide back by default + disable iOS swipe-back
-          header: () => <CustomHeader title="Новости" showBackButton={true} />,
-          gestureEnabled: true,
+          header: () => (
+            <CustomHeader
+              title="Бронь без привязки к курсу"
+              showBackButton={true}
+            />
+          ),
         }}
       />
       <Stack.Screen
-        name="news/[id]"
+        name="branchpicker/index"
         options={{
           headerShown: false,
         }}

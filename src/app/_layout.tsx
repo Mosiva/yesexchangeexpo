@@ -1,6 +1,7 @@
 // app/_layout.tsx
 import { Slot } from "expo-router";
 import { AuthProvider } from "providers";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   SafeAreaProvider,
   initialWindowMetrics,
@@ -22,7 +23,9 @@ export default function RootLayout() {
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <ReduxProvider store={store}>
         <AuthProvider>
-          <Slot />
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Slot />
+          </GestureHandlerRootView>
           <Toast />
         </AuthProvider>
       </ReduxProvider>

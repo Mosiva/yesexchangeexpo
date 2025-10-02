@@ -1,14 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CurrenciesListModalArchive from "../../../components/CurrenciesListModalArchive";
@@ -50,7 +51,7 @@ const findCurrency = (code: string) => currencies.find((c) => c.code === code)!;
 /** ====== screen ====== */
 export default function ReserveNoRateScreen() {
   const insets = useSafeAreaInsets();
-
+  const router = useRouter();
   const [mode, setMode] = useState<"sell" | "buy">("sell");
   const [fromCode, setFromCode] = useState("KZT");
   const [toCode, setToCode] = useState("USD");
@@ -204,7 +205,10 @@ export default function ReserveNoRateScreen() {
             {fmt(footerSum)} {footerCode}
           </Text>
         </View>
-        <Pressable style={styles.cta}>
+        <Pressable
+          style={styles.cta}
+          onPress={() => router.push("/(stacks)/norates/branchpicker")}
+        >
           <Text style={styles.ctaText}>Далее</Text>
         </Pressable>
       </View>
