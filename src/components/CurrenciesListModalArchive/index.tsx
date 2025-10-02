@@ -1,13 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-    FlatList,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Modal from "react-native-modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,6 +22,7 @@ interface Props {
   /** Called with the chosen code (as a single-item array) */
   onConfirm: (selected: string[]) => void;
   items?: Currency[];
+  buttonText?: string;
 }
 
 const ORANGE = "#F58220";
@@ -41,6 +42,7 @@ export default function CurrenciesListModalArchive({
   onConfirm,
   value = ["USD"],
   items = DEFAULT_ITEMS,
+  buttonText = "Посмотреть архив",
 }: Props) {
   const insets = useSafeAreaInsets();
 
@@ -146,7 +148,7 @@ export default function CurrenciesListModalArchive({
             style={[styles.bottomBar, { paddingBottom: insets.bottom + 8 }]}
           >
             <TouchableOpacity style={styles.saveBtn} onPress={handleConfirm}>
-              <Text style={styles.saveText}>Посмотреть архив</Text>
+              <Text style={styles.saveText}>{buttonText}</Text>
             </TouchableOpacity>
           </View>
         </View>
