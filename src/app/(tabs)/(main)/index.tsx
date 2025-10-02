@@ -1,14 +1,19 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  FlatList,
   Image,
+  Modal,
   Pressable,
+  RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import CurrenciesMainCardList from "../../../components/CurrenciesMainCardList.tsx";
@@ -16,6 +21,22 @@ import CurrencyExchangeModal from "../../../components/CurrencyExchangeModal";
 import LineUpDownChartCard from "../../../components/LineUpDownChartCard";
 import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
 import ReservePromoCard from "../../../components/ReservePromoCard";
+import { Skeleton } from "../../../components/skeleton";
+import {
+  useBranchesQuery,
+  useExchangeRatesCurrentQuery,
+  useNbkAverageQuery,
+} from "../../../services/yesExchange";
+
+// Функция для получения вчерашней даты в формате YYYY-MM-DD
+const getYesterdayDate = () => {
+  const now = new Date();
+  now.setDate(now.getDate() - 1); // Subtract one day
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${day}-${month}`;
+};
 
 // Отдельный компонент для локального времени
 const LocalTime = () => {
@@ -40,9 +61,39 @@ const LocalTime = () => {
 };
 
 export default function MainScreen() {
+  const [refreshing, setRefreshing] = useState(false);
+
+  const {
+    data: rawBranches,
+    refetch: refetchBranches,
+    isLoading: isBranchesLoading,
+    isError: isBranchesError,
+  } = useBranchesQuery({});
+
+  const yesterdayDate = getYesterdayDate();
+
+  const {
+    data: rawNbkAverage,
+    refetch: refetchNbkAverage,
+    isLoading: isNbkAverageLoading,
+    isError: isNbkAverageError,
+  } = useNbkAverageQuery({
+    from: yesterdayDate,
+    to: yesterdayDate,
+    limit: 48,
+    page: 1,
+  });
+
+  const branches = React.useMemo(
+    () => rawBranches?.data || [],
+    [rawBranches?.data]
+  );
+
   const { t } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"archive" | "news">("archive");
+  const [selectedBranch, setSelectedBranch] = useState<any>(null);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
 
   const [exchangeVisible, setExchangeVisible] = useState(false);
   const [exchangeData, setExchangeData] = useState<{
@@ -50,6 +101,54 @@ export default function MainScreen() {
     rate: any;
   } | null>(null);
 
+  const {
+    data: rawExchangeRates,
+    refetch: refetchExchangeRates,
+    isLoading: isExchangeRatesLoading,
+    isError: isExchangeRatesError,
+  } = useExchangeRatesCurrentQuery(
+    {
+      branchId: selectedBranch?.id.toString() || "",
+      page: 1,
+      limit: 48,
+    },
+    {
+      skip: !selectedBranch?.id || isBranchesLoading,
+    }
+  );
+
+  const exchangeRates = rawExchangeRates?.data || [];
+
+  const nbkAverage = rawNbkAverage || [];
+
+  // Set default branch when branches are loaded
+  React.useEffect(() => {
+    if (branches.length > 0 && !selectedBranch) {
+      setSelectedBranch(branches[1]); // Set index 1 (Астана) as default
+    }
+  }, [branches, selectedBranch]);
+
+  // Refetch all data function
+  const refetchAllData = useCallback(async () => {
+    await Promise.all([
+      refetchBranches(),
+      refetchNbkAverage(),
+      refetchExchangeRates(),
+    ]);
+  }, [refetchBranches, refetchNbkAverage, refetchExchangeRates]);
+
+  // Refetch data when the screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      refetchAllData();
+    }, [refetchAllData])
+  );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetchAllData();
+    setRefreshing(false);
+  };
   const handlePress = () => {
     router.push({ pathname: "/(stacks)/settings" });
   };
@@ -62,8 +161,18 @@ export default function MainScreen() {
     setExchangeVisible(true);
   };
 
+  const handleBranchSelect = (branch: any) => {
+    setSelectedBranch(branch);
+    setDropdownVisible(false);
+  };
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <StatusBar barStyle="light-content" />
       <View style={styles.headerContainer}>
         <View style={styles.header}>
@@ -72,23 +181,74 @@ export default function MainScreen() {
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <Pressable hitSlop={12} accessibilityLabel="Настройки">
+          <Pressable
+            hitSlop={12}
+            accessibilityLabel="Настройки"
+            onPress={handlePress}
+          >
             <Ionicons name="settings" size={22} color="#fff" />
           </Pressable>
         </View>
 
-        <View style={styles.addressCard}>
-          <Ionicons
-            name="location-sharp"
-            size={28}
-            color="#fff"
-            style={styles.addrIcon}
-          />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.addrLabel}>Адрес</Text>
-            <Text style={styles.addrValue}>Астана, Аэропорт</Text>
+        {isBranchesLoading ? (
+          <View style={styles.addressCard}>
+            <Ionicons
+              name="location-sharp"
+              size={28}
+              color="#fff"
+              style={styles.addrIcon}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.addrLabel}>Адрес</Text>
+              <Skeleton width="90%" height={60} style={styles.skeletonItem} />
+            </View>
           </View>
-        </View>
+        ) : isBranchesError ? (
+          <View style={styles.addressCard}>
+            <Ionicons
+              name="location-sharp"
+              size={28}
+              color="#fff"
+              style={styles.addrIcon}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.addrLabel}>Адрес</Text>
+              <Text style={styles.errorText}>Ошибка загрузки филиалов</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => refetchBranches()}
+              style={styles.retryButtonSmall}
+            >
+              <Ionicons name="refresh" size={16} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.addressCard}
+            onPress={() => setDropdownVisible(true)}
+          >
+            <Ionicons
+              name="location-sharp"
+              size={28}
+              color="#fff"
+              style={styles.addrIcon}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.addrLabel}>Адрес</Text>
+              <Text style={styles.addrValue}>
+                {selectedBranch
+                  ? `${selectedBranch.city}, ${selectedBranch.address}`
+                  : "Выберите филиал"}
+              </Text>
+            </View>
+            <Ionicons
+              name="chevron-down"
+              size={20}
+              color="#fff"
+              style={styles.dropdownIcon}
+            />
+          </TouchableOpacity>
+        )}
 
         {/* текущее время */}
         <View
@@ -97,19 +257,34 @@ export default function MainScreen() {
           <LocalTime />
         </View>
 
-        <CurrenciesMainCardList
-          data={[
-            { code: "USD", buy: "544.36", sell: "549.36", flagEmoji: "🇺🇸" },
-            { code: "EUR", buy: "637.00", sell: "642.00", flagEmoji: "🇪🇺" },
-            { code: "RUB", buy: "6.53", sell: "11.53", flagEmoji: "🇷🇺" },
-            { code: "CNY", buy: "76.31", sell: "81.31", flagEmoji: "🇨🇳" },
-            { code: "AED", buy: "148.21", sell: "153.21", flagEmoji: "🇦🇪" },
-            { code: "TRY", buy: "13.06", sell: "18.06", flagEmoji: "🇹🇷" },
-            { code: "KZT", buy: "1.00", sell: "1.00", flagEmoji: "🇰🇿" },
-          ]}
-          onPressExchange={handlePressExchange}
-          onPressMore={() => console.log("more")}
-        />
+        {isExchangeRatesLoading ? (
+          <View style={styles.skeletonContainer}>
+            <Skeleton width="90%" height={60} style={styles.skeletonItem} />
+            <Skeleton width="90%" height={60} style={styles.skeletonItem} />
+            <Skeleton width="90%" height={60} style={styles.skeletonItem} />
+          </View>
+        ) : isExchangeRatesError ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Ошибка загрузки курсов валют</Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => refetchExchangeRates()}
+            >
+              <Text style={styles.retryButtonText}>Повторить</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <CurrenciesMainCardList
+            data={exchangeRates.map((rate) => ({
+              code: rate.currency,
+              buy: rate.buy.toString(),
+              sell: rate.sell.toString(),
+              flagEmoji: "🇺🇸",
+            }))}
+            onPressExchange={handlePressExchange}
+            onPressMore={() => console.log("more")}
+          />
+        )}
       </View>
 
       {/* Tabs: Архив / Новости */}
@@ -231,6 +406,51 @@ export default function MainScreen() {
           flagEmoji={exchangeData.rate.flagEmoji}
         />
       )}
+
+      {/* Branch Dropdown Modal */}
+      <Modal
+        visible={dropdownVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setDropdownVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setDropdownVisible(false)}
+        >
+          <View style={styles.dropdownContainer}>
+            <Text style={styles.dropdownTitle}>Выберите филиал</Text>
+            <FlatList
+              data={branches}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.dropdownItem,
+                    selectedBranch?.id === item.id &&
+                      styles.dropdownItemSelected,
+                  ]}
+                  onPress={() => handleBranchSelect(item)}
+                >
+                  <View style={styles.dropdownItemContent}>
+                    <Text style={styles.dropdownItemCity}>{item.city}</Text>
+                    <Text style={styles.dropdownItemAddress}>
+                      {item.address}
+                    </Text>
+                    <Text style={styles.dropdownItemPhone}>
+                      {item.contactPhone}
+                    </Text>
+                  </View>
+                  {selectedBranch?.id === item.id && (
+                    <Ionicons name="checkmark" size={20} color="#F79633" />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </ScrollView>
   );
 }
@@ -311,5 +531,107 @@ const styles = StyleSheet.create({
   },
   tabTextMuted: {
     color: "#8E8E93",
+  },
+  dropdownIcon: {
+    marginLeft: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  dropdownContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    margin: 20,
+    maxHeight: "70%",
+    minWidth: "80%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  dropdownTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111827",
+    padding: 20,
+    paddingBottom: 10,
+    textAlign: "center",
+  },
+  dropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6",
+  },
+  dropdownItemSelected: {
+    backgroundColor: "#FEF3E7",
+  },
+  dropdownItemContent: {
+    flex: 1,
+  },
+  dropdownItemCity: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 2,
+  },
+  dropdownItemAddress: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginBottom: 2,
+  },
+  dropdownItemPhone: {
+    fontSize: 12,
+    color: "#9CA3AF",
+  },
+  skeletonContainer: {
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  skeletonItem: {
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  errorContainer: {
+    padding: 20,
+    alignItems: "center",
+    backgroundColor: "#FEF2F2",
+    marginHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#FECACA",
+  },
+  errorText: {
+    color: "#DC2626",
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  retryButton: {
+    backgroundColor: "#DC2626",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  branchSkeleton: {
+    marginTop: 4,
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
+  },
+  retryButtonSmall: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    padding: 8,
+    borderRadius: 6,
+    marginLeft: 8,
   },
 });
