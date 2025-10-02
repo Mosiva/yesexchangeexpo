@@ -1,4 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
+import { StatusBar } from "react-native";
 import NewsDetailCard from "../../../components/NewsDetailCard";
 
 type Params = {
@@ -21,11 +22,14 @@ export default function NewsDetail() {
     ].join("\n\n");
 
   return (
-    <NewsDetailCard
-      title={safeTitle}
-      date={safeDate}
-      content={safeContent}
-      image={image}
-    />
+    <>
+      <StatusBar barStyle="dark-content" />
+      <NewsDetailCard
+        title={safeTitle}
+        date={safeDate}
+        content={safeContent}
+        image={image}
+      />
+    </>
   );
 }

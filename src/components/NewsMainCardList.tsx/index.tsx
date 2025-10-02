@@ -51,22 +51,22 @@ export default function NewsMainCardList({
               color: onDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
             }}
             style={styles.card}
-            onPress={() => {
-              if (onItemPress) {
-                onItemPress(it);
-              } else {
-                // 🔗 переход на карточку новости
-                router.push({
-                  pathname: "/news/[id]",
-                  params: {
-                    id: String(it.id),
-                    title: it.title,
-                    date: String(it.date),
-                    content: it.summary ?? "", // можно заменить на полный текст, если есть
-                  },
-                });
-              }
-            }}
+            // onPress={() => {
+            //   if (onItemPress) {
+            //     onItemPress(it);
+            //   } else {
+            //     // 🔗 переход на карточку новости
+            //     router.push({
+            //       pathname: "/news/[id]",
+            //       params: {
+            //         id: String(it.id),
+            //         title: it.title,
+            //         date: String(it.date),
+            //         content: it.summary ?? "", // можно заменить на полный текст, если есть
+            //       },
+            //     });
+            //   }
+            // }}
           >
             <Text style={[styles.title, c.title]} numberOfLines={2}>
               {it.title}

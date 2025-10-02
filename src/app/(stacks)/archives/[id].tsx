@@ -1,4 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
+import { StatusBar } from "react-native";
 import ArchiveDetailCard from "../../../components/ArchiveDetailCard";
 
 export default function ArchiveDetailScreen() {
@@ -16,11 +17,14 @@ export default function ArchiveDetailScreen() {
   const { name, flag } = meta[id] ?? { name: id, flag: "🏳️" };
 
   return (
-    <ArchiveDetailCard
-      code={id}
-      name={name}
-      flagEmoji={flag}
-      // можно потом rows сюда подгрузить с API
-    />
+    <>
+      <StatusBar barStyle="dark-content" />
+      <ArchiveDetailCard
+        code={id}
+        name={name}
+        flagEmoji={flag}
+        // можно потом rows сюда подгрузить с API
+      />
+    </>
   );
 }
