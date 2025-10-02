@@ -1,8 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
-import React, { useMemo, useRef } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useMemo, useRef, useState } from "react";
+import {
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 const ORANGE = "#F58220";
 const TEXT = "#111827";
@@ -34,6 +41,8 @@ export default function BranchPickerSheet({
 }: Props) {
   const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["35%", "85%"], []);
+  const [query, setQuery] = useState("");
+  const [tab, setTab] = useState<"nearby" | "all">("nearby");
 
   // Данные для списка
   const BRANCHES: Branch[] = [
@@ -96,9 +105,52 @@ export default function BranchPickerSheet({
         {!selectedBranch ? (
           <>
             {/* --- СПИСОК ФИЛИАЛОВ --- */}
+
             <Text style={styles.sheetTitle}>
               Выберите офис, в который хотите{"\n"}оставить заявку
             </Text>
+
+            {/* Search */}
+            <View style={styles.searchBox}>
+              <Ionicons name="search" size={18} color="#9CA3AF" />
+              <TextInput
+                value={query}
+                onChangeText={setQuery}
+                placeholder="Поиск"
+                style={styles.searchInput}
+                returnKeyType="search"
+              />
+            </View>
+
+            {/* Tabs */}
+            <View style={styles.tabs}>
+              <Pressable
+                onPress={() => setTab("nearby")}
+                style={[styles.tab, tab === "nearby" && styles.tabActive]}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    tab === "nearby" && styles.tabTextActive,
+                  ]}
+                >
+                  Рядом
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => setTab("all")}
+                style={[styles.tab, tab === "all" && styles.tabActive]}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    tab === "all" && styles.tabTextActive,
+                  ]}
+                >
+                  Все филиалы
+                </Text>
+              </Pressable>
+            </View>
 
             {/* List */}
             <FlatList
@@ -183,6 +235,38 @@ export default function BranchPickerSheet({
 }
 
 const styles = StyleSheet.create({
+  searchBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F5F6F8",
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    height: 48,
+    marginBottom: 12,
+  },
+  searchInput: { flex: 1, marginLeft: 8, fontSize: 16, color: TEXT },
+  tabs: { flexDirection: "row", gap: 12, marginBottom: 10 },
+  tab: {
+    flex: 1,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: "#F5F6F8",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tabActive: { backgroundColor: "#F0F1F3" },
+  tabText: { color: SUB, fontSize: 16, fontWeight: "700" },
+  tabTextActive: { color: TEXT },
+  item: { flexDirection: "row", alignItems: "center", paddingVertical: 14 },
+  pin: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: ORANGE,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
   sheetBg: {
     backgroundColor: "#fff",
     borderTopLeftRadius: 20,
@@ -201,16 +285,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     marginBottom: 12,
   },
-  item: { flexDirection: "row", alignItems: "center", paddingVertical: 14 },
-  pin: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: ORANGE,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
+
   itemTitle: { color: TEXT, fontSize: 18, fontWeight: "800" },
   itemAddress: { color: SUB, marginTop: 4 },
   row: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
