@@ -1,4 +1,9 @@
-import { Ionicons } from "@expo/vector-icons";
+import {
+  FontAwesome6,
+  Ionicons,
+  MaterialCommunityIcons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
@@ -57,13 +62,13 @@ export default function ReserveScreen() {
       <View style={styles.tilesRow}>
         <Tile
           title={"Без привязки\nк курсу"}
-          Icon={<Ionicons name="cash-outline" size={36} color={ORANGE} />}
+          Icon={<FontAwesome6 name="money-bills" size={24} color={ORANGE} />}
           // onPress={() => router.push("/(reserve)/no-rate")}
         />
         <Tile
           title={"С привязкой\nк курсу"}
           sub="Бронь до 30 минут"
-          Icon={<Ionicons name="trending-up" size={36} color={ORANGE} />}
+          Icon={<MaterialIcons name="analytics" size={24} color={ORANGE} />}
           // onPress={() => router.push("/(reserve)/with-rate")}
         />
       </View>
@@ -74,8 +79,8 @@ export default function ReserveScreen() {
         // onPress={() => router.push("/(reserve)/gold")}
       >
         <View style={styles.rowLeft}>
-          <View style={[styles.iconBadge, { backgroundColor: "#FFF4EA" }]}>
-            <Ionicons name="layers-outline" size={24} color={ORANGE} />
+          <View style={[styles.iconBadge]}>
+            <MaterialCommunityIcons name="gold" size={24} color={ORANGE} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.wideTitle}>Бронирование золота</Text>
@@ -90,8 +95,8 @@ export default function ReserveScreen() {
         // onPress={() => router.push("/(reserve)/history")}
       >
         <View style={styles.rowLeft}>
-          <View style={[styles.iconBadge, { backgroundColor: "#FFF4EA" }]}>
-            <Ionicons name="time-outline" size={22} color={ORANGE} />
+          <View style={[styles.iconBadge]}>
+            <MaterialCommunityIcons name="history" size={24} color="#F58220" />
           </View>
           <Text style={styles.historyText}>История бронирования</Text>
         </View>
@@ -116,9 +121,7 @@ function Tile({
 }) {
   return (
     <Pressable style={styles.tile} onPress={onPress}>
-      <View style={[styles.iconBadge, { backgroundColor: "#FFF4EA" }]}>
-        {Icon}
-      </View>
+      <View style={[styles.iconBadge]}>{Icon}</View>
       <Text style={styles.tileTitle}>{title}</Text>
       {sub ? <Text style={styles.tileSub}>{sub}</Text> : null}
     </Pressable>
