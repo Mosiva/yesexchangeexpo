@@ -1,14 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import React, { useMemo, useRef, useState } from "react";
-import {
-    FlatList,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
-} from "react-native";
+import { router } from "expo-router";
+import React, { useMemo, useRef } from "react";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 const ORANGE = "#F58220";
 const TEXT = "#111827";
@@ -21,57 +15,49 @@ type Branch = {
   address: string;
   worktime: string;
   distanceKm?: number;
+  worktimeToday?: string;
+  schedule?: { [key: string]: string };
+  phone?: string;
+  email?: string;
 };
 
-const BRANCHES: Branch[] = [
-  {
-    id: "1",
-    title: "Yes Exchange NN Airport",
-    address: "Астана, ул. Шарля де Голля, 8",
-    worktime: "пн-пт: 8:00-21:00, вс: выходной",
-    distanceKm: 1.2,
-  },
-  {
-    id: "2",
-    title: "Yes Exchange NN Airport",
-    address: "Астана, ул. Шарля де Голля, 8",
-    worktime: "пн-вск: 8:00-21:00",
-    distanceKm: 3.7,
-  },
-  {
-    id: "3",
-    title: "Yes Exchange NN Airport",
-    address: "Астана, ул. Шарля де Голля, 8",
-    worktime: "пн-вск: 8:00-21:00",
-    distanceKm: 6.1,
-  },
-];
+type Props = {
+  selectedBranch: Branch | null;
+  onSelectBranch: (branch: Branch) => void;
+  onCloseDetails: () => void;
+};
 
-export default function BranchPickerSheet() {
+export default function BranchPickerSheet({
+  selectedBranch,
+  onSelectBranch,
+  onCloseDetails,
+}: Props) {
   const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["35%", "85%"], []);
-  const [query, setQuery] = useState("");
-  const [tab, setTab] = useState<"nearby" | "all">("nearby");
-  const [selectedBranch, setSelectedBranch] = useState<any>(null);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    let list = BRANCHES.slice();
-    if (tab === "nearby") {
-      list.sort((a, b) => (a.distanceKm ?? 0) - (b.distanceKm ?? 0));
-    }
-    if (!q) return list;
-    return list.filter(
-      (b) =>
-        b.title.toLowerCase().includes(q) || b.address.toLowerCase().includes(q)
-    );
-  }, [query, tab]);
+  // Данные для списка
+  const BRANCHES: Branch[] = [
+    {
+      id: "1",
+      title: "Yes Exchange NN Airport",
+      address: "Астана, ул. Шарля де Голля, 8",
+      worktime: "пн-пт: 8:00-21:00, вс: выходной",
+      distanceKm: 1.2,
+    },
+    {
+      id: "2",
+      title: "Yes Exchange City Center",
+      address: "Астана, пр. Абая, 12",
+      worktime: "пн-вск: 8:00-21:00",
+      distanceKm: 3.7,
+    },
+  ];
 
   const renderBranchItem = ({ item }: { item: Branch }) => (
     <Pressable
       style={styles.item}
       onPress={() =>
-        setSelectedBranch({
+        onSelectBranch({
           ...item,
           worktimeToday: "Закрыто до 10:00",
           schedule: { "Пн-Пт": "10:00 - 21:00", "Сб-Вс": "10:00 - 18:00" },
@@ -114,51 +100,9 @@ export default function BranchPickerSheet() {
               Выберите офис, в который хотите{"\n"}оставить заявку
             </Text>
 
-            {/* Search */}
-            <View style={styles.searchBox}>
-              <Ionicons name="search" size={18} color="#9CA3AF" />
-              <TextInput
-                value={query}
-                onChangeText={setQuery}
-                placeholder="Поиск"
-                style={styles.searchInput}
-                returnKeyType="search"
-              />
-            </View>
-
-            {/* Tabs */}
-            <View style={styles.tabs}>
-              <Pressable
-                onPress={() => setTab("nearby")}
-                style={[styles.tab, tab === "nearby" && styles.tabActive]}
-              >
-                <Text
-                  style={[
-                    styles.tabText,
-                    tab === "nearby" && styles.tabTextActive,
-                  ]}
-                >
-                  Рядом
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setTab("all")}
-                style={[styles.tab, tab === "all" && styles.tabActive]}
-              >
-                <Text
-                  style={[
-                    styles.tabText,
-                    tab === "all" && styles.tabTextActive,
-                  ]}
-                >
-                  Все филиалы
-                </Text>
-              </Pressable>
-            </View>
-
             {/* List */}
             <FlatList
-              data={filtered}
+              data={BRANCHES}
               keyExtractor={(b) => b.id}
               renderItem={renderBranchItem}
               ItemSeparatorComponent={() => <View style={styles.sep} />}
@@ -175,28 +119,33 @@ export default function BranchPickerSheet() {
                 <Text style={styles.title}>{selectedBranch.title}</Text>
                 <Text style={styles.address}>{selectedBranch.address}</Text>
               </View>
-              <Pressable onPress={() => setSelectedBranch(null)}>
+              <Pressable onPress={onCloseDetails}>
                 <Ionicons name="close" size={22} color={TEXT} />
               </Pressable>
             </View>
 
+            {/* Галерея-заглушка */}
             <View style={styles.galleryRow}>
               <View style={styles.galleryItem} />
               <View style={styles.galleryItem} />
               <View style={styles.galleryItem} />
             </View>
 
+            {/* Время работы */}
             <Text style={styles.workLabel}>Время работы</Text>
             <Text style={styles.workNow}>{selectedBranch.worktimeToday}</Text>
 
+            {/* График */}
             <Text style={styles.workLabel}>График</Text>
-            {Object.entries(selectedBranch.schedule).map(([day, hours]) => (
-              <View style={styles.scheduleRow} key={day}>
-                <Text style={styles.day}>{day}</Text>
-                <Text style={styles.hours}>{hours as string}</Text>
-              </View>
-            ))}
+            {selectedBranch.schedule &&
+              Object.entries(selectedBranch.schedule).map(([day, hours]) => (
+                <View style={styles.scheduleRow} key={day}>
+                  <Text style={styles.day}>{day}</Text>
+                  <Text style={styles.hours}>{hours}</Text>
+                </View>
+              ))}
 
+            {/* Контакты */}
             <Text style={styles.workLabel}>Контакты</Text>
             <View style={styles.contactRow}>
               <Ionicons name="call" size={18} color={ORANGE} />
@@ -207,7 +156,23 @@ export default function BranchPickerSheet() {
               <Text style={styles.contactText}>{selectedBranch.email}</Text>
             </View>
 
-            <Pressable style={styles.cta}>
+            {/* CTA */}
+            <Pressable
+              style={styles.cta}
+              onPress={() =>
+                router.push({
+                  pathname: "/(stacks)/norates/moderation",
+                  params: {
+                    id: "№12356",
+                    kind: "Без привязки к курсу",
+                    amount: "1000",
+                    currency: "USD",
+                    rateText: "1 KZT = 0,001861123 USD",
+                    address: "Астана, Аэропорт",
+                  },
+                })
+              }
+            >
               <Text style={styles.ctaText}>Забронировать тут</Text>
             </Pressable>
           </>
@@ -236,28 +201,6 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     marginBottom: 12,
   },
-  searchBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F5F6F8",
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    height: 48,
-    marginBottom: 12,
-  },
-  searchInput: { flex: 1, marginLeft: 8, fontSize: 16, color: TEXT },
-  tabs: { flexDirection: "row", gap: 12, marginBottom: 10 },
-  tab: {
-    flex: 1,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: "#F5F6F8",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  tabActive: { backgroundColor: "#F0F1F3" },
-  tabText: { color: SUB, fontSize: 16, fontWeight: "700" },
-  tabTextActive: { color: TEXT },
   item: { flexDirection: "row", alignItems: "center", paddingVertical: 14 },
   pin: {
     width: 28,

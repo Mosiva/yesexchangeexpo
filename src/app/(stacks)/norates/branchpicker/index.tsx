@@ -1,14 +1,36 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import BranchPickerSheet from "../../../../components/BranchPickerSheet ";
+import BranchPickerSheet from "../../../../components/BranchPickerSheet";
+
 const ORANGE = "#F58220";
 const TEXT = "#111827";
 const SUB = "#6B7280";
 
+const BRANCHES = [
+  {
+    id: "1",
+    title: "Yes Exchange NN Airport",
+    address: "Астана, ул. Шарля де Голля, 8",
+    worktime: "пн-пт: 8:00-21:00, вс: выходной",
+    latitude: 51.1694,
+    longitude: 71.4491,
+  },
+  {
+    id: "2",
+    title: "Yes Exchange City Center",
+    address: "Астана, пр. Абая, 12",
+    worktime: "пн-вск: 8:00-21:00",
+    latitude: 51.18,
+    longitude: 71.46,
+  },
+];
+
 export default function BranchPickerScreen() {
+  const [selectedBranch, setSelectedBranch] = useState<any>(null);
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       {/* TopBar поверх */}
@@ -37,25 +59,32 @@ export default function BranchPickerScreen() {
       <MapView
         style={{ flex: 1 }}
         initialRegion={{
-          latitude: 51.1694, // центр Астаны
+          latitude: 51.1694,
           longitude: 71.4491,
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         }}
       >
-        <Marker
-          coordinate={{ latitude: 51.1694, longitude: 71.4491 }}
-          title="Yes Exchange NN Airport"
-          description="Астана, ул. Шарля де Голля, 8"
-        />
-        <Marker
-          coordinate={{ latitude: 51.18, longitude: 71.46 }}
-          title="Yes Exchange City Center"
-          description="Астана, пр. Абая, 12"
-        />
+        {BRANCHES.map((branch) => (
+          <Marker
+            key={branch.id}
+            coordinate={{
+              latitude: branch.latitude,
+              longitude: branch.longitude,
+            }}
+            title={branch.title}
+            description={branch.address}
+            onPress={() => setSelectedBranch(branch)} // 👉 клик по маркеру
+          />
+        ))}
       </MapView>
 
-      <BranchPickerSheet />
+      {/* Шторка: список/детали */}
+      <BranchPickerSheet
+        selectedBranch={selectedBranch}
+        onSelectBranch={(branch: any) => setSelectedBranch(branch)}
+        onCloseDetails={() => setSelectedBranch(null)}
+      />
     </View>
   );
 }

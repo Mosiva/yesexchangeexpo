@@ -49,6 +49,15 @@ export default function Layout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="moderation/index"
+        options={{
+          // Hide back by default + disable iOS swipe-back
+          header: () => (
+            <CustomHeader title="Модерация" showBackButton={true} />
+          ),
+        }}
+      />
     </Stack>
   );
 }
