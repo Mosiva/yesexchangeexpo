@@ -1,9 +1,10 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { useAuth } from "providers";
-import { useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  Pressable,
   RefreshControl,
   ScrollView,
   StatusBar,
@@ -16,30 +17,19 @@ import { clientApi } from "services";
 const { useGetClientQuery } = clientApi;
 
 export default function ReserveScreen() {
-  const { t, i18n } = useTranslation();
-  const currentLanguage = i18n.language;
+  const { t } = useTranslation();
   const router = useRouter();
-  const { logout } = useAuth();
 
-  const {
-    data: clientData,
-    refetch: refetchClient,
-    isLoading: isClientLoading,
-    isError: isClientError,
-  } = useGetClientQuery({});
+  const { refetch: refetchClient, isLoading: isClientLoading } =
+    useGetClientQuery({});
 
   useFocusEffect(
     useCallback(() => {
-      refetchClient(); // Re-fetch when screen is focused
+      refetchClient();
     }, [refetchClient])
   );
 
-  const client = clientData?.data || null;
-  const handlePress = () => {
-    logout();
-  };
   const [refreshing, setRefreshing] = useState(false);
-
   const onRefresh = async () => {
     setRefreshing(true);
     try {
@@ -48,138 +38,174 @@ export default function ReserveScreen() {
       setRefreshing(false);
     }
   };
+
   return (
     <ScrollView
       style={styles.container}
+      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        <RefreshControl
+          refreshing={refreshing || isClientLoading}
+          onRefresh={onRefresh}
+        />
       }
+      keyboardShouldPersistTaps="handled"
     >
       <StatusBar barStyle="dark-content" />
-      <View style={styles.topBar}>
-        <Text style={styles.title}>yesexchange</Text>
+
+      {/* Top tiles */}
+      <View style={styles.tilesRow}>
+        <Tile
+          title={"Без привязки\nк курсу"}
+          Icon={<Ionicons name="cash-outline" size={36} color={ORANGE} />}
+          // onPress={() => router.push("/(reserve)/no-rate")}
+        />
+        <Tile
+          title={"С привязкой\nк курсу"}
+          sub="Бронь до 30 минут"
+          Icon={<Ionicons name="trending-up" size={36} color={ORANGE} />}
+          // onPress={() => router.push("/(reserve)/with-rate")}
+        />
       </View>
+
+      {/* Gold reservation */}
+      <Pressable
+        style={styles.wideCard}
+        // onPress={() => router.push("/(reserve)/gold")}
+      >
+        <View style={styles.rowLeft}>
+          <View style={[styles.iconBadge, { backgroundColor: "#FFF4EA" }]}>
+            <Ionicons name="layers-outline" size={24} color={ORANGE} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.wideTitle}>Бронирование золота</Text>
+            <Text style={styles.wideSub}>Золотые слитки НБ РК</Text>
+          </View>
+        </View>
+      </Pressable>
+
+      {/* History row */}
+      <Pressable
+        style={styles.historyRow}
+        // onPress={() => router.push("/(reserve)/history")}
+      >
+        <View style={styles.rowLeft}>
+          <View style={[styles.iconBadge, { backgroundColor: "#FFF4EA" }]}>
+            <Ionicons name="time-outline" size={22} color={ORANGE} />
+          </View>
+          <Text style={styles.historyText}>История бронирования</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+      </Pressable>
     </ScrollView>
   );
 }
+
+/* -------------------- UI bits -------------------- */
+
+function Tile({
+  title,
+  sub,
+  Icon,
+  onPress,
+}: {
+  title: string;
+  sub?: string;
+  Icon: React.ReactNode;
+  onPress?: () => void;
+}) {
+  return (
+    <Pressable style={styles.tile} onPress={onPress}>
+      <View style={[styles.iconBadge, { backgroundColor: "#FFF4EA" }]}>
+        {Icon}
+      </View>
+      <Text style={styles.tileTitle}>{title}</Text>
+      {sub ? <Text style={styles.tileSub}>{sub}</Text> : null}
+    </Pressable>
+  );
+}
+
+/* -------------------- styles -------------------- */
+
+const ORANGE = "#F58220";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingHorizontal: 20,
   },
-  categoryScroll: {
-    marginBottom: 20,
+
+  screenTitle: {
+    fontSize: 32,
+    fontWeight: "800",
+    color: "#111827",
+    marginTop: 16,
+    marginBottom: 12,
   },
-  categoryCard: {
-    borderRadius: 10,
-    padding: 10,
-    marginRight: 10,
+
+  tilesRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 12,
+  },
+  tile: {
+    flex: 1,
+    backgroundColor: "#F7F7F9",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#ECECEC",
+    padding: 16,
+    minHeight: 170,
+    justifyContent: "center",
     alignItems: "center",
   },
-  categoryIcon: {
+  iconBadge: {
     width: 40,
     height: 40,
-    marginBottom: 5,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  categoryTitle: {
+  tileTitle: {
     fontSize: 14,
-    color: "#4F7942",
-    fontWeight: "700",
+    lineHeight: 26,
+    fontWeight: "600",
+    color: "#111827",
+    textAlign: "center",
   },
-  promoScroll: {
-    marginBottom: 20,
+  tileSub: {
+    marginTop: 10,
+    fontSize: 12,
+    color: "#6B7280",
+    fontWeight: "400",
   },
-  promoCard: {
-    width: 280,
-    height: 140,
-    borderRadius: 12,
-    overflow: "hidden",
-    marginRight: 10,
-    backgroundColor: "#eee",
-  },
-  promoImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-  promoText: {
-    position: "absolute",
-    bottom: 10,
-    left: 10,
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  restaurantCard: {
+
+  wideCard: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 15,
-  },
-  restaurantImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
-    marginRight: 15,
-  },
-  restaurantName: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  restaurantDesc: {
-    fontSize: 14,
-    color: "#555",
-  },
-  sectionHeader: {
-    flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
+    backgroundColor: "#F7F7F9",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#ECECEC",
+    paddingHorizontal: 14,
+    paddingVertical: 16,
+    marginTop: 12,
   },
-  viewAll: {
-    fontSize: 16,
-    color: "#D4AF37",
-    fontWeight: "bold",
-  },
-  restaurantInfoRow: {
-    flex: 1,
+  rowLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
+  wideTitle: { fontSize: 14, fontWeight: "600", color: "#111827" },
+  wideSub: { fontSize: 12, color: "#6B7280", marginTop: 2, fontWeight: "400" },
+
+  historyRow: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    alignItems: "center",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#E9EDF2",
+    paddingHorizontal: 14,
+    paddingVertical: 18,
+    marginTop: 14,
   },
-  discountText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333333",
-  },
-  subInfoRow: {
-    flexDirection: "row",
-    marginTop: 4,
-    gap: 12,
-  },
-  subInfoText: {
-    fontSize: 14,
-    color: "#888",
-  },
-  topBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  login: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#4F7942",
-  },
+  historyText: { fontSize: 14, fontWeight: "600", color: "#111827" },
 });
