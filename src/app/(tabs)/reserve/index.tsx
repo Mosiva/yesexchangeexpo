@@ -63,13 +63,13 @@ export default function ReserveScreen() {
         <Tile
           title={"Без привязки\nк курсу"}
           Icon={<FontAwesome6 name="money-bills" size={24} color={ORANGE} />}
-          // onPress={() => router.push("/(reserve)/no-rate")}
+          onPress={() => router.push("/(stacks)/norates")}
         />
         <Tile
           title={"С привязкой\nк курсу"}
           sub="Бронь до 30 минут"
           Icon={<MaterialIcons name="analytics" size={24} color={ORANGE} />}
-          // onPress={() => router.push("/(reserve)/with-rate")}
+          // onPress={() => router.push("/(reserve)/withrate")}
         />
       </View>
 

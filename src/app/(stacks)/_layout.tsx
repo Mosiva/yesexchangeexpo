@@ -31,10 +31,21 @@ function CustomHeader({
 export default function Layout() {
   return (
     <Stack>
-         <Stack.Screen
+      <Stack.Screen
         name="settings"
         options={{
           headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="norates/index"
+        options={{
+          header: () => (
+            <CustomHeader
+              title="Бронь без привязки к курсу"
+              showBackButton={true}
+            />
+          ),
         }}
       />
       <Stack.Screen
