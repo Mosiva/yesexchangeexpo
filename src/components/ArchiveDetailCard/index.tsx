@@ -9,6 +9,7 @@ type Props = {
   code?: string; // e.g. "USD"
   name?: string; // e.g. "Доллар США"
   flagEmoji?: string; // e.g. "🇺🇸"
+  onPressHeader?: () => void;
 };
 
 const COLORS = {
@@ -32,6 +33,7 @@ export default function ArchiveDetailCard({
   code = "USD",
   name = "Доллар США",
   flagEmoji = "🇺🇸",
+  onPressHeader,
 }: Props) {
   const [source, setSource] = useState<"yes" | "nbrk">("yes");
   const [period, setPeriod] = useState<"day" | "week" | "month">("day");
@@ -63,7 +65,7 @@ export default function ArchiveDetailCard({
       </View>
 
       {/* Currency header card */}
-      <View style={styles.fxCard}>
+      <Pressable style={styles.fxCard} onPress={onPressHeader}>
         <View style={styles.fxHead}>
           <View style={styles.flagWrap}>
             <Text style={{ fontSize: 20 }}>{flagEmoji}</Text>
@@ -75,6 +77,7 @@ export default function ArchiveDetailCard({
           <Ionicons name="chevron-down" size={22} color="#111827" />
         </View>
 
+        {/* значения */}
         <View style={styles.fxRow}>
           <View style={styles.sideBlock}>
             <View style={[styles.dot, { backgroundColor: COLORS.orangeDot }]} />
@@ -90,7 +93,7 @@ export default function ArchiveDetailCard({
             <Text style={styles.caption}>Продажа</Text>
           </View>
         </View>
-      </View>
+      </Pressable>
 
       {/* Period segmented control */}
       <View style={styles.segmentRow}>
