@@ -1,8 +1,9 @@
-// src/services/yesExchange.ts
 import { restApi } from "../api";
 import type {
   BranchDto,
+  CreateUserDto,
   CurrencyCode,
+  DeltaPeriod,
   ExchangeRateDto,
   ExchangeRateHistoryRecordDto,
   LoginDto,
@@ -20,31 +21,23 @@ export const yesExchangeApi = restApi.injectEndpoints({
   endpoints: (build) => ({
     // --- Авторизация ---
     register: build.mutation<MessageResponseDto, RegisterDto>({
-      query: (body) => ({
-        url: "/api/v1/auth/register",
-        method: "POST",
-        data: body,
-      }),
+      query: (data) => ({ url: "/api/v1/auth/register", method: "POST", data }),
     }),
     login: build.mutation<MessageResponseDto, LoginDto>({
-      query: (body) => ({
-        url: "/api/v1/auth/login",
-        method: "POST",
-        data: body,
-      }),
+      query: (data) => ({ url: "/api/v1/auth/login", method: "POST", data }),
     }),
     verifyOtp: build.mutation<MessageResponseDto, VerifyOtpDto>({
-      query: (body) => ({
+      query: (data) => ({
         url: "/api/v1/auth/otp/verify",
         method: "POST",
-        data: body,
+        data,
       }),
     }),
     resendOtp: build.mutation<MessageResponseDto, ResendOtpDto>({
-      query: (body) => ({
+      query: (data) => ({
         url: "/api/v1/auth/otp/resend",
         method: "POST",
-        data: body,
+        data,
       }),
     }),
     logout: build.mutation<MessageResponseDto, void>({
@@ -76,6 +69,7 @@ export const yesExchangeApi = restApi.injectEndpoints({
       providesTags: (r) =>
         r?.data ? [{ type: "City" as const, id: "LIST" }] : [],
     }),
+
     nearestBranches: build.query<BranchDto[], { lng: number; lat: number }>({
       query: (params) => ({
         url: "/api/v1/branches/nearest",
@@ -83,6 +77,7 @@ export const yesExchangeApi = restApi.injectEndpoints({
         params,
       }),
     }),
+
     nearestBranch: build.query<BranchDto, { lng: number; lat: number }>({
       query: (params) => ({
         url: "/api/v1/branches/nearest/one",
@@ -91,20 +86,22 @@ export const yesExchangeApi = restApi.injectEndpoints({
       }),
     }),
 
-    // --- Курсы ---
+    // --- Курсы (текущие) ---
     exchangeRatesCurrent: build.query<
       Paginated<ExchangeRateDto>,
       {
         branchId: string;
-        currencies?: string[];
+        deltaPeriod: DeltaPeriod; // обязательный
+        currencies?: CurrencyCode[]; // сериализация массивов — репитерами
         page?: number;
         limit?: number;
         sortBy?: (
           | "currency:ASC"
           | "currency:DESC"
-          | "fetchedAt:ASC"
-          | "fetchedAt:DESC"
+          | "updatedAt:ASC"
+          | "updatedAt:DESC"
         )[];
+        search?: string;
       }
     >({
       query: ({ branchId, ...params }) => ({
@@ -113,15 +110,19 @@ export const yesExchangeApi = restApi.injectEndpoints({
         params,
       }),
     }),
+
+    // --- Курсы (история) ---
     exchangeRatesHistory: build.query<
       Paginated<ExchangeRateHistoryRecordDto>,
       {
         branchId: string;
-        currency: CurrencyCode;
-        from?: string;
-        to?: string;
+        currency?: CurrencyCode; // можно фильтровать по валюте
+        from?: string; // YYYY-MM-DD
+        to?: string; // YYYY-MM-DD
         page?: number;
         limit?: number;
+        sortBy?: ("changedAt:ASC" | "changedAt:DESC")[];
+        search?: string;
       }
     >({
       query: ({ branchId, ...params }) => ({
@@ -135,12 +136,13 @@ export const yesExchangeApi = restApi.injectEndpoints({
     nbkAverage: build.query<
       NbkExchangeRateDto[],
       {
-        from?: string;
-        to?: string;
-        currencies?: CurrencyCode[];
-        limit?: number;
+        from?: string; // YYYY-MM-DD
+        to?: string; // YYYY-MM-DD
+        currencies?: CurrencyCode[]; // список кодов
         page?: number;
-        deltaPeriod?: string;
+        limit?: number;
+        sortBy?: ("date:ASC" | "date:DESC")[];
+        search?: string;
       }
     >({
       query: (params) => ({
@@ -155,12 +157,14 @@ export const yesExchangeApi = restApi.injectEndpoints({
       query: () => ({ url: "/api/v1/admin/branches/pull", method: "POST" }),
       invalidatesTags: ["City"],
     }),
+
     adminPullExchangeRates: build.mutation<void, void>({
       query: () => ({
         url: "/api/v1/admin/exchange-rates/pull",
         method: "POST",
       }),
     }),
+
     adminUsers: build.query<
       Paginated<UserDto>,
       { page?: number; limit?: number; search?: string }
@@ -172,14 +176,18 @@ export const yesExchangeApi = restApi.injectEndpoints({
       }),
       providesTags: ["Users"],
     }),
+
     adminUser: build.query<UserDto, { id: number }>({
       query: ({ id }) => ({ url: `/api/v1/admin/users/${id}`, method: "GET" }),
       providesTags: (_r, _e, { id }) => [{ type: "Users", id }],
     }),
-    adminCreateUser: build.mutation<MessageResponseDto, UserDto>({
+
+    // Лучше не слать лишние поля (id/даты) при создании
+    adminCreateUser: build.mutation<MessageResponseDto, CreateUserDto>({
       query: (data) => ({ url: "/api/v1/admin/users", method: "POST", data }),
       invalidatesTags: ["Users"],
     }),
+
     adminUpdateUser: build.mutation<
       MessageResponseDto,
       { id: number; data: UpdateUserDto }
@@ -191,6 +199,7 @@ export const yesExchangeApi = restApi.injectEndpoints({
       }),
       invalidatesTags: (_r, _e, { id }) => [{ type: "Users", id }],
     }),
+
     adminDeleteUser: build.mutation<MessageResponseDto, { id: number }>({
       query: ({ id }) => ({
         url: `/api/v1/admin/users/${id}`,

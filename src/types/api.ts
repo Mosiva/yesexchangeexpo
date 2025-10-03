@@ -1,5 +1,3 @@
-// src/types/api.ts
-
 // --- Общие типы ---
 
 export type CurrencyCode =
@@ -51,9 +49,10 @@ export type CurrencyCode =
   | "VND"
   | "ZAR";
 
-export type MessageResponseDto = {
-  message: string;
-};
+export type MessageResponseDto = { message: string };
+
+export type DeltaPeriod = "day" | "week" | "month";
+export type Trend = "up" | "down" | "flat";
 
 // Универсальная обёртка для пагинации
 export type Paginated<T, F = unknown> = {
@@ -83,22 +82,13 @@ export type Paginated<T, F = unknown> = {
 export type RegisterDto = {
   phone: string;
   firstName: string;
-  lastName?: string;
+  lastName?: string | null;
   residentRK: boolean;
 };
 
-export type LoginDto = {
-  phone: string;
-};
-
-export type VerifyOtpDto = {
-  phone: string;
-  code: string;
-};
-
-export type ResendOtpDto = {
-  phone: string;
-};
+export type LoginDto = { phone: string };
+export type VerifyOtpDto = { phone: string; code: string };
+export type ResendOtpDto = { phone: string };
 
 // --- User DTOs ---
 
@@ -106,16 +96,19 @@ export type UserDto = {
   id: number;
   phone: string;
   firstName: string;
-  lastName?: string | Record<string, unknown>;
+  lastName?: string | null;
   residentRK: boolean;
   role?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt?: string; // ISO
+  updatedAt?: string; // ISO
 };
 
 export type UpdateUserDto = Partial<
   Pick<UserDto, "phone" | "firstName" | "lastName" | "residentRK" | "role">
 >;
+
+// В некоторых админ-ручках создание не требует id/дат
+export type CreateUserDto = Omit<UserDto, "id" | "createdAt" | "updatedAt">;
 
 // --- Branches DTOs ---
 
@@ -127,27 +120,33 @@ export type BranchDto = {
   address: string;
   lat: number;
   lng: number;
-  contactPhone: string;
+  contactPhone?: string | null;
 };
 
 // --- Exchange Rates DTOs ---
+// Деньги и проценты как строки: избегаем потери точности на фронте
 
 export type ExchangeRateDto = {
-  currency: string;
-  buy: number;
-  sell: number;
+  currency: CurrencyCode;
+  buy: string; // decimal-string
+  sell: string; // decimal-string
+  updatedAt: string; // ISO datetime
+  delta?: string | null; // decimal-string
+  deltaPercent?: string | null; // decimal-string
+  trend?: Trend | null;
 };
 
 export type ExchangeRateHistoryRecordDto = {
-  currency: string;
-  buy: number;
-  sell: number;
+  currency: CurrencyCode;
+  buy: string; // decimal-string
+  sell: string; // decimal-string
+  changedAt: string; // ISO datetime
 };
 
 // --- Nbk (Нацбанк) DTOs ---
 
 export type NbkExchangeRateDto = {
-  amount: number;
-  currency: string;
-  date: string; // ISO-строка
+  amount: string; // decimal-string (номинал, напр. 1, 10, 100)
+  currency: CurrencyCode;
+  date: string; // dd.MM.yyyy
 };
