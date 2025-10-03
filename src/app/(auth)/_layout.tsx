@@ -41,7 +41,7 @@ export default function Layout() {
       <Stack.Screen
         name="sendcode/index"
         options={{
-          header: () => <CustomHeader title="Введите код из смс" />,
+          header: () => <CustomHeader title="Введите код из смс" />,
         }}
       />
       <Stack.Screen

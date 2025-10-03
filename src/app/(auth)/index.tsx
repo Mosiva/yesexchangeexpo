@@ -23,7 +23,7 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
-  const { error, isAuthenticated, isGuest } = useAuth();
+  const { error, isAuthenticated, isGuest, isLoading: authLoading } = useAuth();
   const { t } = useTranslation();
 
   // RTK mutation
@@ -60,6 +60,24 @@ export default function LoginScreen() {
     }
   }, [isAuthenticated, isGuest, router]);
 
+  // старые ошибки из провайдера, если где-то ещё всплывут
+  useEffect(() => {
+    if (error?.text) {
+      let errorMessage = "";
+      try {
+        errorMessage = JSON.parse(error.text)?.data?.msg;
+      } catch {
+        errorMessage = t("common.errorInLgoin");
+      }
+      Alert.alert("", errorMessage);
+    }
+  }, [error, t]);
+
+  // Показываем загрузку пока AuthProvider инициализируется
+  if (authLoading) {
+    return <Loader />;
+  }
+
   const handleLogin = async () => {
     if (!isValid) return;
     setIsLoading(true);
@@ -79,19 +97,6 @@ export default function LoginScreen() {
       setIsLoading(false);
     }
   };
-
-  // старые ошибки из провайдера, если где-то ещё всплывут
-  useEffect(() => {
-    if (error?.text) {
-      let errorMessage = "";
-      try {
-        errorMessage = JSON.parse(error.text)?.data?.msg;
-      } catch {
-        errorMessage = t("common.errorInLgoin");
-      }
-      Alert.alert("", errorMessage);
-    }
-  }, [error, t]);
 
   return (
     <View style={styles.container}>

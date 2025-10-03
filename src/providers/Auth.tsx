@@ -1,9 +1,7 @@
 // src/providers/AuthProvider.tsx
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setOnAuthFail } from "api";
-import { useRouter } from "expo-router";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
 import { authApi } from "services";
 import i18n, { STORE_LANGUAGE_KEY } from "../local/i18n";
 import type { User } from "../types";
@@ -38,9 +36,6 @@ export const AuthContext = createContext<AuthContextProps | null>(null);
 const { useLogoutMutation } = authApi;
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const dispatch = useDispatch();
-
   const [logout] = useLogoutMutation();
 
   const [user, setUser] = useState<User | null>(null);
@@ -67,7 +62,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     setLanguage(lang);
     i18n.changeLanguage(lang);
 
-    router.replace("/(tabs)/(main)");
+    // Navigation is now handled by the root index component
   };
 
   useEffect(() => {
