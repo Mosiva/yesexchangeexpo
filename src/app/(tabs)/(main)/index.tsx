@@ -109,8 +109,7 @@ export default function MainScreen() {
   } = useExchangeRatesCurrentQuery(
     {
       branchId: selectedBranch?.id.toString() || "",
-      page: 1,
-      limit: 48,
+      deltaPeriod: "day",
     },
     {
       skip: !selectedBranch?.id || isBranchesLoading,
@@ -276,13 +275,11 @@ export default function MainScreen() {
         ) : (
           <CurrenciesMainCardList
             data={exchangeRates.map((rate) => ({
-              code: rate.currency,
+              code: rate.currency.code as CurrencyCode,
+              name: rate.currency.name,
               buy: rate.buy.toString(),
               sell: rate.sell.toString(),
-              flagEmoji: "🇺🇸",
             }))}
-            onPressExchange={handlePressExchange}
-            onPressMore={() => console.log("more")}
           />
         )}
       </View>

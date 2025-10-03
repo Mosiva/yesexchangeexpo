@@ -1,21 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo, useRef, useState } from "react";
-import {
-  Image,
-  ImageSourcePropType,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { CurrencyCode } from "../../types/api";
+import CurrencyFlag from "../CurrencyFlag"; // ✅ подключаем твой компонент
 
 type Rate = {
-  code: string;
+  code: CurrencyCode;
   buy: string | number;
   sell: string | number;
-  flagEmoji?: string;
-  flagSource?: ImageSourcePropType;
-  name?: string; // ← used for tooltip
+  name?: string; // подсказка в тултипе
 };
 
 type Props = {
@@ -44,8 +37,6 @@ export default function CurrenciesMainCardList({
   showMore = true,
 }: Props) {
   const [expanded, setExpanded] = useState(false);
-
-  // which row's tooltip is visible (null = none)
   const [hintIdx, setHintIdx] = useState<number | null>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -61,11 +52,8 @@ export default function CurrenciesMainCardList({
   };
 
   const showHint = (idx: number) => {
-    // toggle if the same row is pressed again
     const next = hintIdx === idx ? null : idx;
     setHintIdx(next);
-
-    // clear any previous timer
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     if (next !== null) {
       hideTimerRef.current = setTimeout(() => setHintIdx(null), 2000);
@@ -84,17 +72,12 @@ export default function CurrenciesMainCardList({
       {visibleData.map((r, idx) => (
         <View key={`${r.code}-${idx}`} style={styles.row}>
           <View style={styles.rowInner}>
-            {/* left side */}
+            {/* Левый блок: флаг + код */}
             <View style={styles.leftBlock}>
-              {r.flagSource ? (
-                <Image source={r.flagSource} style={styles.flagImg} />
-              ) : (
-                <Text style={styles.flagEmoji}>{r.flagEmoji ?? "🏳️"}</Text>
-              )}
-
+              <CurrencyFlag code={r.code} size={28} />
               <Text style={styles.code}>{r.code}</Text>
 
-              {/* Info icon + tooltip */}
+              {/* Инфо и тултип */}
               <TouchableOpacity
                 onPress={() => showHint(idx)}
                 hitSlop={8}
@@ -111,7 +94,7 @@ export default function CurrenciesMainCardList({
               )}
             </View>
 
-            {/* right side values */}
+            {/* Правый блок: покупка / продажа */}
             <View style={styles.cellsRow}>
               <TouchableOpacity
                 style={styles.cell}
@@ -127,7 +110,6 @@ export default function CurrenciesMainCardList({
               </TouchableOpacity>
             </View>
           </View>
-
           {idx !== visibleData.length - 1 && <View style={styles.divider} />}
         </View>
       ))}
@@ -144,10 +126,7 @@ export default function CurrenciesMainCardList({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: ORANGE_BG,
-    paddingHorizontal: 20,
-  },
+  container: { backgroundColor: ORANGE_BG, paddingHorizontal: 20 },
   labelsRow: {
     alignSelf: "flex-end",
     flexDirection: "row",
@@ -164,20 +143,15 @@ const styles = StyleSheet.create({
   },
   row: { paddingVertical: 8 },
   rowInner: { flexDirection: "row", alignItems: "center" },
-
   leftBlock: {
     flexDirection: "row",
     alignItems: "center",
-    position: "relative", // so tooltip positions relative to this block
+    position: "relative",
   },
-  flagImg: { width: 32, height: 32, borderRadius: 16, marginRight: 8 },
-  flagEmoji: { fontSize: 24, marginRight: 8 },
-  code: { color: WHITE, fontSize: 16, fontWeight: "700" },
-
-  // tooltip bubble
+  code: { color: WHITE, fontSize: 16, fontWeight: "700", marginLeft: 8 },
   tooltip: {
     position: "absolute",
-    top: -40, // above the row
+    top: -40,
     left: 0,
     backgroundColor: "rgba(90, 60, 30, 0.9)",
     paddingHorizontal: 12,
@@ -196,7 +170,6 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "45deg" }],
     borderRadius: 2,
   },
-
   cellsRow: { marginLeft: "auto", flexDirection: "row", gap: CELLS_GAP },
   cell: {
     minWidth: CELL_MIN_W,
@@ -208,9 +181,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   cellText: { color: CELL_TEXT, fontSize: 16, fontWeight: "700" },
-
   divider: { height: 2, backgroundColor: DIVIDER, marginTop: 8 },
-
   moreBtn: { alignItems: "center", paddingVertical: 16 },
   moreText: { color: WHITE, fontSize: 14, fontWeight: "700" },
 });
