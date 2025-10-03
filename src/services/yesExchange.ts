@@ -1,8 +1,13 @@
+// src/services/yesExchange.ts
 import { restApi } from "../api";
 import type {
+  BookingDto,
+  BookingStatus,
   BranchDto,
+  CreateBookingDto,
   CreateUserDto,
   CurrencyCode,
+  CurrencyDto,
   DeltaPeriod,
   ExchangeRateDto,
   ExchangeRateHistoryRecordDto,
@@ -54,6 +59,38 @@ export const yesExchangeApi = restApi.injectEndpoints({
       invalidatesTags: ["Users"],
     }),
 
+    // --- Валюты ---
+    currencies: build.query<
+      Paginated<CurrencyDto, Record<string, unknown>>,
+      {
+        page?: number;
+        limit?: number;
+        sortBy?: (
+          | "code:ASC"
+          | "code:DESC"
+          | "name:ASC"
+          | "name:DESC"
+          | "createdAt:ASC"
+          | "createdAt:DESC"
+        )[];
+        search?: string;
+        searchBy?: ("code" | "name")[];
+      }
+    >({
+      query: (params) => ({
+        url: "/api/v1/currencies",
+        method: "GET",
+        params,
+      }),
+    }),
+
+    currencyByCode: build.query<CurrencyDto, { code: CurrencyCode }>({
+      query: ({ code }) => ({
+        url: `/api/v1/currencies/${encodeURIComponent(code)}`,
+        method: "GET",
+      }),
+    }),
+
     // --- Филиалы ---
     branches: build.query<
       Paginated<BranchDto, { residentRK?: string | string[] }>,
@@ -91,17 +128,18 @@ export const yesExchangeApi = restApi.injectEndpoints({
       Paginated<ExchangeRateDto>,
       {
         branchId: string;
-        deltaPeriod: DeltaPeriod; // обязательный
-        currencies?: CurrencyCode[]; // сериализация массивов — репитерами
+        deltaPeriod: DeltaPeriod; // обязательно
+        currencies?: CurrencyCode[]; // массив кодов
         page?: number;
         limit?: number;
         sortBy?: (
-          | "currency:ASC"
-          | "currency:DESC"
+          | "currencyCode:ASC"
+          | "currencyCode:DESC"
           | "updatedAt:ASC"
           | "updatedAt:DESC"
         )[];
         search?: string;
+        searchBy?: "currencyCode"[];
       }
     >({
       query: ({ branchId, ...params }) => ({
@@ -116,7 +154,8 @@ export const yesExchangeApi = restApi.injectEndpoints({
       Paginated<ExchangeRateHistoryRecordDto>,
       {
         branchId: string;
-        currency?: CurrencyCode; // можно фильтровать по валюте
+        deltaPeriod: DeltaPeriod; // обязательно
+        currencies?: CurrencyCode[]; // можно несколько
         from?: string; // YYYY-MM-DD
         to?: string; // YYYY-MM-DD
         page?: number;
@@ -138,7 +177,7 @@ export const yesExchangeApi = restApi.injectEndpoints({
       {
         from?: string; // YYYY-MM-DD
         to?: string; // YYYY-MM-DD
-        currencies?: CurrencyCode[]; // список кодов
+        currencies?: string[]; // строковые коды по спекам
         page?: number;
         limit?: number;
         sortBy?: ("date:ASC" | "date:DESC")[];
@@ -152,12 +191,64 @@ export const yesExchangeApi = restApi.injectEndpoints({
       }),
     }),
 
+    // --- Бронирования (история пользователя) ---
+    bookingsHistory: build.query<
+      Paginated<BookingDto, { statuses?: BookingStatus[] }>,
+      {
+        page?: number;
+        limit?: number;
+        sortBy?: string[]; // в спеках sortBy есть, без жёсткого перечня
+        search?: string;
+        statuses?: BookingStatus[];
+        from?: string; // YYYY-MM-DD
+        to?: string; // YYYY-MM-DD
+      }
+    >({
+      query: (params) => ({
+        url: "/api/v1/bookings/history",
+        method: "GET",
+        params,
+      }),
+    }),
+    // --- Бронирования (создание/получение) ---
+    createBooking: build.mutation<MessageResponseDto, CreateBookingDto>({
+      // Требует bearer-токен (проставится интерсептором)
+      query: (data) => ({
+        url: "/api/v1/bookings",
+        method: "POST",
+        data,
+      }),
+    }),
+
+    createGuestBooking: build.mutation<MessageResponseDto, CreateBookingDto>({
+      // Для гостей токен не нужен
+      query: (data) => ({
+        url: "/api/v1/bookings/guest",
+        method: "POST",
+        data,
+      }),
+    }),
+
+    bookingById: build.query<BookingDto, { id: number }>({
+      query: ({ id }) => ({
+        url: `/api/v1/bookings/${id}`,
+        method: "GET",
+      }),
+    }),
+
+    guestBookingById: build.query<BookingDto, { id: number; phone: string }>({
+      query: ({ id, phone }) => ({
+        url: `/api/v1/bookings/guest/${id}`,
+        method: "GET",
+        params: { phone },
+      }),
+    }),
+
     // --- Админ ---
     adminPullBranches: build.mutation<void, void>({
       query: () => ({ url: "/api/v1/admin/branches/pull", method: "POST" }),
       invalidatesTags: ["City"],
     }),
-
     adminPullExchangeRates: build.mutation<void, void>({
       query: () => ({
         url: "/api/v1/admin/exchange-rates/pull",
@@ -176,18 +267,14 @@ export const yesExchangeApi = restApi.injectEndpoints({
       }),
       providesTags: ["Users"],
     }),
-
     adminUser: build.query<UserDto, { id: number }>({
       query: ({ id }) => ({ url: `/api/v1/admin/users/${id}`, method: "GET" }),
       providesTags: (_r, _e, { id }) => [{ type: "Users", id }],
     }),
-
-    // Лучше не слать лишние поля (id/даты) при создании
     adminCreateUser: build.mutation<MessageResponseDto, CreateUserDto>({
       query: (data) => ({ url: "/api/v1/admin/users", method: "POST", data }),
       invalidatesTags: ["Users"],
     }),
-
     adminUpdateUser: build.mutation<
       MessageResponseDto,
       { id: number; data: UpdateUserDto }
@@ -199,7 +286,6 @@ export const yesExchangeApi = restApi.injectEndpoints({
       }),
       invalidatesTags: (_r, _e, { id }) => [{ type: "Users", id }],
     }),
-
     adminDeleteUser: build.mutation<MessageResponseDto, { id: number }>({
       query: ({ id }) => ({
         url: `/api/v1/admin/users/${id}`,
@@ -217,19 +303,34 @@ export const yesExchangeApi = restApi.injectEndpoints({
 });
 
 export const {
+  // auth
   useRegisterMutation,
   useLoginMutation,
   useVerifyOtpMutation,
   useResendOtpMutation,
   useLogoutMutation,
+  // user
   useMeQuery,
   useUpdateMeMutation,
+  // currencies
+  useCurrenciesQuery,
+  useCurrencyByCodeQuery,
+  // branches
   useBranchesQuery,
   useNearestBranchesQuery,
   useNearestBranchQuery,
+  // rates
   useExchangeRatesCurrentQuery,
   useExchangeRatesHistoryQuery,
+  // nbk
   useNbkAverageQuery,
+  // bookings
+  useBookingsHistoryQuery,
+  useCreateBookingMutation,
+  useCreateGuestBookingMutation,
+  useBookingByIdQuery,
+  useGuestBookingByIdQuery,
+  // admin
   useAdminPullBranchesMutation,
   useAdminPullExchangeRatesMutation,
   useAdminUsersQuery,
@@ -237,5 +338,6 @@ export const {
   useAdminCreateUserMutation,
   useAdminUpdateUserMutation,
   useAdminDeleteUserMutation,
+  // health
   useHealthQuery,
 } = yesExchangeApi;

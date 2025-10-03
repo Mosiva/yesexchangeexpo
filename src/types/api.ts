@@ -52,9 +52,9 @@ export type CurrencyCode =
 export type MessageResponseDto = { message: string };
 
 export type DeltaPeriod = "day" | "week" | "month";
-export type Trend = "up" | "down" | "flat";
+export type Trend = "up" | "down" | "same";
 
-// Универсальная обёртка для пагинации
+// Универсальная обёртка для пагинации (оставляем как есть)
 export type Paginated<T, F = unknown> = {
   data: T[];
   meta: {
@@ -107,10 +107,55 @@ export type UpdateUserDto = Partial<
   Pick<UserDto, "phone" | "firstName" | "lastName" | "residentRK" | "role">
 >;
 
-// В некоторых админ-ручках создание не требует id/дат
 export type CreateUserDto = Omit<UserDto, "id" | "createdAt" | "updatedAt">;
 
-// --- Branches DTOs ---
+// --- Currency DTOs (новое) ---
+
+export type CurrencyDto = {
+  code: CurrencyCode;
+  name: string;
+  iconUrl: string;
+};
+
+// --- Exchange Rates DTOs ---
+
+export type DeltaDto = {
+  buy: number;
+  sell: number;
+};
+
+export type DeltaPercentDto = {
+  buy: number;
+  sell: number;
+};
+
+export type ExchangeRateDto = {
+  currency: CurrencyDto;
+  buy: number;
+  sell: number;
+  changedAt: string; // ISO datetime (поле времени в ответе)
+  delta?: DeltaDto | null; // разница абсолютная
+  deltaPercent?: DeltaPercentDto | null; // разница в процентах
+  trend?: Trend | null; // "up" | "down" | "same"
+};
+
+export type ExchangeRateHistoryRecordDto = {
+  currency: CurrencyDto;
+  buy: number;
+  sell: number;
+  changedAt: string; // ISO datetime
+  delta?: DeltaDto | null;
+  deltaPercent?: DeltaPercentDto | null;
+  trend?: Trend | null;
+};
+
+// --- Nbk (Нацбанк) DTOs ---
+
+export type NbkExchangeRateDto = {
+  amount: number; // номинал (1, 10, 100)
+  currency: string; // код валюты строкой по спекам
+  date: string; // dd.MM.yyyy
+};
 
 export type BranchDto = {
   id: number;
@@ -123,36 +168,38 @@ export type BranchDto = {
   contactPhone?: string | null;
 };
 
-// --- Exchange Rates DTOs ---
-// Деньги и проценты как строки: избегаем потери точности на фронте
-// добавь рядом с CurrencyCode
-export type CurrencyDto = {
-  code: CurrencyCode;
-  name: string;
+// --- Booking DTOs ---
+export type BookingStatus =
+  | "pending_moderation"
+  | "ready_for_pickup"
+  | "rejected"
+  | "not_confirmed"
+  | "expired";
+
+export type BookingOperationType = "buy" | "sell";
+
+export type CreateBookingDto = {
+  branchId: number; // ID филиала
+  fromCurrency: CurrencyCode; // код, напр. "KZT"
+  amount: string; // decimal-string во fromCurrency
+  toCurrency: CurrencyCode; // код, напр. "USD"
+  operationType: BookingOperationType; // "buy" | "sell"
+  isRateLocked: boolean; // фиксируем курс?
 };
 
-// обнови ExchangeRateDto
-export type ExchangeRateDto = {
-  currency: CurrencyDto; // <-- было: CurrencyCode | string
-  buy: string; // лучше как decimal-string, без потери точности
-  sell: string;
-  updatedAt: string; // ISO
-  delta?: string | null;
-  deltaPercent?: string | null;
-  trend?: "up" | "down" | "flat" | null;
-};
-
-export type ExchangeRateHistoryRecordDto = {
-  currency: CurrencyCode;
-  buy: string; // decimal-string
-  sell: string; // decimal-string
-  changedAt: string; // ISO datetime
-};
-
-// --- Nbk (Нацбанк) DTOs ---
-
-export type NbkExchangeRateDto = {
-  amount: string; // decimal-string (номинал, напр. 1, 10, 100)
-  currency: CurrencyCode;
-  date: string; // dd.MM.yyyy
+// в пользовательском ответе валюты — строковые коды, не объект CurrencyDto
+export type BookingDto = {
+  id: number;
+  number: string; // ровно 8 цифр
+  branch: { id: number; city: string; address: string };
+  fromCurrency: CurrencyCode;
+  toCurrency: CurrencyCode;
+  amount: string; // decimal-string
+  isRateLocked: boolean;
+  toAmount: string | null; // decimal-string | null
+  operationType: BookingOperationType;
+  status: BookingStatus;
+  expiresAt: string | null; // ISO | null
+  completedAt: string | null; // ISO | null
+  createdAt: string; // ISO
 };
