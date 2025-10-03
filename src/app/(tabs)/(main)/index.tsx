@@ -400,9 +400,6 @@ export default function MainScreen() {
               ? Number(exchangeData.rate.sell)
               : Number(exchangeData.rate.buy)
           }
-          fromSymbol={exchangeData.rate.code === "USD" ? "$" : "₽"}
-          toSymbol="₸"
-          flagEmoji={exchangeData.rate.flagEmoji}
         />
       )}
 

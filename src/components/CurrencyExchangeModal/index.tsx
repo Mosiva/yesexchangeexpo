@@ -7,9 +7,12 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import Modal from "react-native-modal";
+import { CurrencyCode } from "../../types/api";
+import { getCurrencySymbol } from "../../utils/currency";
+import CurrencyFlag from "../CurrencyFlag";
 
 type ConfirmPayload = { sell: number; receive: number };
 
@@ -27,7 +30,6 @@ interface Props {
   rate?: number;
   fromSymbol?: string;
   toSymbol?: string;
-  flagEmoji?: string;
 }
 
 export default function CurrencyExchangeModal({
@@ -37,11 +39,9 @@ export default function CurrencyExchangeModal({
   mode = "sell",
   fromCode = "RUB",
   fromName = "Российский рубль",
-  toCode = "KZT",
   rate = 535.8,
   fromSymbol = "₽",
   toSymbol = "₸",
-  flagEmoji = "🇷🇺",
 }: Props) {
   const [sellText, setSellText] = useState<string>("1");
   const sell = Number(sellText.replace(",", "."));
@@ -57,7 +57,11 @@ export default function CurrencyExchangeModal({
   // динамические подписи
   const title = mode === "sell" ? "Продажа" : "Покупка";
   const inputLabel = mode === "sell" ? "Продать" : "Купить";
+  const outputLabel = mode === "sell" ? "Получить" : "Отдать";
   const ctaLabel = "Забронировать";
+
+  // символы из словаря
+  const fromCurrSymbol = getCurrencySymbol(fromCode as CurrencyCode);
 
   return (
     <Modal
@@ -92,7 +96,7 @@ export default function CurrencyExchangeModal({
           <View style={styles.cardRow}>
             <View style={styles.left}>
               <View style={styles.flagCircle}>
-                <Text style={{ fontSize: 20 }}>{flagEmoji}</Text>
+                <CurrencyFlag code={fromCode as CurrencyCode} size={28} />
               </View>
               <View>
                 <Text style={styles.codeText}>{fromCode}</Text>
@@ -120,7 +124,7 @@ export default function CurrencyExchangeModal({
                   placeholder="0"
                 />
                 <View style={styles.suffix}>
-                  <Text style={styles.suffixText}>{fromSymbol}</Text>
+                  <Text style={styles.suffixText}>{fromCurrSymbol}</Text>
                 </View>
               </View>
             </View>
@@ -128,7 +132,7 @@ export default function CurrencyExchangeModal({
             <View style={{ width: 12 }} />
 
             <View style={{ flex: 1 }}>
-              <Text style={styles.label}>Получить</Text>
+              <Text style={styles.label}>{outputLabel}</Text>
               <View style={[styles.inputWrap, { opacity: 0.9 }]}>
                 <TextInput
                   editable={false}
