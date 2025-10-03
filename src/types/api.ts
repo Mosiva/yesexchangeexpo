@@ -125,15 +125,21 @@ export type BranchDto = {
 
 // --- Exchange Rates DTOs ---
 // Деньги и проценты как строки: избегаем потери точности на фронте
+// добавь рядом с CurrencyCode
+export type CurrencyDto = {
+  code: CurrencyCode;
+  name: string;
+};
 
+// обнови ExchangeRateDto
 export type ExchangeRateDto = {
-  currency: CurrencyCode;
-  buy: string; // decimal-string
-  sell: string; // decimal-string
-  updatedAt: string; // ISO datetime
-  delta?: string | null; // decimal-string
-  deltaPercent?: string | null; // decimal-string
-  trend?: Trend | null;
+  currency: CurrencyDto; // <-- было: CurrencyCode | string
+  buy: string; // лучше как decimal-string, без потери точности
+  sell: string;
+  updatedAt: string; // ISO
+  delta?: string | null;
+  deltaPercent?: string | null;
+  trend?: "up" | "down" | "flat" | null;
 };
 
 export type ExchangeRateHistoryRecordDto = {
