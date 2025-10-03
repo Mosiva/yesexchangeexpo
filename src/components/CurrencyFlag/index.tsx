@@ -1,10 +1,10 @@
 // components/CurrencyFlag.tsx
 import React from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, Text } from "react-native";
 import CountryFlag from "react-native-country-flag";
-import { CurrencyCode } from "../../types/api"; // твой enum
+import { CurrencyCode } from "../../types/api";
 
-function getFlagCode(currency: CurrencyCode): string {
+function getFlagCode(currency: CurrencyCode): string | null {
   const map: Record<CurrencyCode, string> = {
     AED: "AE",
     AMD: "AM",
@@ -19,7 +19,6 @@ function getFlagCode(currency: CurrencyCode): string {
     CNY: "CN",
     CZK: "CZ",
     DKK: "DK",
-    EUR: "EU", // особый случай
     GBP: "GB",
     GEL: "GE",
     HKD: "HK",
@@ -53,9 +52,9 @@ function getFlagCode(currency: CurrencyCode): string {
     UZS: "UZ",
     VND: "VN",
     ZAR: "ZA",
+    EUR: "EU", // 👈 обработаем вручную
   };
-
-  return map[currency];
+  return map[currency] ?? null;
 }
 
 type Props = {
@@ -64,21 +63,14 @@ type Props = {
 };
 
 export default function CurrencyFlag({ code, size = 28 }: Props) {
-  return (
-    <CountryFlag
-      isoCode={getFlagCode(code)}
-      size={size}
-      style={styles.flagImg}
-    />
-  );
+  const iso = getFlagCode(code);
+  if (!iso) {
+    return <Text style={{ fontSize: size }}>🏳️</Text>; // fallback
+  }
+
+  return <CountryFlag isoCode={iso} size={size} style={styles.flagImg} />;
 }
 
 const styles = StyleSheet.create({
-  leftBlock: {
-    flexDirection: "row",
-    alignItems: "center",
-    position: "relative",
-  },
   flagImg: { width: 32, height: 32, borderRadius: 16, marginRight: 8 },
-  flagEmoji: { fontSize: 24, marginRight: 8 },
 });
