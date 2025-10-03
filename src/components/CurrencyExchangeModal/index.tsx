@@ -95,9 +95,7 @@ export default function CurrencyExchangeModal({
           {/* Currency row */}
           <View style={styles.cardRow}>
             <View style={styles.left}>
-              <View style={styles.flagCircle}>
-                <CurrencyFlag code={fromCode as CurrencyCode} size={28} />
-              </View>
+              <CurrencyFlag code={fromCode as CurrencyCode} size={28} />
               <View>
                 <Text style={styles.codeText}>{fromCode}</Text>
                 <Text style={styles.nameText}>{fromName}</Text>
