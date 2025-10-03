@@ -1,12 +1,13 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 type Params = {
@@ -60,6 +61,7 @@ export default function ModerationScreen() {
   return (
     <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       {/* Lead text */}
+      <StatusBar barStyle="dark-content" />
       <Text style={styles.lead}>
         Ваша бронь находится на модерации,{"\n"}ожидайте
       </Text>

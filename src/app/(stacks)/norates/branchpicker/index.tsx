@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StatusBar, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import BranchPickerSheet from "../../../../components/BranchPickerSheet";
 
@@ -15,8 +15,8 @@ const BRANCHES = [
     title: "Yes Exchange NN Airport",
     address: "Астана, ул. Шарля де Голля, 8",
     worktime: "пн-пт: 8:00-21:00, вс: выходной",
-    latitude: 51.1694,
-    longitude: 71.4491,
+    latitude: 51.026821,
+    longitude: 71.460850,
   },
   {
     id: "2",
@@ -34,6 +34,7 @@ export default function BranchPickerScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       {/* TopBar поверх */}
+      <StatusBar barStyle="dark-content" />
       <View style={styles.topBarWrapper}>
         <View style={styles.topBar}>
           <Pressable onPress={() => router.back()}>
