@@ -275,11 +275,13 @@ export default function MainScreen() {
         ) : (
           <CurrenciesMainCardList
             data={exchangeRates.map((rate) => ({
-              code: rate.currency.code as CurrencyCode,
-              name: rate.currency.name,
+              code: rate.currency.code, // USD, EUR и т.д.
+              name: rate.currency.name, // "Доллар США"
               buy: rate.buy.toString(),
               sell: rate.sell.toString(),
             }))}
+            onPressExchange={handlePressExchange}
+            onPressMore={() => console.log("more")}
           />
         )}
       </View>

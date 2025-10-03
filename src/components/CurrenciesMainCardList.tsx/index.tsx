@@ -37,6 +37,8 @@ export default function CurrenciesMainCardList({
   showMore = true,
 }: Props) {
   const [expanded, setExpanded] = useState(false);
+
+  // which row's tooltip is visible (null = none)
   const [hintIdx, setHintIdx] = useState<number | null>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -52,8 +54,11 @@ export default function CurrenciesMainCardList({
   };
 
   const showHint = (idx: number) => {
+    // toggle if the same row is pressed again
     const next = hintIdx === idx ? null : idx;
     setHintIdx(next);
+
+    // clear any previous timer
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     if (next !== null) {
       hideTimerRef.current = setTimeout(() => setHintIdx(null), 2000);
@@ -72,12 +77,13 @@ export default function CurrenciesMainCardList({
       {visibleData.map((r, idx) => (
         <View key={`${r.code}-${idx}`} style={styles.row}>
           <View style={styles.rowInner}>
-            {/* Левый блок: флаг + код */}
+            {/* left side */}
             <View style={styles.leftBlock}>
               <CurrencyFlag code={r.code} size={28} />
+
               <Text style={styles.code}>{r.code}</Text>
 
-              {/* Инфо и тултип */}
+              {/* Info icon + tooltip */}
               <TouchableOpacity
                 onPress={() => showHint(idx)}
                 hitSlop={8}
@@ -94,7 +100,7 @@ export default function CurrenciesMainCardList({
               )}
             </View>
 
-            {/* Правый блок: покупка / продажа */}
+            {/* right side values */}
             <View style={styles.cellsRow}>
               <TouchableOpacity
                 style={styles.cell}
@@ -110,6 +116,7 @@ export default function CurrenciesMainCardList({
               </TouchableOpacity>
             </View>
           </View>
+
           {idx !== visibleData.length - 1 && <View style={styles.divider} />}
         </View>
       ))}
@@ -126,7 +133,10 @@ export default function CurrenciesMainCardList({
 }
 
 const styles = StyleSheet.create({
-  container: { backgroundColor: ORANGE_BG, paddingHorizontal: 20 },
+  container: {
+    backgroundColor: ORANGE_BG,
+    paddingHorizontal: 20,
+  },
   labelsRow: {
     alignSelf: "flex-end",
     flexDirection: "row",
@@ -143,15 +153,20 @@ const styles = StyleSheet.create({
   },
   row: { paddingVertical: 8 },
   rowInner: { flexDirection: "row", alignItems: "center" },
+
   leftBlock: {
     flexDirection: "row",
     alignItems: "center",
-    position: "relative",
+    position: "relative", // so tooltip positions relative to this block
   },
-  code: { color: WHITE, fontSize: 16, fontWeight: "700", marginLeft: 8 },
+  flagImg: { width: 32, height: 32, borderRadius: 16, marginRight: 8 },
+  flagEmoji: { fontSize: 24, marginRight: 8 },
+  code: { color: WHITE, fontSize: 16, fontWeight: "700" },
+
+  // tooltip bubble
   tooltip: {
     position: "absolute",
-    top: -40,
+    top: -40, // above the row
     left: 0,
     backgroundColor: "rgba(90, 60, 30, 0.9)",
     paddingHorizontal: 12,
@@ -170,6 +185,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "45deg" }],
     borderRadius: 2,
   },
+
   cellsRow: { marginLeft: "auto", flexDirection: "row", gap: CELLS_GAP },
   cell: {
     minWidth: CELL_MIN_W,
@@ -181,7 +197,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   cellText: { color: CELL_TEXT, fontSize: 16, fontWeight: "700" },
+
   divider: { height: 2, backgroundColor: DIVIDER, marginTop: 8 },
+
   moreBtn: { alignItems: "center", paddingVertical: 16 },
   moreText: { color: WHITE, fontSize: 14, fontWeight: "700" },
 });
