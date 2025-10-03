@@ -95,7 +95,6 @@ export default function CurrenciesMainCardList({
               {hintIdx === idx && !!(r.name || r.code) && (
                 <View style={styles.tooltip}>
                   <Text style={styles.tooltipText}>{r.name ?? r.code}</Text>
-                  <View style={styles.tooltipTail} />
                 </View>
               )}
             </View>
@@ -117,7 +116,7 @@ export default function CurrenciesMainCardList({
             </View>
           </View>
 
-          {idx !== visibleData.length - 1 && <View style={styles.divider} />}
+          <View style={styles.divider} />
         </View>
       ))}
 
@@ -175,16 +174,6 @@ const styles = StyleSheet.create({
     zIndex: 5,
   },
   tooltipText: { color: "#fff", fontSize: 14, fontWeight: "700" },
-  tooltipTail: {
-    position: "absolute",
-    bottom: -6,
-    left: 18,
-    width: 12,
-    height: 12,
-    backgroundColor: "rgba(90, 60, 30, 0.9)",
-    transform: [{ rotate: "45deg" }],
-    borderRadius: 2,
-  },
 
   cellsRow: { marginLeft: "auto", flexDirection: "row", gap: CELLS_GAP },
   cell: {

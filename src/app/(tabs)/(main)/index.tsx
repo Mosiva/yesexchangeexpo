@@ -43,19 +43,38 @@ const LocalTime = () => {
   const [now, setNow] = useState(new Date());
 
   React.useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 60_000); // обновляем каждую минуту
+    const timer = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(timer);
   }, []);
 
+  // Месяцы по-русски в родительном падеже
+  const months = [
+    "января",
+    "февраля",
+    "марта",
+    "апреля",
+    "мая",
+    "июня",
+    "июля",
+    "августа",
+    "сентября",
+    "октября",
+    "ноября",
+    "декабря",
+  ];
+
+  const day = String(now.getDate()).padStart(2, "0");
+  const month = months[now.getMonth()];
+  const year = now.getFullYear();
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+
+  const dateStr = `${day} ${month} ${year}`;
+  const timeStr = `${hours}:${minutes}`;
+
   return (
     <Text style={styles.localtime}>
-      {now.toLocaleString("ru-RU", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      })}
+      {dateStr} {timeStr}
     </Text>
   );
 };
