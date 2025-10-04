@@ -224,6 +224,8 @@ export default function ReserveNoRateScreen() {
           setShowFromModal(false);
         }}
         value={[fromCode]}
+        buttonText="Выбрать"
+        items={currencies}
       />
       <CurrenciesListModalArchive
         visible={showToModal}
@@ -234,6 +236,7 @@ export default function ReserveNoRateScreen() {
         }}
         value={[toCode]}
         buttonText="Выбрать"
+        items={currencies}
       />
     </KeyboardAvoidingView>
   );

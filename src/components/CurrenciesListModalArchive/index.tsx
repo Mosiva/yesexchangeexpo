@@ -27,21 +27,12 @@ interface Props {
 
 const ORANGE = "#F58220";
 
-const DEFAULT_ITEMS: Currency[] = [
-  { code: "USD", name: "Доллар США", flag: "🇺🇸" },
-  { code: "RUB", name: "Российский рубль", flag: "🇷🇺" },
-  { code: "EUR", name: "Евро", flag: "🇪🇺" },
-  { code: "GBP", name: "Фунт стерлингов", flag: "🇬🇧" },
-  { code: "CNY", name: "Китайский юань", flag: "🇨🇳" },
-  { code: "KZT", name: "Казахстанский тенге", flag: "🇰🇿" },
-];
-
 export default function CurrenciesListModalArchive({
   visible,
   onClose,
   onConfirm,
   value = ["USD"],
-  items = DEFAULT_ITEMS,
+  items,
   buttonText = "Посмотреть архив",
 }: Props) {
   const insets = useSafeAreaInsets();
@@ -57,7 +48,7 @@ export default function CurrenciesListModalArchive({
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return items;
-    return items.filter(
+    return items?.filter(
       (i) =>
         i.code.toLowerCase().includes(q) || i.name.toLowerCase().includes(q)
     );
