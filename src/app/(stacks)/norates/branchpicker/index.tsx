@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import * as Location from "expo-location";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   Linking,
@@ -15,7 +16,7 @@ import MapView, { Marker } from "react-native-maps";
 import BranchPickerSheet from "../../../../components/BranchPickerSheet";
 import {
   useBranchesQuery,
-  useNearestBranchQuery,
+  useNearestBranchesQuery,
 } from "../../../../services/yesExchange";
 
 const ORANGE = "#F58220";
@@ -55,21 +56,30 @@ export default function BranchPickerScreen() {
     isLoading: isBranchesLoading,
     isError: isBranchesError,
   } = useBranchesQuery({});
+
   const branches = rawBranches?.data ?? [];
 
   const {
-    data: rawNearestBranch,
-    refetch: refetchNearestBranch,
-    isLoading: isNearestBranchLoading,
-    isError: isNearestBranchError,
-  } = useNearestBranchQuery({
+    data: rawNearestBranches,
+    refetch: refetchNearestBranches,
+    isLoading: isNearestBranchesLoading,
+    isError: isNearestBranchesError,
+  } = useNearestBranchesQuery({
     lng: location?.coords.longitude ?? 0,
     lat: location?.coords.latitude ?? 0,
   });
+  const nearestBranch = rawNearestBranches ?? null;
+  // Refetch all data function
+  const refetchAllData = useCallback(async () => {
+    await Promise.all([refetchBranches(), refetchNearestBranches()]);
+  }, [refetchBranches, refetchNearestBranches]);
 
-
-  
-  const nearestBranch = rawNearestBranch ?? null;
+  // Refetch data when the screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      refetchAllData();
+    }, [refetchAllData])
+  );
 
   /** 🧭 Запросить разрешение и получить текущее местоположение */
   const requestLocation = async () => {
