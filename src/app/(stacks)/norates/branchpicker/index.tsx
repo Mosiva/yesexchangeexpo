@@ -23,25 +23,6 @@ const ORANGE = "#F58220";
 const TEXT = "#111827";
 const SUB = "#6B7280";
 
-const BRANCHES = [
-  {
-    id: "1",
-    title: "Yes Exchange NN Airport",
-    address: "Астана, ул. Шарля де Голля, 8",
-    worktime: "пн-пт: 8:00-21:00, вс: выходной",
-    latitude: 51.026821,
-    longitude: 71.46085,
-  },
-  {
-    id: "2",
-    title: "Yes Exchange City Center",
-    address: "Астана, пр. Абая, 12",
-    worktime: "пн-вск: 8:00-21:00",
-    latitude: 51.18,
-    longitude: 71.46,
-  },
-];
-
 export default function BranchPickerScreen() {
   const [selectedBranch, setSelectedBranch] = useState<any>(null);
   const [location, setLocation] = useState<Location.LocationObject | null>(
@@ -50,67 +31,52 @@ export default function BranchPickerScreen() {
   const [address, setAddress] = useState<string>("Не определено");
   const [loadingLocation, setLoadingLocation] = useState(false);
 
+  // --- запрос филиалов ---
   const {
     data: rawBranches,
     refetch: refetchBranches,
     isLoading: isBranchesLoading,
-    isError: isBranchesError,
   } = useBranchesQuery({});
-
   const branches = rawBranches?.data ?? [];
 
-  const {
-    data: rawNearestBranches,
-    refetch: refetchNearestBranches,
-    isLoading: isNearestBranchesLoading,
-    isError: isNearestBranchesError,
-  } = useNearestBranchesQuery({
-    lng: location?.coords.longitude ?? 0,
-    lat: location?.coords.latitude ?? 0,
-  });
+  // --- ближайший филиал ---
+  const { data: rawNearestBranches, refetch: refetchNearestBranches } =
+    useNearestBranchesQuery({
+      lng: location?.coords.longitude ?? 0,
+      lat: location?.coords.latitude ?? 0,
+    });
   const nearestBranch = rawNearestBranches?.[0] ?? null;
-  // Refetch all data function
+
+  // --- обновление при фокусе ---
   const refetchAllData = useCallback(async () => {
     await Promise.all([refetchBranches(), refetchNearestBranches()]);
   }, [refetchBranches, refetchNearestBranches]);
 
-  // Refetch data when the screen gains focus
   useFocusEffect(
     useCallback(() => {
       refetchAllData();
     }, [refetchAllData])
   );
 
-  /** 🧭 Запросить разрешение и получить текущее местоположение */
+  /** 🧭 Определение местоположения пользователя */
   const requestLocation = async () => {
     try {
       setLoadingLocation(true);
-
-      // 1️⃣ Проверяем разрешение
-      const { status, canAskAgain } =
-        await Location.requestForegroundPermissionsAsync();
+      const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== "granted") {
-        // Пользователь отказал или отключил геолокацию в настройках
         Alert.alert(
-          "Доступ к геолокации запрещён",
-          "Разрешите доступ к геолокации в настройках устройства, чтобы приложение могло определить ваше местоположение.",
+          "Доступ запрещён",
+          "Разрешите доступ к геолокации в настройках устройства.",
           [
-            {
-              text: "Отмена",
-              style: "cancel",
-            },
+            { text: "Отмена", style: "cancel" },
             {
               text: "Открыть настройки",
               onPress: async () => {
                 try {
                   await Linking.openSettings();
-                } catch (err) {
-                  console.error("Не удалось открыть настройки:", err);
-                  Alert.alert(
-                    "Ошибка",
-                    "Не удалось открыть настройки устройства."
-                  );
+                } catch {
+                  Alert.alert("Ошибка", "Не удалось открыть настройки.");
                 }
               },
             },
@@ -119,13 +85,11 @@ export default function BranchPickerScreen() {
         return;
       }
 
-      // 2️⃣ Получаем координаты
       const current = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
       });
       setLocation(current);
 
-      // 3️⃣ Преобразуем в адрес
       const [reverse] = await Location.reverseGeocodeAsync(current.coords);
       if (reverse) {
         setAddress(
@@ -143,7 +107,7 @@ export default function BranchPickerScreen() {
   };
 
   useEffect(() => {
-    requestLocation(); // автоматически при открытии
+    requestLocation();
   }, []);
 
   return (
@@ -178,37 +142,41 @@ export default function BranchPickerScreen() {
         initialRegion={{
           latitude: location?.coords.latitude ?? 51.1694,
           longitude: location?.coords.longitude ?? 71.4491,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
+          latitudeDelta: 0.3,
+          longitudeDelta: 0.3,
         }}
         region={
           location
             ? {
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude,
-                latitudeDelta: 0.05,
-                longitudeDelta: 0.05,
+                latitudeDelta: 0.3,
+                longitudeDelta: 0.3,
               }
             : undefined
         }
         showsUserLocation
         showsMyLocationButton
       >
-        {BRANCHES?.map((branch) => (
-          <Marker
-            key={branch.id}
-            coordinate={{
-              latitude: branch.latitude,
-              longitude: branch.longitude,
-            }}
-            title={branch.title}
-            description={branch.address}
-            onPress={() => setSelectedBranch(branch)}
-          />
-        ))}
+        {branches.map((branch) => {
+          const lat = Number(branch.lat);
+          const lng = Number(branch.lng);
+
+          if (isNaN(lat) || isNaN(lng)) return null; // безопасная проверка
+
+          return (
+            <Marker
+              key={String(branch.id)}
+              coordinate={{ latitude: lat, longitude: lng }}
+              title={branch.city}
+              description={branch.address}
+              onPress={() => setSelectedBranch(branch)}
+            />
+          );
+        })}
       </MapView>
 
-      {/* Шторка с филиалами */}
+      {/* Шторка */}
       <BranchPickerSheet
         selectedBranch={selectedBranch}
         onSelectBranch={(branch: any) => setSelectedBranch(branch)}
