@@ -87,6 +87,12 @@ export default function BranchPickerSheet({
         <Text style={styles.itemAddress} numberOfLines={1}>
           {item.address}
         </Text>
+        <View style={styles.row}>
+          <Ionicons name="time-outline" size={14} color={SUB} />
+          <Text style={styles.itemTime}>
+            {"пн-пт: 8:00-21:00, вс: выходной"}
+          </Text>
+        </View>
         {item.distanceKm != null && (
           <Text style={styles.itemDistance}>
             {item.distanceKm.toFixed(1)} км от вас
@@ -319,4 +325,6 @@ const styles = StyleSheet.create({
   scheduleRow: { flexDirection: "row", justifyContent: "space-between" },
   day: { fontWeight: "700", color: TEXT },
   hours: { color: TEXT },
+  row: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
+  itemTime: { color: SUB },
 });
