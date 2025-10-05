@@ -16,7 +16,8 @@ const TEXT = "#111827";
 const SUB = "#6B7280";
 const BORDER = "#ECECEC";
 
-type Branch = {
+/** Тип филиала */
+export type Branch = {
   id: string | number;
   city?: string;
   title?: string;
@@ -28,14 +29,16 @@ type Branch = {
   schedule?: { [key: string]: string };
   phone?: string;
   email?: string;
+  distanceKm?: number | null;
 };
 
+/** Пропсы компонента */
 type Props = {
   selectedBranch: Branch | null;
   onSelectBranch: (branch: Branch) => void;
   onCloseDetails: () => void;
   allBranches?: Branch[];
-  nearestBranch?: Branch | null;
+  nearbyBranches?: Branch[];
 };
 
 export default function BranchPickerSheet({
@@ -43,48 +46,52 @@ export default function BranchPickerSheet({
   onSelectBranch,
   onCloseDetails,
   allBranches = [],
-  nearestBranch = null,
+  nearbyBranches = [],
 }: Props) {
   const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["35%", "85%"], []);
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"nearby" | "all">("nearby");
 
-  /** 🔍 Фильтрация по поиску */
-  const filteredAll = allBranches.filter(
-    (b) =>
-      b.address?.toLowerCase().includes(query.toLowerCase()) ||
-      b.city?.toLowerCase().includes(query.toLowerCase())
-  );
+  // 🔎 Фильтрация
+  const filteredAll = useMemo(() => {
+    if (!query.trim()) return allBranches;
+    return allBranches.filter((b) =>
+      `${b.city ?? ""} ${b.address ?? ""}`
+        .toLowerCase()
+        .includes(query.toLowerCase())
+    );
+  }, [query, allBranches]);
 
-  const dataToShow =
-    tab === "nearby" ? (nearestBranch ? [nearestBranch] : []) : filteredAll;
+  const dataToShow = tab === "nearby" ? nearbyBranches : filteredAll;
 
   const renderBranchItem = ({ item }: { item: Branch }) => (
     <Pressable
       style={styles.item}
-      onPress={() => {
+      onPress={() =>
         onSelectBranch({
           ...item,
           worktimeToday: "Закрыто до 10:00",
           schedule: { "Пн-Пт": "10:00 - 21:00", "Сб-Вс": "10:00 - 18:00" },
-          phone: item.contactPhone ?? "+7 777 000 0000",
-          email: "info@yesx.kz",
-        });
-      }}
+          email: "info@mail.com",
+        })
+      }
     >
       <View style={styles.pin}>
-        <Ionicons name="logo-yen" size={14} color="#fff" />
+        <Ionicons name="business" size={14} color="#fff" />
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={styles.itemTitle}>{item.city || "Филиал"}</Text>
+        <Text style={styles.itemTitle}>
+          {item.city ?? item.title ?? "Без названия"}
+        </Text>
         <Text style={styles.itemAddress} numberOfLines={1}>
           {item.address}
         </Text>
-        <View style={styles.row}>
-          <Ionicons name="time-outline" size={14} color={SUB} />
-          <Text style={styles.itemTime}>пн-вск: 8:00–21:00</Text>
-        </View>
+        {item.distanceKm != null && (
+          <Text style={styles.itemDistance}>
+            {item.distanceKm.toFixed(1)} км от вас
+          </Text>
+        )}
       </View>
       <Ionicons name="chevron-forward" size={18} color="#C7C9CF" />
     </Pressable>
@@ -102,10 +109,7 @@ export default function BranchPickerSheet({
       <BottomSheetView style={styles.content}>
         {!selectedBranch ? (
           <>
-            {/* --- СПИСОК ФИЛИАЛОВ --- */}
-            <Text style={styles.sheetTitle}>
-              Выберите офис, в который хотите{"\n"}оставить заявку
-            </Text>
+            <Text style={styles.sheetTitle}>Выберите офис обмена</Text>
 
             {/* Поиск */}
             <View style={styles.searchBox}>
@@ -113,7 +117,7 @@ export default function BranchPickerSheet({
               <TextInput
                 value={query}
                 onChangeText={setQuery}
-                placeholder="Поиск"
+                placeholder="Поиск по адресу"
                 style={styles.searchInput}
                 returnKeyType="search"
               />
@@ -134,6 +138,7 @@ export default function BranchPickerSheet({
                   Рядом
                 </Text>
               </Pressable>
+
               <Pressable
                 onPress={() => setTab("all")}
                 style={[styles.tab, tab === "all" && styles.tabActive]}
@@ -151,20 +156,12 @@ export default function BranchPickerSheet({
 
             {/* Список */}
             <FlatList
-              data={dataToShow?.filter(Boolean) ?? []}
-              keyExtractor={(b, i) => (b?.id ? String(b.id) : String(i))}
+              data={dataToShow}
+              keyExtractor={(b) => String(b.id)}
               renderItem={renderBranchItem}
               ItemSeparatorComponent={() => <View style={styles.sep} />}
               contentContainerStyle={{ paddingBottom: 24 }}
-              keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
-              ListEmptyComponent={
-                <Text
-                  style={{ textAlign: "center", color: SUB, marginTop: 20 }}
-                >
-                  Нет филиалов
-                </Text>
-              }
             />
           </>
         ) : (
@@ -173,7 +170,7 @@ export default function BranchPickerSheet({
             <View style={styles.header}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.title}>
-                  {selectedBranch.city || "Филиал"}
+                  {selectedBranch.city ?? selectedBranch.title ?? "Филиал"}
                 </Text>
                 <Text style={styles.address}>{selectedBranch.address}</Text>
               </View>
@@ -181,26 +178,41 @@ export default function BranchPickerSheet({
                 <Ionicons name="close" size={22} color={TEXT} />
               </Pressable>
             </View>
-
             {/* Галерея-заглушка */}
             <View style={styles.galleryRow}>
               <View style={styles.galleryItem} />
               <View style={styles.galleryItem} />
               <View style={styles.galleryItem} />
             </View>
+            {/* Время работы */}
+            <Text style={styles.workLabel}>Время работы</Text>
+            <Text style={styles.workNow}>{selectedBranch.worktimeToday}</Text>
 
+            {/* График */}
+            <Text style={styles.workLabel}>График</Text>
+            {selectedBranch.schedule &&
+              Object.entries(selectedBranch.schedule).map(([day, hours]) => (
+                <View style={styles.scheduleRow} key={day}>
+                  <Text style={styles.day}>{day}</Text>
+                  <Text style={styles.hours}>{hours}</Text>
+                </View>
+              ))}
             {/* Контакты */}
-            <Text style={styles.workLabel}>Контакты</Text>
-            <View style={styles.contactRow}>
-              <Ionicons name="call" size={18} color={ORANGE} />
-              <Text style={styles.contactText}>
-                {selectedBranch.contactPhone || "+7 777 000 0000"}
-              </Text>
-            </View>
-            <View style={styles.contactRow}>
-              <Ionicons name="mail" size={18} color={ORANGE} />
-              <Text style={styles.contactText}>info@yesx.kz</Text>
-            </View>
+            {selectedBranch.contactPhone && (
+              <>
+                <Text style={styles.workLabel}>Контакты</Text>
+                <View style={styles.contactRow}>
+                  <Ionicons name="call" size={18} color={ORANGE} />
+                  <Text style={styles.contactText}>
+                    {selectedBranch.contactPhone}
+                  </Text>
+                </View>
+                <View style={styles.contactRow}>
+                  <Ionicons name="mail" size={18} color={ORANGE} />
+                  <Text style={styles.contactText}>info@yesx.kz</Text>
+                </View>
+              </>
+            )}
 
             {/* CTA */}
             <Pressable
@@ -209,12 +221,9 @@ export default function BranchPickerSheet({
                 router.push({
                   pathname: "/(stacks)/norates/moderation",
                   params: {
-                    id: String(selectedBranch.id),
+                    id: selectedBranch.id,
                     address: selectedBranch.address,
-                    kind: "Без привязки к курсу",
-                    amount: "1000",
-                    currency: "USD",
-                    rateText: "1 KZT = 0,001861123 USD",
+                    city: selectedBranch.city,
                   },
                 })
               }
@@ -228,7 +237,21 @@ export default function BranchPickerSheet({
   );
 }
 
+/* 💅 Стили */
 const styles = StyleSheet.create({
+  sheetBg: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  handle: { width: 60, height: 4, backgroundColor: "#E9ECEF", borderRadius: 2 },
+  content: { flex: 1, padding: 16 },
+  sheetTitle: {
+    color: TEXT,
+    fontSize: 20,
+    fontWeight: "800",
+    marginBottom: 12,
+  },
   searchBox: {
     flexDirection: "row",
     alignItems: "center",
@@ -261,46 +284,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 12,
   },
-  sheetBg: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  handle: {
-    width: 60,
-    height: 4,
-    backgroundColor: "#E9ECEF",
-    borderRadius: 2,
-  },
-  content: { flex: 1, padding: 16 },
-  sheetTitle: {
-    color: TEXT,
-    fontSize: 20,
-    fontWeight: "800",
-    marginBottom: 12,
-  },
   itemTitle: { color: TEXT, fontSize: 18, fontWeight: "800" },
   itemAddress: { color: SUB, marginTop: 4 },
-  row: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
-  itemTime: { color: SUB },
+  itemDistance: { color: "#9CA3AF", fontSize: 13, marginTop: 2 },
   sep: { height: 1, backgroundColor: BORDER },
   header: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
   title: { fontSize: 20, fontWeight: "800", color: TEXT },
   address: { color: SUB, marginTop: 4 },
-  galleryRow: { flexDirection: "row", gap: 8, marginVertical: 12 },
-  galleryItem: {
-    flex: 1,
-    height: 60,
-    backgroundColor: "#E5E7EB",
-    borderRadius: 8,
-  },
-  workLabel: { color: SUB, fontSize: 14, marginTop: 12, marginBottom: 4 },
   contactRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
     marginTop: 6,
   },
+  workLabel: { color: SUB, fontSize: 14, marginTop: 12, marginBottom: 4 },
   contactText: { color: TEXT, fontSize: 16 },
   cta: {
     marginTop: 20,
@@ -311,4 +308,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   ctaText: { color: "#fff", fontWeight: "700", fontSize: 16 },
+  galleryRow: { flexDirection: "row", gap: 8, marginVertical: 12 },
+  galleryItem: {
+    flex: 1,
+    height: 60,
+    backgroundColor: "#E5E7EB",
+    borderRadius: 8,
+  },
+  workNow: { color: "red", fontSize: 16, fontWeight: "700", marginBottom: 6 },
+  scheduleRow: { flexDirection: "row", justifyContent: "space-between" },
+  day: { fontWeight: "700", color: TEXT },
+  hours: { color: TEXT },
 });

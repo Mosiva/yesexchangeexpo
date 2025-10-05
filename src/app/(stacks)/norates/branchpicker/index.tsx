@@ -2,7 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import * as Location from "expo-location";
 import { router } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import { getDistance } from "geolib";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Linking,
@@ -30,24 +31,21 @@ export default function BranchPickerScreen() {
   );
   const [address, setAddress] = useState<string>("Не определено");
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [branchesWithDistance, setBranchesWithDistance] = useState<any[]>([]);
 
-  // --- запрос филиалов ---
   const {
     data: rawBranches,
     refetch: refetchBranches,
     isLoading: isBranchesLoading,
   } = useBranchesQuery({});
+
   const branches = rawBranches?.data ?? [];
 
-  // --- ближайший филиал ---
-  const { data: rawNearestBranches, refetch: refetchNearestBranches } =
-    useNearestBranchesQuery({
-      lng: location?.coords.longitude ?? 0,
-      lat: location?.coords.latitude ?? 0,
-    });
-  const nearestBranch = rawNearestBranches?.[0] ?? null;
+  const { refetch: refetchNearestBranches } = useNearestBranchesQuery({
+    lng: location?.coords.longitude ?? 0,
+    lat: location?.coords.latitude ?? 0,
+  });
 
-  // --- обновление при фокусе ---
   const refetchAllData = useCallback(async () => {
     await Promise.all([refetchBranches(), refetchNearestBranches()]);
   }, [refetchBranches, refetchNearestBranches]);
@@ -58,7 +56,7 @@ export default function BranchPickerScreen() {
     }, [refetchAllData])
   );
 
-  /** 🧭 Определение местоположения пользователя */
+  /** 📍 Запросить разрешение и определить местоположение */
   const requestLocation = async () => {
     try {
       setLoadingLocation(true);
@@ -66,19 +64,13 @@ export default function BranchPickerScreen() {
 
       if (status !== "granted") {
         Alert.alert(
-          "Доступ запрещён",
+          "Доступ к геолокации запрещён",
           "Разрешите доступ к геолокации в настройках устройства.",
           [
             { text: "Отмена", style: "cancel" },
             {
               text: "Открыть настройки",
-              onPress: async () => {
-                try {
-                  await Linking.openSettings();
-                } catch {
-                  Alert.alert("Ошибка", "Не удалось открыть настройки.");
-                }
-              },
+              onPress: () => Linking.openSettings(),
             },
           ]
         );
@@ -95,24 +87,57 @@ export default function BranchPickerScreen() {
         setAddress(
           `${reverse.city ?? reverse.region ?? ""}, ${reverse.street ?? ""}`
         );
-      } else {
-        setAddress("Не определено");
       }
-    } catch (error) {
-      console.error("Ошибка определения локации:", error);
-      Alert.alert("Ошибка", "Не удалось определить ваше местоположение.");
+    } catch (e) {
+      console.error("Ошибка геолокации:", e);
     } finally {
       setLoadingLocation(false);
     }
   };
 
+  /** 📏 Расчёт расстояний */
+  const computeDistances = useCallback(() => {
+    if (!location || !branches.length) return;
+
+    const computed = branches.map((branch) => {
+      const lat = Number(branch.lat);
+      const lng = Number(branch.lng);
+      if (isNaN(lat) || isNaN(lng)) return { ...branch, distanceKm: null };
+
+      const distanceMeters = getDistance(
+        {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        },
+        { latitude: lat, longitude: lng }
+      );
+
+      return { ...branch, distanceKm: distanceMeters / 1000 };
+    });
+
+    const sorted = computed.sort(
+      (a, b) => (a.distanceKm ?? 99999) - (b.distanceKm ?? 99999)
+    );
+    setBranchesWithDistance(sorted);
+  }, [branches, location]);
+
   useEffect(() => {
     requestLocation();
   }, []);
 
+  useEffect(() => {
+    computeDistances();
+  }, [branches, location]);
+
+  /** 📍 Фильтрация ближайших филиалов (≤15 км) */
+  const nearbyBranches = useMemo(() => {
+    return branchesWithDistance.filter(
+      (b) => b.distanceKm !== null && b.distanceKm <= 15
+    );
+  }, [branchesWithDistance]);
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      {/* TopBar */}
       <StatusBar barStyle="dark-content" />
       <View style={styles.topBarWrapper}>
         <View style={styles.topBar}>
@@ -136,53 +161,48 @@ export default function BranchPickerScreen() {
         </View>
       </View>
 
-      {/* Карта */}
+      {/* 🗺 Карта */}
       <MapView
         style={{ flex: 1 }}
         initialRegion={{
           latitude: location?.coords.latitude ?? 51.1694,
           longitude: location?.coords.longitude ?? 71.4491,
-          latitudeDelta: 0.3,
-          longitudeDelta: 0.3,
+          latitudeDelta: 0.2,
+          longitudeDelta: 0.2,
         }}
         region={
           location
             ? {
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude,
-                latitudeDelta: 0.3,
-                longitudeDelta: 0.3,
+                latitudeDelta: 0.2,
+                longitudeDelta: 0.2,
               }
             : undefined
         }
         showsUserLocation
         showsMyLocationButton
       >
-        {branches.map((branch) => {
-          const lat = Number(branch.lat);
-          const lng = Number(branch.lng);
-
-          if (isNaN(lat) || isNaN(lng)) return null; // безопасная проверка
-
-          return (
-            <Marker
-              key={String(branch.id)}
-              coordinate={{ latitude: lat, longitude: lng }}
-              title={branch.city}
-              description={branch.address}
-              onPress={() => setSelectedBranch(branch)}
-            />
-          );
-        })}
+        {branchesWithDistance.map((branch) => (
+          <Marker
+            key={branch.id}
+            coordinate={{
+              latitude: Number(branch.lat),
+              longitude: Number(branch.lng),
+            }}
+            title={branch.city}
+            description={branch.address}
+            onPress={() => setSelectedBranch(branch)}
+          />
+        ))}
       </MapView>
 
-      {/* Шторка */}
       <BranchPickerSheet
         selectedBranch={selectedBranch}
-        onSelectBranch={(branch: any) => setSelectedBranch(branch)}
+        onSelectBranch={setSelectedBranch}
         onCloseDetails={() => setSelectedBranch(null)}
-        allBranches={branches}
-        nearestBranch={nearestBranch}
+        allBranches={branchesWithDistance}
+        nearbyBranches={nearbyBranches}
       />
     </View>
   );
