@@ -9,10 +9,14 @@ import {
   StatusBar,
   StyleSheet,
   Text,
-  View
+  View,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import BranchPickerSheet from "../../../../components/BranchPickerSheet";
+import {
+  useBranchesQuery,
+  useNearestBranchQuery,
+} from "../../../../services/yesExchange";
 
 const ORANGE = "#F58220";
 const TEXT = "#111827";
@@ -44,6 +48,28 @@ export default function BranchPickerScreen() {
   );
   const [address, setAddress] = useState<string>("Не определено");
   const [loadingLocation, setLoadingLocation] = useState(false);
+
+  const {
+    data: rawBranches,
+    refetch: refetchBranches,
+    isLoading: isBranchesLoading,
+    isError: isBranchesError,
+  } = useBranchesQuery({});
+  const branches = rawBranches?.data ?? [];
+
+  const {
+    data: rawNearestBranch,
+    refetch: refetchNearestBranch,
+    isLoading: isNearestBranchLoading,
+    isError: isNearestBranchError,
+  } = useNearestBranchQuery({
+    lng: location?.coords.longitude ?? 0,
+    lat: location?.coords.latitude ?? 0,
+  });
+
+
+  
+  const nearestBranch = rawNearestBranch ?? null;
 
   /** 🧭 Запросить разрешение и получить текущее местоположение */
   const requestLocation = async () => {
