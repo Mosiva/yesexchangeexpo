@@ -20,6 +20,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
       "softwareKeyboardLayoutMode": "pan",
       "versionCode": 1,
       "edgeToEdgeEnabled": true,
@@ -39,6 +40,12 @@
           "imageWidth": 150,
           "resizeMode": "contain",
           "backgroundColor": "#F79633"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Приложению нужен доступ к вашей геолокации для определения ближайших филиалов."
         }
       ]
     ],

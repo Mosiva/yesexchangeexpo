@@ -8,7 +8,7 @@ import React, {
   useEffect,
   useMemo,
   useRef,
-  useState
+  useState,
 } from "react";
 import {
   Alert,
@@ -39,14 +39,11 @@ export default function BranchPickerScreen() {
   );
   const [address, setAddress] = useState<string>("Не определено");
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [permissionDenied, setPermissionDenied] = useState(false);
   const [branchesWithDistance, setBranchesWithDistance] = useState<any[]>([]);
   const mapRef = useRef<MapView | null>(null);
 
-  const {
-    data: rawBranches,
-    refetch: refetchBranches,
-    isLoading: isBranchesLoading,
-  } = useBranchesQuery({});
+  const { data: rawBranches, refetch: refetchBranches } = useBranchesQuery({});
 
   const branches = rawBranches?.data ?? [];
 
@@ -69,9 +66,12 @@ export default function BranchPickerScreen() {
   const requestLocation = async () => {
     try {
       setLoadingLocation(true);
+      setPermissionDenied(false); // сбрасываем флаг перед новой попыткой
+
       const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== "granted") {
+        setPermissionDenied(true);
         Alert.alert(
           "Доступ к геолокации запрещён",
           "Разрешите доступ к геолокации в настройках устройства.",
@@ -92,10 +92,12 @@ export default function BranchPickerScreen() {
       setLocation(current);
 
       const [reverse] = await Location.reverseGeocodeAsync(current.coords);
-      if (reverse) {
+      if (reverse && (reverse.city || reverse.region)) {
         setAddress(
-          `${reverse.city ?? reverse.region ?? ""}, ${reverse.street ?? ""}`
+          `${reverse.city ?? reverse.region}, ${reverse.street ?? ""}`
         );
+      } else {
+        setAddress("Адрес не определён");
       }
     } catch (e) {
       console.error("Ошибка геолокации:", e);
@@ -196,7 +198,11 @@ export default function BranchPickerScreen() {
             <View style={{ marginLeft: 8 }}>
               <Text style={styles.myAddrLabel}>Моё местоположение</Text>
               <Text style={styles.myAddrValue}>
-                {loadingLocation ? "Определяем..." : address}
+                {loadingLocation
+                  ? "Определяем..."
+                  : permissionDenied
+                  ? "Доступ запрещён"
+                  : address}
               </Text>
             </View>
           </View>
@@ -232,6 +238,9 @@ export default function BranchPickerScreen() {
       >
         {branchesWithDistance.map((branch) => {
           const isSelected = selectedBranch?.id === branch.id;
+          if (isNaN(Number(branch.lat)) || isNaN(Number(branch.lng)))
+            return null;
+
           return (
             <Marker
               key={branch.id}
@@ -276,6 +285,20 @@ export default function BranchPickerScreen() {
         nearbyBranches={nearbyBranches}
         loadingLocation={loadingLocation}
       />
+
+      {/* Заглушка при отключённой геолокации */}
+      {permissionDenied && (
+        <View style={styles.permissionOverlay}>
+          <Ionicons name="alert-circle-outline" size={48} color={ORANGE} />
+          <Text style={styles.permissionTitle}>Геолокация отключена</Text>
+          <Text style={styles.permissionDesc}>
+            Чтобы показать ближайшие филиалы, разрешите доступ к местоположению
+          </Text>
+          <Pressable style={styles.retryBtn} onPress={requestLocation}>
+            <Text style={styles.retryText}>Попробовать снова</Text>
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 }
@@ -314,4 +337,37 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   refreshText: { color: "#fff", fontWeight: "700" },
+  permissionOverlay: {
+    position: "absolute",
+    top: "30%",
+    left: 20,
+    right: 20,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 24,
+    alignItems: "center",
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+  },
+  permissionTitle: {
+    marginTop: 12,
+    fontSize: 18,
+    fontWeight: "700",
+    color: TEXT,
+  },
+  permissionDesc: {
+    marginTop: 8,
+    color: SUB,
+    textAlign: "center",
+  },
+  retryBtn: {
+    marginTop: 16,
+    backgroundColor: ORANGE,
+    borderRadius: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  retryText: { color: "#fff", fontWeight: "700" },
 });

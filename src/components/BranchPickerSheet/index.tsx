@@ -5,6 +5,7 @@ import React, { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -81,7 +82,10 @@ export default function BranchPickerSheet({
       }
     >
       <View style={styles.pin}>
-        <Ionicons name="business" size={14} color="#fff" />
+        <Image
+          source={require("../../../assets/icons/LocationIcon.png")}
+          style={{ width: 28, height: 28 }}
+        />
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.itemTitle}>
@@ -294,13 +298,7 @@ const styles = StyleSheet.create({
   tabTextActive: { color: TEXT },
   item: { flexDirection: "row", alignItems: "center", paddingVertical: 14 },
   pin: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: ORANGE,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
+    marginRight: 10,
   },
   itemTitle: { color: TEXT, fontSize: 18, fontWeight: "800" },
   itemAddress: { color: SUB, marginTop: 4 },
