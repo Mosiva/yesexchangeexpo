@@ -68,7 +68,7 @@ export default function BranchPickerScreen() {
     lng: location?.coords.longitude ?? 0,
     lat: location?.coords.latitude ?? 0,
   });
-  const nearestBranch = rawNearestBranches ?? null;
+  const nearestBranch = rawNearestBranches?.[0] ?? null;
   // Refetch all data function
   const refetchAllData = useCallback(async () => {
     await Promise.all([refetchBranches(), refetchNearestBranches()]);
@@ -194,7 +194,7 @@ export default function BranchPickerScreen() {
         showsUserLocation
         showsMyLocationButton
       >
-        {BRANCHES.map((branch) => (
+        {BRANCHES?.map((branch) => (
           <Marker
             key={branch.id}
             coordinate={{
@@ -213,6 +213,8 @@ export default function BranchPickerScreen() {
         selectedBranch={selectedBranch}
         onSelectBranch={(branch: any) => setSelectedBranch(branch)}
         onCloseDetails={() => setSelectedBranch(null)}
+        allBranches={branches}
+        nearestBranch={nearestBranch}
       />
     </View>
   );

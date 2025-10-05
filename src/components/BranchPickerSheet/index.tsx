@@ -17,11 +17,13 @@ const SUB = "#6B7280";
 const BORDER = "#ECECEC";
 
 type Branch = {
-  id: string;
-  title: string;
+  id: string | number;
+  city?: string;
+  title?: string;
   address: string;
-  worktime: string;
-  distanceKm?: number;
+  lat: string | number;
+  lng: string | number;
+  contactPhone?: string | null;
   worktimeToday?: string;
   schedule?: { [key: string]: string };
   phone?: string;
@@ -32,60 +34,56 @@ type Props = {
   selectedBranch: Branch | null;
   onSelectBranch: (branch: Branch) => void;
   onCloseDetails: () => void;
+  allBranches?: Branch[];
+  nearestBranch?: Branch | null;
 };
 
 export default function BranchPickerSheet({
   selectedBranch,
   onSelectBranch,
   onCloseDetails,
+  allBranches = [],
+  nearestBranch = null,
 }: Props) {
   const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["35%", "85%"], []);
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"nearby" | "all">("nearby");
 
-  // Данные для списка
-  const BRANCHES: Branch[] = [
-    {
-      id: "1",
-      title: "Yes Exchange NN Airport",
-      address: "Астана, ул. Шарля де Голля, 8",
-      worktime: "пн-пт: 8:00-21:00, вс: выходной",
-      distanceKm: 1.2,
-    },
-    {
-      id: "2",
-      title: "Yes Exchange City Center",
-      address: "Астана, пр. Абая, 12",
-      worktime: "пн-вск: 8:00-21:00",
-      distanceKm: 3.7,
-    },
-  ];
+  /** 🔍 Фильтрация по поиску */
+  const filteredAll = allBranches.filter(
+    (b) =>
+      b.address?.toLowerCase().includes(query.toLowerCase()) ||
+      b.city?.toLowerCase().includes(query.toLowerCase())
+  );
+
+  const dataToShow =
+    tab === "nearby" ? (nearestBranch ? [nearestBranch] : []) : filteredAll;
 
   const renderBranchItem = ({ item }: { item: Branch }) => (
     <Pressable
       style={styles.item}
-      onPress={() =>
+      onPress={() => {
         onSelectBranch({
           ...item,
           worktimeToday: "Закрыто до 10:00",
           schedule: { "Пн-Пт": "10:00 - 21:00", "Сб-Вс": "10:00 - 18:00" },
-          phone: "+998 586 66 66 577",
-          email: "info@mail.com",
-        })
-      }
+          phone: item.contactPhone ?? "+7 777 000 0000",
+          email: "info@yesx.kz",
+        });
+      }}
     >
       <View style={styles.pin}>
         <Ionicons name="logo-yen" size={14} color="#fff" />
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={styles.itemTitle}>{item.title}</Text>
+        <Text style={styles.itemTitle}>{item.city || "Филиал"}</Text>
         <Text style={styles.itemAddress} numberOfLines={1}>
           {item.address}
         </Text>
         <View style={styles.row}>
           <Ionicons name="time-outline" size={14} color={SUB} />
-          <Text style={styles.itemTime}>{item.worktime}</Text>
+          <Text style={styles.itemTime}>пн-вск: 8:00–21:00</Text>
         </View>
       </View>
       <Ionicons name="chevron-forward" size={18} color="#C7C9CF" />
@@ -105,12 +103,11 @@ export default function BranchPickerSheet({
         {!selectedBranch ? (
           <>
             {/* --- СПИСОК ФИЛИАЛОВ --- */}
-
             <Text style={styles.sheetTitle}>
               Выберите офис, в который хотите{"\n"}оставить заявку
             </Text>
 
-            {/* Search */}
+            {/* Поиск */}
             <View style={styles.searchBox}>
               <Ionicons name="search" size={18} color="#9CA3AF" />
               <TextInput
@@ -122,7 +119,7 @@ export default function BranchPickerSheet({
               />
             </View>
 
-            {/* Tabs */}
+            {/* Вкладки */}
             <View style={styles.tabs}>
               <Pressable
                 onPress={() => setTab("nearby")}
@@ -152,15 +149,22 @@ export default function BranchPickerSheet({
               </Pressable>
             </View>
 
-            {/* List */}
+            {/* Список */}
             <FlatList
-              data={BRANCHES}
-              keyExtractor={(b) => b.id}
+              data={dataToShow?.filter(Boolean) ?? []}
+              keyExtractor={(b, i) => (b?.id ? String(b.id) : String(i))}
               renderItem={renderBranchItem}
               ItemSeparatorComponent={() => <View style={styles.sep} />}
               contentContainerStyle={{ paddingBottom: 24 }}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
+              ListEmptyComponent={
+                <Text
+                  style={{ textAlign: "center", color: SUB, marginTop: 20 }}
+                >
+                  Нет филиалов
+                </Text>
+              }
             />
           </>
         ) : (
@@ -168,7 +172,9 @@ export default function BranchPickerSheet({
             {/* --- ДЕТАЛИ ФИЛИАЛА --- */}
             <View style={styles.header}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.title}>{selectedBranch.title}</Text>
+                <Text style={styles.title}>
+                  {selectedBranch.city || "Филиал"}
+                </Text>
                 <Text style={styles.address}>{selectedBranch.address}</Text>
               </View>
               <Pressable onPress={onCloseDetails}>
@@ -183,29 +189,17 @@ export default function BranchPickerSheet({
               <View style={styles.galleryItem} />
             </View>
 
-            {/* Время работы */}
-            <Text style={styles.workLabel}>Время работы</Text>
-            <Text style={styles.workNow}>{selectedBranch.worktimeToday}</Text>
-
-            {/* График */}
-            <Text style={styles.workLabel}>График</Text>
-            {selectedBranch.schedule &&
-              Object.entries(selectedBranch.schedule).map(([day, hours]) => (
-                <View style={styles.scheduleRow} key={day}>
-                  <Text style={styles.day}>{day}</Text>
-                  <Text style={styles.hours}>{hours}</Text>
-                </View>
-              ))}
-
             {/* Контакты */}
             <Text style={styles.workLabel}>Контакты</Text>
             <View style={styles.contactRow}>
               <Ionicons name="call" size={18} color={ORANGE} />
-              <Text style={styles.contactText}>{selectedBranch.phone}</Text>
+              <Text style={styles.contactText}>
+                {selectedBranch.contactPhone || "+7 777 000 0000"}
+              </Text>
             </View>
             <View style={styles.contactRow}>
               <Ionicons name="mail" size={18} color={ORANGE} />
-              <Text style={styles.contactText}>{selectedBranch.email}</Text>
+              <Text style={styles.contactText}>info@yesx.kz</Text>
             </View>
 
             {/* CTA */}
@@ -215,12 +209,12 @@ export default function BranchPickerSheet({
                 router.push({
                   pathname: "/(stacks)/norates/moderation",
                   params: {
-                    id: "№12356",
+                    id: String(selectedBranch.id),
+                    address: selectedBranch.address,
                     kind: "Без привязки к курсу",
                     amount: "1000",
                     currency: "USD",
                     rateText: "1 KZT = 0,001861123 USD",
-                    address: "Астана, Аэропорт",
                   },
                 })
               }
@@ -285,13 +279,11 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     marginBottom: 12,
   },
-
   itemTitle: { color: TEXT, fontSize: 18, fontWeight: "800" },
   itemAddress: { color: SUB, marginTop: 4 },
   row: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
   itemTime: { color: SUB },
   sep: { height: 1, backgroundColor: BORDER },
-
   header: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
   title: { fontSize: 20, fontWeight: "800", color: TEXT },
   address: { color: SUB, marginTop: 4 },
@@ -303,10 +295,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   workLabel: { color: SUB, fontSize: 14, marginTop: 12, marginBottom: 4 },
-  workNow: { color: "red", fontSize: 16, fontWeight: "700", marginBottom: 6 },
-  scheduleRow: { flexDirection: "row", justifyContent: "space-between" },
-  day: { fontWeight: "700", color: TEXT },
-  hours: { color: TEXT },
   contactRow: {
     flexDirection: "row",
     alignItems: "center",
