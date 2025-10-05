@@ -8,10 +8,12 @@ import React, {
   useEffect,
   useMemo,
   useRef,
-  useState,
+  useState
 } from "react";
 import {
   Alert,
+  Animated,
+  Easing,
   Linking,
   Pressable,
   StatusBar,
@@ -143,9 +145,30 @@ export default function BranchPickerScreen() {
     );
   }, [branchesWithDistance]);
 
-  /** 🎯 Фокус карты на выбранный филиал */
+  /** 🎯 Фокус карты на выбранный филиал + bounce анимация */
+  const markerScale = useRef(new Animated.Value(1)).current;
+
+  const triggerBounce = () => {
+    markerScale.setValue(1);
+    Animated.sequence([
+      Animated.timing(markerScale, {
+        toValue: 1.3,
+        duration: 180,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(markerScale, {
+        toValue: 1,
+        duration: 180,
+        easing: Easing.in(Easing.ease),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
   const handleSelectBranch = (branch: any) => {
     setSelectedBranch(branch);
+    triggerBounce();
     if (branch.lat && branch.lng && mapRef.current) {
       mapRef.current.animateToRegion(
         {
@@ -207,18 +230,42 @@ export default function BranchPickerScreen() {
         showsUserLocation
         showsMyLocationButton
       >
-        {branchesWithDistance.map((branch) => (
-          <Marker
-            key={branch.id}
-            coordinate={{
-              latitude: Number(branch.lat),
-              longitude: Number(branch.lng),
-            }}
-            title={branch.city}
-            description={branch.address}
-            onPress={() => handleSelectBranch(branch)}
-          />
-        ))}
+        {branchesWithDistance.map((branch) => {
+          const isSelected = selectedBranch?.id === branch.id;
+          return (
+            <Marker
+              key={branch.id}
+              coordinate={{
+                latitude: Number(branch.lat),
+                longitude: Number(branch.lng),
+              }}
+              title={branch.city}
+              description={branch.address}
+              onPress={() => handleSelectBranch(branch)}
+            >
+              <Animated.View
+                style={{
+                  transform: [{ scale: isSelected ? markerScale : 1 }],
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <View
+                  style={{
+                    width: isSelected ? 28 : 22,
+                    height: isSelected ? 28 : 22,
+                    backgroundColor: isSelected ? ORANGE : "#2B2B2B",
+                    borderRadius: 14,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Ionicons name="business" size={12} color="#fff" />
+                </View>
+              </Animated.View>
+            </Marker>
+          );
+        })}
       </MapView>
 
       <BranchPickerSheet
