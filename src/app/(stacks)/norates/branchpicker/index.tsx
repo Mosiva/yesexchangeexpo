@@ -3,7 +3,13 @@ import { useFocusEffect } from "@react-navigation/native";
 import * as Location from "expo-location";
 import { router } from "expo-router";
 import { getDistance } from "geolib";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Alert,
   Linking,
@@ -32,6 +38,7 @@ export default function BranchPickerScreen() {
   const [address, setAddress] = useState<string>("Не определено");
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [branchesWithDistance, setBranchesWithDistance] = useState<any[]>([]);
+  const mapRef = useRef<MapView | null>(null);
 
   const {
     data: rawBranches,
@@ -136,6 +143,22 @@ export default function BranchPickerScreen() {
     );
   }, [branchesWithDistance]);
 
+  /** 🎯 Фокус карты на выбранный филиал */
+  const handleSelectBranch = (branch: any) => {
+    setSelectedBranch(branch);
+    if (branch.lat && branch.lng && mapRef.current) {
+      mapRef.current.animateToRegion(
+        {
+          latitude: Number(branch.lat),
+          longitude: Number(branch.lng),
+          latitudeDelta: 0.03,
+          longitudeDelta: 0.03,
+        },
+        600
+      );
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <StatusBar barStyle="dark-content" />
@@ -163,6 +186,7 @@ export default function BranchPickerScreen() {
 
       {/* 🗺 Карта */}
       <MapView
+        ref={mapRef}
         style={{ flex: 1 }}
         initialRegion={{
           latitude: location?.coords.latitude ?? 51.1694,
@@ -192,17 +216,18 @@ export default function BranchPickerScreen() {
             }}
             title={branch.city}
             description={branch.address}
-            onPress={() => setSelectedBranch(branch)}
+            onPress={() => handleSelectBranch(branch)}
           />
         ))}
       </MapView>
 
       <BranchPickerSheet
         selectedBranch={selectedBranch}
-        onSelectBranch={setSelectedBranch}
+        onSelectBranch={handleSelectBranch}
         onCloseDetails={() => setSelectedBranch(null)}
         allBranches={branchesWithDistance}
         nearbyBranches={nearbyBranches}
+        loadingLocation={loadingLocation}
       />
     </View>
   );

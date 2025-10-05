@@ -3,6 +3,7 @@ import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   Pressable,
   StyleSheet,
@@ -39,6 +40,7 @@ type Props = {
   onCloseDetails: () => void;
   allBranches?: Branch[];
   nearbyBranches?: Branch[];
+  loadingLocation?: boolean;
 };
 
 export default function BranchPickerSheet({
@@ -47,6 +49,7 @@ export default function BranchPickerSheet({
   onCloseDetails,
   allBranches = [],
   nearbyBranches = [],
+  loadingLocation = false,
 }: Props) {
   const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["35%", "85%"], []);
@@ -160,15 +163,24 @@ export default function BranchPickerSheet({
               </Pressable>
             </View>
 
-            {/* Список */}
-            <FlatList
-              data={dataToShow}
-              keyExtractor={(b) => String(b.id)}
-              renderItem={renderBranchItem}
-              ItemSeparatorComponent={() => <View style={styles.sep} />}
-              contentContainerStyle={{ paddingBottom: 24 }}
-              showsVerticalScrollIndicator={false}
-            />
+            {/* Список / индикатор */}
+            {tab === "nearby" && loadingLocation ? (
+              <View style={{ paddingVertical: 32, alignItems: "center" }}>
+                <ActivityIndicator size="small" color={ORANGE} />
+                <Text style={{ marginTop: 8, color: SUB }}>
+                  Определяем местоположение...
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={dataToShow}
+                keyExtractor={(b) => String(b.id)}
+                renderItem={renderBranchItem}
+                ItemSeparatorComponent={() => <View style={styles.sep} />}
+                contentContainerStyle={{ paddingBottom: 24 }}
+                showsVerticalScrollIndicator={false}
+              />
+            )}
           </>
         ) : (
           <>
