@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Ваше местоположение нужно, чтобы показать ближайшие филиалы обмена валют."
+      }
     },
     "android": {
       "adaptiveIcon": {
