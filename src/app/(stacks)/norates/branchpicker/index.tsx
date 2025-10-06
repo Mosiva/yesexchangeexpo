@@ -45,6 +45,9 @@ export default function BranchPickerScreen() {
     requestLocation,
   } = useUserLocation();
 
+  console.log("📍 Локация:", location);
+  console.log("🏠 Адрес:", address);
+
   /** 🔗 API запросы */
   const { data: rawBranches, refetch: refetchBranches } = useBranchesQuery();
   const { refetch: refetchNearestBranches } = useNearestBranchesQuery({
@@ -167,7 +170,10 @@ export default function BranchPickerScreen() {
             </View>
           </View>
 
-          <Pressable style={styles.refreshBtn} onPress={requestLocation}>
+          <Pressable
+            style={styles.refreshBtn}
+            onPress={() => requestLocation()}
+          >
             <Text style={styles.refreshText}>Обновить</Text>
           </Pressable>
         </View>
@@ -258,7 +264,7 @@ export default function BranchPickerScreen() {
           <Text style={styles.permissionDesc}>
             Чтобы показать ближайшие филиалы, разрешите доступ к местоположению
           </Text>
-          <Pressable style={styles.retryBtn} onPress={requestLocation}>
+          <Pressable style={styles.retryBtn} onPress={() => requestLocation()}>
             <Text style={styles.retryText}>Попробовать снова</Text>
           </Pressable>
         </View>
