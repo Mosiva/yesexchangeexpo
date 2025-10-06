@@ -14,6 +14,7 @@ import {
   Alert,
   Animated,
   Easing,
+  Image,
   Linking,
   Pressable,
   StatusBar,
@@ -265,13 +266,16 @@ export default function BranchPickerScreen() {
                   style={{
                     width: isSelected ? 28 : 22,
                     height: isSelected ? 28 : 22,
-                    backgroundColor: isSelected ? ORANGE : "#2B2B2B",
+                    backgroundColor: isSelected ? "transparent" : "#fff",
                     borderRadius: 14,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Ionicons name="business" size={12} color="#fff" />
+                  <Image
+                    source={require("../../../../../assets/icons/LocationIcon.png")}
+                    style={{ width: 28, height: 28 }}
+                  />
                 </View>
               </Animated.View>
             </Marker>
