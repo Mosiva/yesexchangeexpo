@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
-import * as Location from "expo-location";
 import { router } from "expo-router";
 import { getDistance } from "geolib";
 import React, {
@@ -11,11 +10,9 @@ import React, {
   useState,
 } from "react";
 import {
-  Alert,
   Animated,
   Easing,
   Image,
-  Linking,
   Pressable,
   StatusBar,
   StyleSheet,
@@ -24,6 +21,7 @@ import {
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import BranchPickerSheet from "../../../../components/BranchPickerSheet";
+import { useUserLocation } from "../../../../hooks/useUserLocation";
 import {
   useBranchesQuery,
   useNearestBranchesQuery,
@@ -35,26 +33,31 @@ const SUB = "#6B7280";
 
 export default function BranchPickerScreen() {
   const [selectedBranch, setSelectedBranch] = useState<any>(null);
-  const [location, setLocation] = useState<Location.LocationObject | null>(
-    null
-  );
-  const [address, setAddress] = useState<string>("Не определено");
-  const [loadingLocation, setLoadingLocation] = useState(false);
-  const [permissionDenied, setPermissionDenied] = useState(false);
   const [branchesWithDistance, setBranchesWithDistance] = useState<any[]>([]);
   const mapRef = useRef<MapView | null>(null);
 
+  /** 🧭 Геолокация через кастомный хук */
+  const {
+    location,
+    address,
+    loading: loadingLocation,
+    permissionDenied,
+    requestLocation,
+  } = useUserLocation();
+
+  /** 🔗 API запросы */
   const { data: rawBranches, refetch: refetchBranches } = useBranchesQuery();
-
-  const branches = React.useMemo(() => {
-    return Array.isArray(rawBranches) ? rawBranches : [];
-  }, [rawBranches]);
-
   const { refetch: refetchNearestBranches } = useNearestBranchesQuery({
     lng: location?.coords.longitude ?? 0,
     lat: location?.coords.latitude ?? 0,
   });
 
+  const branches = useMemo(
+    () => (Array.isArray(rawBranches) ? rawBranches : []),
+    [rawBranches]
+  );
+
+  /** 🔄 Обновление данных при фокусе */
   const refetchAllData = useCallback(async () => {
     await Promise.all([refetchBranches(), refetchNearestBranches()]);
   }, [refetchBranches, refetchNearestBranches]);
@@ -65,54 +68,9 @@ export default function BranchPickerScreen() {
     }, [refetchAllData])
   );
 
-  /** 📍 Запросить разрешение и определить местоположение */
-  const requestLocation = async () => {
-    try {
-      setLoadingLocation(true);
-      setPermissionDenied(false); // сбрасываем флаг перед новой попыткой
-
-      const { status } = await Location.requestForegroundPermissionsAsync();
-
-      if (status !== "granted") {
-        setPermissionDenied(true);
-        Alert.alert(
-          "Доступ к геолокации запрещён",
-          "Разрешите доступ к геолокации в настройках устройства.",
-          [
-            { text: "Отмена", style: "cancel" },
-            {
-              text: "Открыть настройки",
-              onPress: () => Linking.openSettings(),
-            },
-          ]
-        );
-        return;
-      }
-
-      const current = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-      setLocation(current);
-
-      const [reverse] = await Location.reverseGeocodeAsync(current.coords);
-      if (reverse && (reverse.city || reverse.region)) {
-        setAddress(
-          `${reverse.city ?? reverse.region}, ${reverse.street ?? ""}`
-        );
-      } else {
-        setAddress("Адрес не определён");
-      }
-    } catch (e) {
-      console.error("Ошибка геолокации:", e);
-    } finally {
-      setLoadingLocation(false);
-    }
-  };
-
-  /** 📏 Расчёт расстояний */
+  /** 📏 Расчёт расстояний от пользователя */
   const computeDistances = useCallback(() => {
     if (!location || !branches.length) return;
-
     const computed = branches.map((branch) => {
       const lat = Number(branch.lat);
       const lng = Number(branch.lng);
@@ -125,7 +83,6 @@ export default function BranchPickerScreen() {
         },
         { latitude: lat, longitude: lng }
       );
-
       return { ...branch, distanceKm: distanceMeters / 1000 };
     });
 
@@ -136,21 +93,19 @@ export default function BranchPickerScreen() {
   }, [branches, location]);
 
   useEffect(() => {
-    requestLocation();
-  }, []);
-
-  useEffect(() => {
     computeDistances();
   }, [branches, location]);
 
-  /** 📍 Фильтрация ближайших филиалов (≤15 км) */
-  const nearbyBranches = useMemo(() => {
-    return branchesWithDistance.filter(
-      (b) => b.distanceKm !== null && b.distanceKm <= 15
-    );
-  }, [branchesWithDistance]);
+  /** 🚩 Список филиалов рядом (≤15 км) */
+  const nearbyBranches = useMemo(
+    () =>
+      branchesWithDistance.filter(
+        (b) => b.distanceKm !== null && b.distanceKm <= 15
+      ),
+    [branchesWithDistance]
+  );
 
-  /** 🎯 Фокус карты на выбранный филиал + bounce анимация */
+  /** 🎯 Анимация маркера */
   const markerScale = useRef(new Animated.Value(1)).current;
 
   const triggerBounce = () => {
@@ -190,6 +145,8 @@ export default function BranchPickerScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <StatusBar barStyle="dark-content" />
+
+      {/* Верхняя панель */}
       <View style={styles.topBarWrapper}>
         <View style={styles.topBar}>
           <Pressable onPress={() => router.back()}>
@@ -216,7 +173,7 @@ export default function BranchPickerScreen() {
         </View>
       </View>
 
-      {/* 🗺 Карта */}
+      {/* Карта */}
       <MapView
         ref={mapRef}
         style={{ flex: 1 }}
@@ -283,6 +240,7 @@ export default function BranchPickerScreen() {
         })}
       </MapView>
 
+      {/* Шторка с филиалами */}
       <BranchPickerSheet
         selectedBranch={selectedBranch}
         onSelectBranch={handleSelectBranch}
@@ -292,7 +250,7 @@ export default function BranchPickerScreen() {
         loadingLocation={loadingLocation}
       />
 
-      {/* Заглушка при отключённой геолокации */}
+      {/* Если доступ к геолокации запрещён */}
       {permissionDenied && (
         <View style={styles.permissionOverlay}>
           <Ionicons name="alert-circle-outline" size={48} color={ORANGE} />
