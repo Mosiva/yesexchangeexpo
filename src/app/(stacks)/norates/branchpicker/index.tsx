@@ -43,9 +43,11 @@ export default function BranchPickerScreen() {
   const [branchesWithDistance, setBranchesWithDistance] = useState<any[]>([]);
   const mapRef = useRef<MapView | null>(null);
 
-  const { data: rawBranches, refetch: refetchBranches } = useBranchesQuery({});
+  const { data: rawBranches, refetch: refetchBranches } = useBranchesQuery();
 
-  const branches = rawBranches?.data ?? [];
+  const branches = React.useMemo(() => {
+    return Array.isArray(rawBranches) ? rawBranches : [];
+  }, [rawBranches]);
 
   const { refetch: refetchNearestBranches } = useNearestBranchesQuery({
     lng: location?.coords.longitude ?? 0,
