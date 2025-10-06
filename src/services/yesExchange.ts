@@ -1,25 +1,41 @@
 // src/services/yesExchange.ts
 import { restApi } from "../api";
 import type {
+  AdminBookingDto,
+  // bookings
   BookingDto,
   BookingStatus,
+  // branches
   BranchDto,
   CreateBookingDto,
-  CreateUserDto,
+  CreateUserViolationDto,
+  CreateViolationTypeDto,
+  // dictionaries
   CurrencyCode,
   CurrencyDto,
+  // rates
   DeltaPeriod,
   ExchangeRateDto,
   ExchangeRateHistoryRecordDto,
   LoginDto,
   MessageResponseDto,
+  // nbk
   NbkExchangeRateDto,
+  // pagination
   Paginated,
   RegisterDto,
   ResendOtpDto,
+  SetFavoriteCurrenciesDto,
+  ToAmountQueryDto,
+  ToAmountResponseDto,
+  UpdateBookingStatusDto,
   UpdateUserDto,
+  UpdateViolationTypeDto,
   UserDto,
+  UserViolationDto,
   VerifyOtpDto,
+  // violations
+  ViolationTypeDto
 } from "../types/api";
 
 export const yesExchangeApi = restApi.injectEndpoints({
@@ -49,7 +65,7 @@ export const yesExchangeApi = restApi.injectEndpoints({
       query: () => ({ url: "/api/v1/auth/logout", method: "POST" }),
     }),
 
-    // --- Пользователь ---
+    // --- Текущий пользователь ---
     me: build.query<UserDto, void>({
       query: () => ({ url: "/api/v1/me", method: "GET" }),
       providesTags: ["Users"],
@@ -59,31 +75,30 @@ export const yesExchangeApi = restApi.injectEndpoints({
       invalidatesTags: ["Users"],
     }),
 
-    // --- Валюты ---
-    currencies: build.query<
-      Paginated<CurrencyDto, Record<string, unknown>>,
-      {
-        page?: number;
-        limit?: number;
-        sortBy?: (
-          | "code:ASC"
-          | "code:DESC"
-          | "name:ASC"
-          | "name:DESC"
-          | "createdAt:ASC"
-          | "createdAt:DESC"
-        )[];
-        search?: string;
-        searchBy?: ("code" | "name")[];
-      }
-    >({
-      query: (params) => ({
-        url: "/api/v1/currencies",
+    // --- Предпочтения пользователя: избранные валюты ---
+    getFavoriteCurrencies: build.query<string[], void>({
+      query: () => ({
+        url: "/api/v1/me/preferences/favorite-currencies",
         method: "GET",
-        params,
       }),
+      providesTags: ["Users"],
+    }),
+    setFavoriteCurrencies: build.mutation<
+      MessageResponseDto,
+      SetFavoriteCurrenciesDto
+    >({
+      query: (data) => ({
+        url: "/api/v1/me/preferences/favorite-currencies",
+        method: "PUT",
+        data,
+      }),
+      invalidatesTags: ["Users"],
     }),
 
+    // --- Валюты ---
+    currencies: build.query<CurrencyDto[], void>({
+      query: () => ({ url: "/api/v1/currencies", method: "GET" }),
+    }),
     currencyByCode: build.query<CurrencyDto, { code: CurrencyCode }>({
       query: ({ code }) => ({
         url: `/api/v1/currencies/${encodeURIComponent(code)}`,
@@ -92,21 +107,10 @@ export const yesExchangeApi = restApi.injectEndpoints({
     }),
 
     // --- Филиалы ---
-    branches: build.query<
-      Paginated<BranchDto, { residentRK?: string | string[] }>,
-      {
-        page?: number;
-        limit?: number;
-        sortBy?: ("id:ASC" | "id:DESC" | "city:ASC" | "city:DESC")[];
-        search?: string;
-        searchBy?: ("city" | "address")[];
-      }
-    >({
-      query: (params) => ({ url: "/api/v1/branches", method: "GET", params }),
-      providesTags: (r) =>
-        r?.data ? [{ type: "City" as const, id: "LIST" }] : [],
+    branches: build.query<BranchDto[], void>({
+      query: () => ({ url: "/api/v1/branches", method: "GET" }),
+      providesTags: (r) => (r ? [{ type: "City" as const, id: "LIST" }] : []),
     }),
-
     nearestBranches: build.query<BranchDto[], { lng: number; lat: number }>({
       query: (params) => ({
         url: "/api/v1/branches/nearest",
@@ -114,7 +118,6 @@ export const yesExchangeApi = restApi.injectEndpoints({
         params,
       }),
     }),
-
     nearestBranch: build.query<BranchDto, { lng: number; lat: number }>({
       query: (params) => ({
         url: "/api/v1/branches/nearest/one",
@@ -122,28 +125,29 @@ export const yesExchangeApi = restApi.injectEndpoints({
         params,
       }),
     }),
+    branchById: build.query<BranchDto, { id: number }>({
+      query: ({ id }) => ({
+        url: `/api/v1/branches/${id}`,
+        method: "GET",
+      }),
+    }),
 
     // --- Курсы (текущие) ---
     exchangeRatesCurrent: build.query<
       Paginated<ExchangeRateDto>,
       {
-        branchId: string;
+        branchId: number;
         deltaPeriod: DeltaPeriod; // обязательно
-        currencies?: CurrencyCode[]; // массив кодов
+        currencyCodes?: string[]; // ISO-4217
         page?: number;
         limit?: number;
-        sortBy?: (
-          | "currencyCode:ASC"
-          | "currencyCode:DESC"
-          | "updatedAt:ASC"
-          | "updatedAt:DESC"
-        )[];
+        sortBy?: ("updatedAt:ASC" | "updatedAt:DESC")[];
         search?: string;
         searchBy?: "currencyCode"[];
       }
     >({
       query: ({ branchId, ...params }) => ({
-        url: `/api/v1/exchange-rates/${encodeURIComponent(branchId)}`,
+        url: `/api/v1/exchange-rates/${encodeURIComponent(String(branchId))}`,
         method: "GET",
         params,
       }),
@@ -153,9 +157,9 @@ export const yesExchangeApi = restApi.injectEndpoints({
     exchangeRatesHistory: build.query<
       Paginated<ExchangeRateHistoryRecordDto>,
       {
-        branchId: string;
+        branchId: number;
         deltaPeriod: DeltaPeriod; // обязательно
-        currencies?: CurrencyCode[]; // можно несколько
+        currencyCodes?: string[];
         from?: string; // YYYY-MM-DD
         to?: string; // YYYY-MM-DD
         page?: number;
@@ -165,7 +169,9 @@ export const yesExchangeApi = restApi.injectEndpoints({
       }
     >({
       query: ({ branchId, ...params }) => ({
-        url: `/api/v1/exchange-rates/${encodeURIComponent(branchId)}/history`,
+        url: `/api/v1/exchange-rates/${encodeURIComponent(
+          String(branchId)
+        )}/history`,
         method: "GET",
         params,
       }),
@@ -177,10 +183,10 @@ export const yesExchangeApi = restApi.injectEndpoints({
       {
         from?: string; // YYYY-MM-DD
         to?: string; // YYYY-MM-DD
-        currencies?: string[]; // строковые коды по спекам
+        currencyCodes?: string[];
         page?: number;
         limit?: number;
-        sortBy?: ("date:ASC" | "date:DESC")[];
+        sortBy?: string[];
         search?: string;
       }
     >({
@@ -191,17 +197,27 @@ export const yesExchangeApi = restApi.injectEndpoints({
       }),
     }),
 
-    // --- Бронирования (история пользователя) ---
+    // --- Бронирования (пользователь) ---
     bookingsHistory: build.query<
       Paginated<BookingDto, { statuses?: BookingStatus[] }>,
       {
         page?: number;
         limit?: number;
-        sortBy?: string[]; // в спеках sortBy есть, без жёсткого перечня
+        sortBy?: (
+          | "id:ASC"
+          | "id:DESC"
+          | "createdAt:ASC"
+          | "createdAt:DESC"
+          | "updatedAt:ASC"
+          | "updatedAt:DESC"
+        )[];
         search?: string;
         statuses?: BookingStatus[];
         from?: string; // YYYY-MM-DD
         to?: string; // YYYY-MM-DD
+        searchBy?: "number"[];
+        "filter.status"?: string[]; // спец. фильтр-операторы, если нужно
+        "filter.operationType"?: string[];
       }
     >({
       query: (params) => ({
@@ -210,32 +226,24 @@ export const yesExchangeApi = restApi.injectEndpoints({
         params,
       }),
     }),
-    // --- Бронирования (создание/получение) ---
     createBooking: build.mutation<MessageResponseDto, CreateBookingDto>({
-      // Требует bearer-токен (проставится интерсептором)
-      query: (data) => ({
-        url: "/api/v1/bookings",
-        method: "POST",
-        data,
-      }),
+      query: (data) => ({ url: "/api/v1/bookings", method: "POST", data }),
     }),
-
-    createGuestBooking: build.mutation<MessageResponseDto, CreateBookingDto>({
-      // Для гостей токен не нужен
-      query: (data) => ({
+    bookingById: build.query<BookingDto, { id: number }>({
+      query: ({ id }) => ({ url: `/api/v1/bookings/${id}`, method: "GET" }),
+    }),
+    // --- Бронирования (гость) ---
+    createGuestBooking: build.mutation<
+      MessageResponseDto,
+      { phone: string; data: CreateBookingDto }
+    >({
+      query: ({ phone, data }) => ({
         url: "/api/v1/bookings/guest",
         method: "POST",
+        params: { phone },
         data,
       }),
     }),
-
-    bookingById: build.query<BookingDto, { id: number }>({
-      query: ({ id }) => ({
-        url: `/api/v1/bookings/${id}`,
-        method: "GET",
-      }),
-    }),
-
     guestBookingById: build.query<BookingDto, { id: number; phone: string }>({
       query: ({ id, phone }) => ({
         url: `/api/v1/bookings/guest/${id}`,
@@ -243,8 +251,171 @@ export const yesExchangeApi = restApi.injectEndpoints({
         params: { phone },
       }),
     }),
+    cancelBooking: build.mutation<
+      MessageResponseDto,
+      { id: number; phone: string }
+    >({
+      query: ({ id, phone }) => ({
+        url: `/api/v1/bookings/${id}/cancel`,
+        method: "POST",
+        params: { phone },
+      }),
+    }),
+    toAmount: build.mutation<ToAmountResponseDto, ToAmountQueryDto>({
+      query: (data) => ({
+        url: "/api/v1/bookings/to-amount",
+        method: "POST",
+        data,
+      }),
+    }),
 
-    // --- Админ ---
+    // --- Админ. Бронирования ---
+    adminBookings: build.query<
+      Paginated<AdminBookingDto>,
+      {
+        page?: number;
+        limit?: number;
+        sortBy?: (
+          | "id:ASC"
+          | "id:DESC"
+          | "createdAt:ASC"
+          | "createdAt:DESC"
+          | "updatedAt:ASC"
+          | "updatedAt:DESC"
+        )[];
+        search?: string;
+        searchBy?: "number"[];
+        "filter.status"?: string[];
+        "filter.operationType"?: string[];
+      }
+    >({
+      query: (params) => ({
+        url: "/api/v1/admin/bookings",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["Users"],
+    }),
+    adminBookingUpdateStatus: build.mutation<
+      MessageResponseDto,
+      { id: number; data: UpdateBookingStatusDto }
+    >({
+      query: ({ id, data }) => ({
+        url: `/api/v1/admin/bookings/${id}/status`,
+        method: "POST",
+        data,
+      }),
+      invalidatesTags: ["Users"],
+    }),
+    adminBookingCancel: build.mutation<MessageResponseDto, { id: number }>({
+      query: ({ id }) => ({
+        url: `/api/v1/admin/bookings/${id}/cancel`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Users"],
+    }),
+
+    // --- Админ. Нарушения ---
+    adminViolations: build.query<
+      Paginated<UserViolationDto>,
+      {
+        page?: number;
+        limit?: number;
+        sortBy?: ("id:ASC" | "id:DESC" | "createdAt:ASC" | "createdAt:DESC")[];
+        search?: string;
+        searchBy?: "phone"[];
+        "filter.violationTypeCode"?: string[];
+        "filter.userId"?: string[];
+      }
+    >({
+      query: (params) => ({
+        url: "/api/v1/admin/violations",
+        method: "GET",
+        params,
+      }),
+    }),
+    adminCreateViolation: build.mutation<
+      MessageResponseDto,
+      CreateUserViolationDto
+    >({
+      query: (data) => ({
+        url: "/api/v1/admin/violations",
+        method: "POST",
+        data,
+      }),
+    }),
+    adminViolationsByUser: build.query<unknown, { userId: number }>({
+      query: ({ userId }) => ({
+        url: `/api/v1/admin/violations/user/${userId}`,
+        method: "GET",
+      }),
+    }),
+    adminViolationsByPhone: build.query<unknown, { phone: string }>({
+      query: ({ phone }) => ({
+        url: `/api/v1/admin/violations/phone/${encodeURIComponent(phone)}`,
+        method: "GET",
+      }),
+    }),
+    adminViolationsByType: build.query<unknown, { typeCode: string }>({
+      query: ({ typeCode }) => ({
+        url: `/api/v1/admin/violations/type/${encodeURIComponent(typeCode)}`,
+        method: "GET",
+      }),
+    }),
+    adminViolationsStats: build.query<unknown, void>({
+      query: () => ({
+        url: "/api/v1/admin/violations/stats",
+        method: "GET",
+      }),
+    }),
+
+    // --- Админ. Типы нарушений ---
+    adminViolationTypes: build.query<ViolationTypeDto[], void>({
+      query: () => ({ url: "/api/v1/admin/violation-types", method: "GET" }),
+    }),
+    adminCreateViolationType: build.mutation<
+      MessageResponseDto,
+      CreateViolationTypeDto
+    >({
+      query: (data) => ({
+        url: "/api/v1/admin/violation-types",
+        method: "POST",
+        data,
+      }),
+    }),
+    adminActiveViolationTypes: build.query<ViolationTypeDto[], void>({
+      query: () => ({
+        url: "/api/v1/admin/violation-types/active",
+        method: "GET",
+      }),
+    }),
+    adminViolationType: build.query<ViolationTypeDto, { code: string }>({
+      query: ({ code }) => ({
+        url: `/api/v1/admin/violation-types/${encodeURIComponent(code)}`,
+        method: "GET",
+      }),
+    }),
+    adminUpdateViolationType: build.mutation<
+      MessageResponseDto,
+      { code: string; data: UpdateViolationTypeDto }
+    >({
+      query: ({ code, data }) => ({
+        url: `/api/v1/admin/violation-types/${encodeURIComponent(code)}`,
+        method: "PATCH",
+        data,
+      }),
+    }),
+    adminDeleteViolationType: build.mutation<
+      MessageResponseDto,
+      { code: string }
+    >({
+      query: ({ code }) => ({
+        url: `/api/v1/admin/violation-types/${encodeURIComponent(code)}`,
+        method: "DELETE",
+      }),
+    }),
+
+    // --- Админ. Служебные ---
     adminPullBranches: build.mutation<void, void>({
       query: () => ({ url: "/api/v1/admin/branches/pull", method: "POST" }),
       invalidatesTags: ["City"],
@@ -254,44 +425,6 @@ export const yesExchangeApi = restApi.injectEndpoints({
         url: "/api/v1/admin/exchange-rates/pull",
         method: "POST",
       }),
-    }),
-
-    adminUsers: build.query<
-      Paginated<UserDto>,
-      { page?: number; limit?: number; search?: string }
-    >({
-      query: (params) => ({
-        url: "/api/v1/admin/users",
-        method: "GET",
-        params,
-      }),
-      providesTags: ["Users"],
-    }),
-    adminUser: build.query<UserDto, { id: number }>({
-      query: ({ id }) => ({ url: `/api/v1/admin/users/${id}`, method: "GET" }),
-      providesTags: (_r, _e, { id }) => [{ type: "Users", id }],
-    }),
-    adminCreateUser: build.mutation<MessageResponseDto, CreateUserDto>({
-      query: (data) => ({ url: "/api/v1/admin/users", method: "POST", data }),
-      invalidatesTags: ["Users"],
-    }),
-    adminUpdateUser: build.mutation<
-      MessageResponseDto,
-      { id: number; data: UpdateUserDto }
-    >({
-      query: ({ id, data }) => ({
-        url: `/api/v1/admin/users/${id}`,
-        method: "PATCH",
-        data,
-      }),
-      invalidatesTags: (_r, _e, { id }) => [{ type: "Users", id }],
-    }),
-    adminDeleteUser: build.mutation<MessageResponseDto, { id: number }>({
-      query: ({ id }) => ({
-        url: `/api/v1/admin/users/${id}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: ["Users"],
     }),
 
     // --- Healthcheck ---
@@ -312,6 +445,8 @@ export const {
   // user
   useMeQuery,
   useUpdateMeMutation,
+  useGetFavoriteCurrenciesQuery,
+  useSetFavoriteCurrenciesMutation,
   // currencies
   useCurrenciesQuery,
   useCurrencyByCodeQuery,
@@ -319,25 +454,42 @@ export const {
   useBranchesQuery,
   useNearestBranchesQuery,
   useNearestBranchQuery,
+  useBranchByIdQuery,
   // rates
   useExchangeRatesCurrentQuery,
   useExchangeRatesHistoryQuery,
   // nbk
   useNbkAverageQuery,
-  // bookings
+  // bookings (user)
   useBookingsHistoryQuery,
   useCreateBookingMutation,
-  useCreateGuestBookingMutation,
   useBookingByIdQuery,
+  // bookings (guest)
+  useCreateGuestBookingMutation,
   useGuestBookingByIdQuery,
-  // admin
+  useCancelBookingMutation,
+  useToAmountMutation,
+  // admin bookings
+  useAdminBookingsQuery,
+  useAdminBookingUpdateStatusMutation,
+  useAdminBookingCancelMutation,
+  // admin violations
+  useAdminViolationsQuery,
+  useAdminCreateViolationMutation,
+  useAdminViolationsByUserQuery,
+  useAdminViolationsByPhoneQuery,
+  useAdminViolationsByTypeQuery,
+  useAdminViolationsStatsQuery,
+  // admin violation types
+  useAdminViolationTypesQuery,
+  useAdminCreateViolationTypeMutation,
+  useAdminActiveViolationTypesQuery,
+  useAdminViolationTypeQuery,
+  useAdminUpdateViolationTypeMutation,
+  useAdminDeleteViolationTypeMutation,
+  // admin misc
   useAdminPullBranchesMutation,
   useAdminPullExchangeRatesMutation,
-  useAdminUsersQuery,
-  useAdminUserQuery,
-  useAdminCreateUserMutation,
-  useAdminUpdateUserMutation,
-  useAdminDeleteUserMutation,
   // health
   useHealthQuery,
 } = yesExchangeApi;

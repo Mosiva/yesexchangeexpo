@@ -54,7 +54,7 @@ export type MessageResponseDto = { message: string };
 export type DeltaPeriod = "day" | "week" | "month";
 export type Trend = "up" | "down" | "same";
 
-// Универсальная обёртка для пагинации (оставляем как есть)
+// Универсальная обёртка для пагинации
 export type Paginated<T, F = unknown> = {
   data: T[];
   meta: {
@@ -92,13 +92,17 @@ export type ResendOtpDto = { phone: string };
 
 // --- User DTOs ---
 
+export type UserRole = "admin" | "user";
+
 export type UserDto = {
   id: number;
   phone: string;
   firstName: string;
   lastName?: string | null;
   residentRK: boolean;
-  role?: string;
+  phoneVerified: boolean;
+  blocked: boolean;
+  role: UserRole;
   createdAt?: string; // ISO
   updatedAt?: string; // ISO
 };
@@ -107,9 +111,21 @@ export type UpdateUserDto = Partial<
   Pick<UserDto, "phone" | "firstName" | "lastName" | "residentRK" | "role">
 >;
 
-export type CreateUserDto = Omit<UserDto, "id" | "createdAt" | "updatedAt">;
+export type CreateUserDto = {
+  phone: string;
+  firstName: string;
+  lastName?: string | null;
+  residentRK: boolean;
+  role: UserRole;
+};
 
-// --- Currency DTOs (новое) ---
+// --- Предпочтения пользователя ---
+
+export type SetFavoriteCurrenciesDto = {
+  currencyCodes: string[]; // ISO-4217
+};
+
+// --- Currency DTOs ---
 
 export type CurrencyDto = {
   code: CurrencyCode;
@@ -117,29 +133,42 @@ export type CurrencyDto = {
   iconUrl: string;
 };
 
+// --- Branches DTOs ---
+
+export type BranchDto = {
+  id: number;
+  city: string;
+  address: string;
+  lat: number;
+  lng: number;
+  contactPhone: string;
+};
+
 // --- Exchange Rates DTOs ---
 
-export type DeltaDto = {
-  buy: number;
-  sell: number;
-};
-
-export type DeltaPercentDto = {
-  buy: number;
-  sell: number;
-};
+export type DeltaDto = { buy: number; sell: number };
+export type DeltaPercentDto = { buy: number; sell: number };
 
 export type ExchangeRateDto = {
+  id: number;
   currency: CurrencyDto;
   buy: number;
   sell: number;
-  changedAt: string; // ISO datetime (поле времени в ответе)
-  delta?: DeltaDto | null; // разница абсолютная
-  deltaPercent?: DeltaPercentDto | null; // разница в процентах
-  trend?: Trend | null; // "up" | "down" | "same"
+  changedAt: string; // ISO datetime
+  delta?: DeltaDto | null;
+  deltaPercent?: DeltaPercentDto | null;
+  trend?: Trend | null;
+};
+
+export type ExchangeRateDtoWithIdCurrencySellAndBuy = {
+  id: number;
+  currency: CurrencyDto;
+  buy: number;
+  sell: number;
 };
 
 export type ExchangeRateHistoryRecordDto = {
+  id: number;
   currency: CurrencyDto;
   buy: number;
   sell: number;
@@ -152,54 +181,113 @@ export type ExchangeRateHistoryRecordDto = {
 // --- Nbk (Нацбанк) DTOs ---
 
 export type NbkExchangeRateDto = {
-  amount: number; // номинал (1, 10, 100)
-  currency: string; // код валюты строкой по спекам
+  amount: number;
+  currencyCode: string; // ISO-4217
   date: string; // dd.MM.yyyy
 };
 
-export type BranchDto = {
-  id: number;
-  name: string;
-  code: string;
-  city: string;
-  address: string;
-  lat: number;
-  lng: number;
-  contactPhone?: string | null;
-};
-
 // --- Booking DTOs ---
+
 export type BookingStatus =
   | "pending_moderation"
-  | "ready_for_pickup"
-  | "rejected"
   | "not_confirmed"
-  | "expired";
+  | "ready_for_pickup"
+  | "cancelled"
+  | "expired"
+  | "received";
 
 export type BookingOperationType = "buy" | "sell";
 
 export type CreateBookingDto = {
-  branchId: number; // ID филиала
-  fromCurrency: CurrencyCode; // код, напр. "KZT"
-  amount: string; // decimal-string во fromCurrency
-  toCurrency: CurrencyCode; // код, напр. "USD"
-  operationType: BookingOperationType; // "buy" | "sell"
-  isRateLocked: boolean; // фиксируем курс?
+  branchId: number;
+  fromExchangeRateId: number;
+  amount: string; // decimal-string
+  toExchangeRateId: number;
+  operationType: BookingOperationType;
+  isRateLocked: boolean;
 };
 
-// в пользовательском ответе валюты — строковые коды, не объект CurrencyDto
+export type ToAmountQueryDto = {
+  fromExchangeRateId: number;
+  fromAmount: string; // decimal-string
+  toExchangeRateId: number;
+};
+
+export type ToAmountResponseDto = {
+  toAmount: string; // decimal-string
+  rate: string; // decimal-string
+};
+
 export type BookingDto = {
   id: number;
   number: string; // ровно 8 цифр
   branch: { id: number; city: string; address: string };
-  fromCurrency: CurrencyCode;
-  toCurrency: CurrencyCode;
-  amount: string; // decimal-string
+  fromExchangeRate: ExchangeRateDtoWithIdCurrencySellAndBuy;
+  toExchangeRate: ExchangeRateDto;
+  amount: string;
   isRateLocked: boolean;
-  toAmount: string | null; // decimal-string | null
+  toAmount: string | null;
   operationType: BookingOperationType;
   status: BookingStatus;
-  expiresAt: string | null; // ISO | null
-  completedAt: string | null; // ISO | null
-  createdAt: string; // ISO
+  expiresAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+};
+
+// --- Admin Bookings DTOs ---
+
+export type AdminBookingDto = BookingDto & {
+  // расширенная версия с полным BranchDto и UserDto
+  branch: BranchDto;
+  user: UserDto | null;
+  discountPercentApplied: string | null;
+  lockedRate: string | null;
+  lockedAt: string | null;
+  phone: string | null;
+  canceledAt: string | null;
+  canceledBy: string | null;
+};
+
+export type UpdateBookingStatusDto = {
+  status: BookingStatus;
+  canceledBy?: "admin" | "automatic" | "external" | "user";
+};
+
+// --- Violations DTOs ---
+
+export type ViolationSeverity = "none" | "low" | "medium" | "high" | "critical";
+
+export type ViolationTypeDto = {
+  code: string;
+  title: string;
+  description?: string;
+  severity: ViolationSeverity;
+  retiredAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type CreateViolationTypeDto = {
+  code: string;
+  title: string;
+  description?: string;
+  severity?: ViolationSeverity; // default: none
+};
+
+export type UpdateViolationTypeDto = Partial<
+  Pick<ViolationTypeDto, "title" | "description" | "severity" | "retiredAt">
+>;
+
+export type UserViolationDto = {
+  userId?: number | null;
+  phone: string;
+  violationTypeCode: string;
+  description?: string | Record<string, unknown> | null;
+};
+
+export type CreateUserViolationDto = {
+  userId?: number | null;
+  phone: string;
+  violationTypeCode: string;
+  description?: string | Record<string, unknown> | null;
 };
