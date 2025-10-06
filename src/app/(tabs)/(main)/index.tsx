@@ -26,6 +26,7 @@ import {
   useBranchesQuery,
   useExchangeRatesCurrentQuery,
   useNbkAverageQuery,
+  useNearestBranchQuery,
 } from "../../../services/yesExchange";
 
 // === Вспомогательные функции ===
@@ -87,6 +88,16 @@ export default function MainScreen() {
     isLoading: isBranchesLoading,
     isError: isBranchesError,
   } = useBranchesQuery();
+  // === API ===
+  const {
+    data: rawNearestBranch,
+    refetch: refetchNearestBranch,
+    isLoading: isNearestBranchLoading,
+    isError: isNearestBranchError,
+  } = useNearestBranchQuery({
+    lng: 0,
+    lat: 0,
+  });
 
   const yesterdayDate = getYesterdayDate();
 
@@ -212,7 +223,7 @@ export default function MainScreen() {
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <Pressable hitSlop={12} onPress={handlePress}>
+          <Pressable hitSlop={12}>
             <Ionicons name="settings" size={22} color="#fff" />
           </Pressable>
         </View>
