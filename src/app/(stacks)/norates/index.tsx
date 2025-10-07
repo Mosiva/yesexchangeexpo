@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -14,6 +15,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CurrenciesListModalArchive from "../../../components/CurrenciesListModalArchive";
+import CurrencyFlag from "../../../components/CurrencyFlag";
+import { useExchangeRatesCurrentQuery } from "../../../services/yesExchange";
+import { CurrencyCode } from "../../../types/api";
 
 /** ====== helpers ====== */
 const ORANGE = "#F58220";
@@ -36,50 +40,82 @@ const parse = (s: string) =>
       .replace(",", ".")
   );
 
-/** ====== currencies ====== */
-const currencies = [
-  { code: "USD", buy: 544.36, sell: 549.36, flag: "🇺🇸", name: "Доллар США" },
-  { code: "EUR", buy: 637.0, sell: 642.0, flag: "🇪🇺", name: "Евро" },
-  { code: "RUB", buy: 6.53, sell: 11.53, flag: "🇷🇺", name: "Российский рубль" },
-  { code: "CNY", buy: 76.31, sell: 81.31, flag: "🇨🇳", name: "Китайский юань" },
-  { code: "AED", buy: 148.21, sell: 153.21, flag: "🇦🇪", name: "Дирхам ОАЭ" },
-  { code: "TRY", buy: 13.06, sell: 18.06, flag: "🇹🇷", name: "Турецкая лира" },
-  { code: "KZT", buy: 1.0, sell: 1.0, flag: "🇰🇿", name: "Казахстанский тенге" },
-];
-
-const findCurrency = (code: string) => currencies.find((c) => c.code === code)!;
-
 /** ====== screen ====== */
 export default function ReserveNoRateScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { id: branchIdParam } = useLocalSearchParams<{ id?: string }>();
+
   const [mode, setMode] = useState<"sell" | "buy">("sell");
-  const [fromCode, setFromCode] = useState("KZT");
   const [toCode, setToCode] = useState("USD");
 
-  const from = findCurrency(fromCode);
+  /** ====== API ====== */
+  const {
+    data: rawExchangeRates,
+    refetch: refetchExchangeRates,
+    isLoading: isExchangeRatesLoading,
+    isError: isExchangeRatesError,
+  } = useExchangeRatesCurrentQuery(
+    {
+      branchId: Number(branchIdParam),
+      deltaPeriod: "day",
+    },
+    {
+      skip: !branchIdParam,
+    }
+  );
+
+  /** 🔄 Обновление данных при фокусе */
+  const refetchAllData = useCallback(async () => {
+    await Promise.all([refetchExchangeRates()]);
+  }, [refetchExchangeRates]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refetchAllData();
+    }, [refetchAllData])
+  );
+
+  /** ====== Массив валют из API ====== */
+  const currencies = useMemo(() => {
+    if (!rawExchangeRates?.data) return [];
+    return rawExchangeRates.data.map((item) => ({
+      code: item.currency.code,
+      name: item.currency.name,
+      buy: item.buy,
+      sell: item.sell,
+    }));
+  }, [rawExchangeRates]);
+
+  const findCurrency = (code: string) =>
+    currencies.find((c) => c.code === code) ?? {
+      code: code as CurrencyCode,
+      name: "",
+      buy: 1,
+      sell: 1,
+    };
+
+  const from = {
+    code: "KZT" as CurrencyCode,
+    name: "Казахстанский тенге",
+    buy: 1,
+    sell: 1,
+  };
   const to = findCurrency(toCode);
 
   // Controlled amounts
   const [fromText, setFromText] = useState(fmt(1000));
-  const [toText, setToText] = useState(fmt(1000 / 537));
+  const [toText, setToText] = useState(fmt(1000 / 540));
 
   const fromAmount = parse(fromText);
   const toAmount = parse(toText);
 
   const rate = useMemo(() => {
-    if (mode === "sell") {
-      // Продаём FROM → обменник берёт по buy
-      const fromRateInKzt = from.buy;
-      const toRateInKzt = to.sell; // Покупаем TO → обменник продаёт по sell
-      return fromRateInKzt / toRateInKzt;
-    } else {
-      // Я покупаю (т.е. задаю TO)
-      const fromRateInKzt = from.sell;
-      const toRateInKzt = to.buy;
-      return fromRateInKzt / toRateInKzt;
-    }
-  }, [from, to, mode]);
+    // KZT всегда базовая
+    const fromRateInKzt = 1;
+    const toRateInKzt = mode === "sell" ? to.sell : to.buy;
+    return fromRateInKzt / toRateInKzt;
+  }, [to, mode]);
 
   const computed = useMemo(() => {
     if (mode === "sell") {
@@ -101,8 +137,7 @@ export default function ReserveNoRateScreen() {
   const footerSum = computed.to;
   const footerCode = to.code;
 
-  // Modal states
-  const [showFromModal, setShowFromModal] = useState(false);
+  // Modal
   const [showToModal, setShowToModal] = useState(false);
 
   return (
@@ -132,7 +167,7 @@ export default function ReserveNoRateScreen() {
                 mode === "sell" && styles.segmentTextActive,
               ]}
             >
-              Я продаю
+              Я покупаю
             </Text>
           </Pressable>
           <Pressable
@@ -145,51 +180,47 @@ export default function ReserveNoRateScreen() {
                 mode === "buy" && styles.segmentTextActive,
               ]}
             >
-              Я покупаю
+              Я продаю
             </Text>
           </Pressable>
         </View>
-
-        {/* FROM row */}
+        {/* TO row — вводим валюту */}
         <FXRow
-          flag={from.flag}
-          code={from.code}
-          name={from.name}
-          value={fmt(computed.from)}
-          onChangeText={(t) => {
-            if (mode === "sell") {
-              setFromText(t);
-              const v = parse(t);
-              setToText(fmt(isFinite(v) ? v / rate : 0));
-            }
-          }}
-          editable={mode === "sell"}
-          suffix={from.code}
-          highlight={mode === "sell"}
-          onPressSelect={() => setShowFromModal(true)}
-        />
-
-        {/* TO row */}
-        <FXRow
-          flag={to.flag}
+          flag={<CurrencyFlag code={to.code} size={18} />}
           code={to.code}
           name={to.name}
-          value={fmt(computed.to)}
+          value={fmt(toAmount)}
           onChangeText={(t) => {
-            if (mode === "buy") {
-              setToText(t);
-              const v = parse(t);
-              setFromText(fmt(isFinite(v) ? v * rate : 0));
+            setToText(t);
+            const v = parse(t);
+
+            if (mode === "sell") {
+              // 💸 продаём валюту, получаем тенге
+              setFromText(fmt(isFinite(v) ? v * to.buy : 0));
+            } else {
+              // 💱 покупаем валюту, платим тенге
+              setFromText(fmt(isFinite(v) ? v * to.sell : 0));
             }
           }}
-          editable={mode === "buy"}
+          editable={true} // 👈 теперь всегда редактируется именно это поле
           suffix={to.code}
-          highlight={mode === "buy"}
-          mutedCard
+          highlight={true}
           onPressSelect={() => setShowToModal(true)}
         />
 
-        {/* Rate line */}
+        {/* FROM row — всегда KZT, не редактируется */}
+        <FXRow
+          flag={<CurrencyFlag code="KZT" size={18} />}
+          code="KZT"
+          name="Казахстанский тенге"
+          value={fmt(computed.from)}
+          onChangeText={() => {}}
+          editable={false}
+          suffix="KZT"
+          highlight={false}
+          mutedCard
+        />
+
         <View style={styles.rateRow}>
           <Text style={styles.rateText}>
             {rateLineLeft} = {rateLineRight}
@@ -215,18 +246,7 @@ export default function ReserveNoRateScreen() {
         </Pressable>
       </View>
 
-      {/* Modals */}
-      <CurrenciesListModalArchive
-        visible={showFromModal}
-        onClose={() => setShowFromModal(false)}
-        onConfirm={(selected: string[]) => {
-          setFromCode(selected[0]);
-          setShowFromModal(false);
-        }}
-        value={[fromCode]}
-        buttonText="Выбрать"
-        items={currencies}
-      />
+      {/* TO Modal */}
       <CurrenciesListModalArchive
         visible={showToModal}
         onClose={() => setShowToModal(false)}
@@ -235,14 +255,18 @@ export default function ReserveNoRateScreen() {
           setShowToModal(false);
         }}
         value={[toCode]}
-        buttonText="Выбрать"
-        items={currencies}
+        buttonText="Выбрать валюту"
+        items={currencies.map((c) => ({
+          code: c.code,
+          name: c.name,
+          flag: <CurrencyFlag code={c.code} size={24} />,
+        }))}
       />
     </KeyboardAvoidingView>
   );
 }
 
-/** ====== currency row ====== */
+/** ====== FXRow component ====== */
 function FXRow({
   flag,
   code,
@@ -255,7 +279,7 @@ function FXRow({
   mutedCard,
   onPressSelect,
 }: {
-  flag: string;
+  flag: React.ReactNode;
   code: string;
   name: string;
   value: string;
@@ -275,14 +299,14 @@ function FXRow({
         ]}
         onPress={onPressSelect}
       >
-        <View style={styles.flagWrap}>
-          <Text style={{ fontSize: 18 }}>{flag}</Text>
-        </View>
+        <View style={styles.flagWrap}>{flag}</View>
         <View style={{ flex: 1 }}>
           <Text style={styles.code}>{code}</Text>
           <Text style={styles.name}>{name}</Text>
         </View>
-        <Ionicons name="chevron-down" size={18} color="#6B7280" />
+        {onPressSelect && (
+          <Ionicons name="chevron-down" size={18} color="#6B7280" />
+        )}
       </Pressable>
 
       <View style={[styles.amountWrap, highlight && { borderColor: ORANGE }]}>
@@ -313,11 +337,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     fontWeight: "400",
   },
-  segmentWrap: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 12,
-  },
+  segmentWrap: { flexDirection: "row", gap: 10, marginBottom: 12 },
   segment: {
     flex: 1,
     height: 56,
@@ -329,7 +349,6 @@ const styles = StyleSheet.create({
   segmentActive: { backgroundColor: "#2B2B2B" },
   segmentText: { fontSize: 16, fontWeight: "400", color: "#8C8C8C" },
   segmentTextActive: { color: "#fff" },
-
   fxRow: {
     flexDirection: "row",
     gap: 10,
@@ -351,12 +370,9 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 18,
-    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
   },
   code: { fontSize: 16, fontWeight: "700", color: TEXT },
   name: { fontSize: 11, color: SUB, marginTop: 2, fontWeight: "400" },
@@ -371,12 +387,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff",
   },
-  amountInput: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "700",
-    color: TEXT,
-  },
+  amountInput: { flex: 1, fontSize: 16, fontWeight: "700", color: TEXT },
   suffix: {
     borderLeftWidth: 1,
     borderLeftColor: BORDER,

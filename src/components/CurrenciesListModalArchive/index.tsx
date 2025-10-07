@@ -12,14 +12,12 @@ import {
 import Modal from "react-native-modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-type Currency = { code: string; name: string; flag: string };
+type Currency = { code: string; name: string; flag: React.ReactNode };
 
 interface Props {
   visible: boolean;
   onClose: () => void;
-  /** Preselected currency code(s); the first one will be used */
   value?: string[];
-  /** Called with the chosen code (as a single-item array) */
   onConfirm: (selected: string[]) => void;
   items?: Currency[];
   buttonText?: string;
@@ -36,9 +34,7 @@ export default function CurrenciesListModalArchive({
   buttonText = "Посмотреть архив",
 }: Props) {
   const insets = useSafeAreaInsets();
-
   const [query, setQuery] = useState("");
-  // keep a Set for minimal change, but enforce single select
   const [selected, setSelected] = useState<Set<string>>(new Set(value));
 
   useEffect(() => {
@@ -66,10 +62,8 @@ export default function CurrenciesListModalArchive({
           {on && <View style={styles.radioInner} />}
         </View>
 
-        {/* flag */}
-        <Text style={styles.flag} accessibilityLabel={`${item.code} flag`}>
-          {item.flag}
-        </Text>
+        {/* flag — теперь React-элемент */}
+        <View style={{ marginRight: 4 }}>{item.flag}</View>
 
         {/* code + name */}
         <View style={{ flex: 1 }}>
@@ -178,7 +172,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: { fontSize: 20, fontWeight: "700", color: "#111827" },
-
   searchWrap: {
     flexDirection: "row",
     alignItems: "center",
@@ -189,15 +182,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   searchInput: { flex: 1, fontSize: 16, color: "#111827" },
-
   row: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 14,
     gap: 12,
   },
-
-  // radio
   radioOuter: {
     width: 24,
     height: 24,
@@ -214,13 +204,9 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: ORANGE,
   },
-
-  flag: { fontSize: 24, marginRight: 4 },
   code: { fontSize: 16, fontWeight: "700", color: "#111827" },
   name: { fontSize: 12, color: "#6B7280", marginTop: 2, fontWeight: "400" },
-
   sep: { height: 1, backgroundColor: "#ECECEC" },
-
   bottomBar: {
     position: "absolute",
     left: 16,
