@@ -156,8 +156,19 @@ export default function MainScreen() {
   const nbkAverage = rawNbkAverage || [];
 
   React.useEffect(() => {
-    // 1️⃣ Если геолокация разрешена и бэк вернул ближайший филиал
-    if (!selectedBranch && !permissionDenied && rawNearestBranch?.id) {
+    // 🕓 1️⃣ Идёт загрузка ближайшего филиала
+    if (isNearestBranchLoading && !selectedBranch) {
+      console.log("🕓 Определяем ближайший филиал по геолокации...");
+      return;
+    }
+
+    // 🟢 2️⃣ Успешно нашли ближайший филиал
+    if (
+      !selectedBranch &&
+      !permissionDenied &&
+      !isNearestBranchLoading &&
+      rawNearestBranch?.id
+    ) {
       console.log(
         "📍 Геолокация активна — выбран ближайший филиал:",
         rawNearestBranch.city,
@@ -168,9 +179,16 @@ export default function MainScreen() {
       return;
     }
 
-    // 2️⃣ Если геолокация запрещена — выбираем дефолтный филиал из Астаны
+    // ⚠️ 3️⃣ Ошибка при получении ближайшего филиала
+    if (isNearestBranchError && !permissionDenied && !selectedBranch) {
+      console.log(
+        "⚠️ Ошибка при запросе ближайшего филиала, используем fallback."
+      );
+    }
+
+    // 🚫 4️⃣ Геолокация отключена — выбираем дефолтный филиал
     if (
-      permissionDenied &&
+      (permissionDenied || isNearestBranchError) &&
       Array.isArray(rawBranches) &&
       rawBranches.length > 0 &&
       !selectedBranch
@@ -180,19 +198,17 @@ export default function MainScreen() {
         city: typeof b.city === "string" ? b.city : "",
       }));
 
-      // 🔍 Фильтруем только филиалы в Астане
       const astanaBranches = normalizedBranches.filter(
         (b) =>
           b.city?.toLowerCase().includes("астан") ||
           b.city?.toLowerCase().includes("astan")
       );
 
-      // 📦 Если нашли несколько в Астане — берём первый
       const defaultBranch =
         astanaBranches.length > 0 ? astanaBranches[0] : normalizedBranches[0];
 
       console.log(
-        "📍 Геолокация отключена — выбран дефолтный филиал:",
+        "📍 Геолокация недоступна — выбран дефолтный филиал:",
         defaultBranch.city,
         "|",
         defaultBranch.address
@@ -201,11 +217,18 @@ export default function MainScreen() {
       setSelectedBranch(defaultBranch);
     }
 
-    // 3️⃣ Если геолокация ещё не определена (loading) — просто ждём
-    if (!permissionDenied && !rawNearestBranch && !selectedBranch) {
-      console.log("🕓 Ожидаем определение геолокации...");
+    // 💤 5️⃣ Если всё ещё ничего не выбрано (например, очень ранний рендер)
+    if (!selectedBranch && !isNearestBranchLoading && !permissionDenied) {
+      console.log("🕓 Ожидание данных о филиалах...");
     }
-  }, [rawNearestBranch, permissionDenied, rawBranches, selectedBranch]);
+  }, [
+    rawNearestBranch,
+    isNearestBranchLoading,
+    isNearestBranchError,
+    permissionDenied,
+    rawBranches,
+    selectedBranch,
+  ]);
 
   // === Обновление данных ===
   const refetchAllData = useCallback(async () => {
@@ -315,12 +338,36 @@ export default function MainScreen() {
             />
             <View style={{ flex: 1 }}>
               <Text style={styles.addrLabel}>Адрес</Text>
+
+              {/* 🏦 Основной адрес */}
               <Text style={styles.addrValue}>
                 {selectedBranch
                   ? `${selectedBranch.city}, ${selectedBranch.address}`
                   : "Выберите филиал"}
               </Text>
+
+              {/* 💬 Подпись под адресом */}
+              {isNearestBranchLoading ? (
+                <Text style={styles.addrHint}>
+                  Определяем ближайший филиал...
+                </Text>
+              ) : permissionDenied ? (
+                <Text style={styles.addrHint}>
+                  Филиал по умолчанию (Астана)
+                </Text>
+              ) : isNearestBranchError ? (
+                <Text style={styles.addrHint}>
+                  Не удалось определить ближайший филиал
+                </Text>
+              ) : selectedBranch?.id === rawNearestBranch?.id ? (
+                <Text style={styles.addrHint}>
+                  Ближайший филиал по вашему местоположению
+                </Text>
+              ) : (
+                <Text style={styles.addrHint}>Выбран филиал вручную</Text>
+              )}
             </View>
+
             <Ionicons name="chevron-down" size={20} color="#fff" />
           </TouchableOpacity>
         )}
@@ -648,5 +695,11 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 6,
     marginLeft: 8,
+  },
+  addrHint: {
+    color: "rgba(255,255,255,0.9)",
+    fontSize: 12,
+    marginTop: 2,
+    opacity: 0.8,
   },
 });
