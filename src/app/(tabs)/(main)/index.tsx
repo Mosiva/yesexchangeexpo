@@ -22,6 +22,7 @@ import LineUpDownChartCard from "../../../components/LineUpDownChartCard";
 import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
 import ReservePromoCard from "../../../components/ReservePromoCard";
 import { Skeleton } from "../../../components/skeleton";
+import { useUserLocation } from "../../../hooks/useUserLocation";
 import {
   useBranchesQuery,
   useExchangeRatesCurrentQuery,
@@ -79,6 +80,8 @@ const LocalTime = () => {
 };
 
 export default function MainScreen() {
+  const { location, loading, permissionDenied } = useUserLocation();
+
   const [refreshing, setRefreshing] = useState(false);
 
   // === API ===
@@ -94,10 +97,15 @@ export default function MainScreen() {
     refetch: refetchNearestBranch,
     isLoading: isNearestBranchLoading,
     isError: isNearestBranchError,
-  } = useNearestBranchQuery({
-    lng: 0,
-    lat: 0,
-  });
+  } = useNearestBranchQuery(
+    {
+      lng: location?.coords.longitude ?? 0,
+      lat: location?.coords.latitude ?? 0,
+    },
+    {
+      skip: !location, // ⏳ не делаем запрос, пока не получили координаты
+    }
+  );
 
   const yesterdayDate = getYesterdayDate();
 
@@ -147,30 +155,57 @@ export default function MainScreen() {
   const exchangeRates = rawExchangeRates?.data || [];
   const nbkAverage = rawNbkAverage || [];
 
-  // === useEffect: установить филиал по умолчанию (Астана) ===
   React.useEffect(() => {
+    // 1️⃣ Если геолокация разрешена и бэк вернул ближайший филиал
+    if (!selectedBranch && !permissionDenied && rawNearestBranch?.id) {
+      console.log(
+        "📍 Геолокация активна — выбран ближайший филиал:",
+        rawNearestBranch.city,
+        "|",
+        rawNearestBranch.address
+      );
+      setSelectedBranch(rawNearestBranch);
+      return;
+    }
+
+    // 2️⃣ Если геолокация запрещена — выбираем дефолтный филиал из Астаны
     if (
+      permissionDenied &&
       Array.isArray(rawBranches) &&
       rawBranches.length > 0 &&
       !selectedBranch
     ) {
-      // Преобразуем города, убирая возможные артефакты кодировки
       const normalizedBranches = rawBranches.map((b) => ({
         ...b,
         city: typeof b.city === "string" ? b.city : "",
       }));
 
-      // Ищем "Астана"
-      const astanaBranch =
-        normalizedBranches.find(
-          (b) =>
-            b.city?.toLowerCase().includes("астан") ||
-            b.city?.toLowerCase().includes("astan")
-        ) ?? normalizedBranches[0]; // если не нашли — берём первый
+      // 🔍 Фильтруем только филиалы в Астане
+      const astanaBranches = normalizedBranches.filter(
+        (b) =>
+          b.city?.toLowerCase().includes("астан") ||
+          b.city?.toLowerCase().includes("astan")
+      );
 
-      setSelectedBranch(astanaBranch);
+      // 📦 Если нашли несколько в Астане — берём первый
+      const defaultBranch =
+        astanaBranches.length > 0 ? astanaBranches[0] : normalizedBranches[0];
+
+      console.log(
+        "📍 Геолокация отключена — выбран дефолтный филиал:",
+        defaultBranch.city,
+        "|",
+        defaultBranch.address
+      );
+
+      setSelectedBranch(defaultBranch);
     }
-  }, [rawBranches, selectedBranch]);
+
+    // 3️⃣ Если геолокация ещё не определена (loading) — просто ждём
+    if (!permissionDenied && !rawNearestBranch && !selectedBranch) {
+      console.log("🕓 Ожидаем определение геолокации...");
+    }
+  }, [rawNearestBranch, permissionDenied, rawBranches, selectedBranch]);
 
   // === Обновление данных ===
   const refetchAllData = useCallback(async () => {
@@ -178,8 +213,14 @@ export default function MainScreen() {
       refetchBranches(),
       refetchNbkAverage(),
       refetchExchangeRates(),
+      refetchNearestBranch(),
     ]);
-  }, [refetchBranches, refetchNbkAverage, refetchExchangeRates]);
+  }, [
+    refetchBranches,
+    refetchNbkAverage,
+    refetchExchangeRates,
+    refetchNearestBranch,
+  ]);
 
   useFocusEffect(
     useCallback(() => {
