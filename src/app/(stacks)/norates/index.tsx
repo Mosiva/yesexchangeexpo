@@ -209,7 +209,7 @@ export default function ReserveNoRateScreen() {
         </View>
         <Pressable
           style={styles.cta}
-          onPress={() => router.push("/(stacks)/norates/branchpicker")}
+          onPress={() => router.push("/(stacks)/norates/moderation")}
         >
           <Text style={styles.ctaText}>Далее</Text>
         </Pressable>

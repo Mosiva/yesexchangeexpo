@@ -241,7 +241,7 @@ export default function BranchPickerSheet({
               style={styles.cta}
               onPress={() =>
                 router.push({
-                  pathname: "/(stacks)/norates/moderation",
+                  pathname: "/(stacks)/norates",
                   params: {
                     id: selectedBranch.id,
                     address: selectedBranch.address,

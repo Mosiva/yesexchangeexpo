@@ -63,7 +63,7 @@ export default function ReserveScreen() {
         <Tile
           title={"Без привязки\nк курсу"}
           Icon={<FontAwesome6 name="money-bills" size={24} color={ORANGE} />}
-          onPress={() => router.push("/(stacks)/norates")}
+          onPress={() => router.push("/(stacks)/norates/branchpicker")}
         />
         <Tile
           title={"С привязкой\nк курсу"}
