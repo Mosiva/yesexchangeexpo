@@ -69,6 +69,7 @@ export default function ReserveNoRateScreen() {
     {
       branchId: Number(branchIdParam),
       deltaPeriod: "day",
+      limit: 100,
     },
     {
       skip: !branchIdParam,

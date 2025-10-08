@@ -146,6 +146,7 @@ export default function MainScreen() {
     {
       branchId: selectedBranch?.id?.toString() || "",
       deltaPeriod: "day",
+      limit: 100,
     },
     {
       skip: !selectedBranch?.id || isBranchesLoading,
