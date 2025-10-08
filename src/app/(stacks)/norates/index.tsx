@@ -175,21 +175,23 @@ export default function ReserveNoRateScreen() {
     }
 
     try {
-      await doCreateBooking({
-        branchId: Number(branchIdParam),
-        fromExchangeRateId: to.id, // id валюты
-        toExchangeRateId: to.id, // здесь одинаково, так как без курса
-        amount: footerSum.toFixed(2),
-        operationType: mode,
-        isRateLocked: false,
-      }).unwrap();
+      // await doCreateBooking({
+      //   branchId: Number(branchIdParam),
+      //   fromExchangeRateId: to.id, // id валюты
+      //   toExchangeRateId: to.id, // здесь одинаково, так как без курса
+      //   amount: footerSum.toFixed(2),
+      //   operationType: mode,
+      //   isRateLocked: false,
+      // }).unwrap();
+      const displayAmount = fmt(toAmount); // это то, что пользователь вводил
+      const displayCurrency = to.code;
 
       router.push({
         pathname: "/(stacks)/norates/moderation",
         params: {
           kind: "Без привязки к курсу",
-          amount: footerSum.toFixed(0),
-          currency: to.code,
+          amount: displayAmount,
+          currency: displayCurrency,
           rateText: `${rateLineLeft} = ${rateLineRight}`,
           address: address ?? "Неизвестный филиал",
         },
@@ -301,7 +303,9 @@ export default function ReserveNoRateScreen() {
       <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
         <Text style={styles.footerTitle}>Итого</Text>
         <View style={styles.footerRow}>
-          <Text style={styles.footerLabel}>К получению</Text>
+          <Text style={styles.footerLabel}>
+            {mode === "sell" ? "К получению" : "К оплате"}
+          </Text>
           <Text style={styles.footerValue}>
             {fmt(footerSum)} {fromSymbol}
           </Text>
