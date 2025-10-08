@@ -9,6 +9,7 @@ import React, {
   useState,
 } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -22,11 +23,13 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CurrenciesListModalArchive from "../../../components/CurrenciesListModalArchive";
 import CurrencyFlag from "../../../components/CurrencyFlag";
-import { useExchangeRatesCurrentQuery } from "../../../services/yesExchange";
+import {
+  useCreateBookingMutation,
+  useExchangeRatesCurrentQuery,
+} from "../../../services/yesExchange";
 import { CurrencyCode } from "../../../types/api";
-import { getCurrencySymbol } from "../../../utils/currency"; // 👈 добавили импорт
+import { getCurrencySymbol } from "../../../utils/currency";
 
-/** ====== helpers ====== */
 const ORANGE = "#F58220";
 const TEXT = "#111827";
 const SUB = "#6B7280";
@@ -47,7 +50,6 @@ const parse = (s: string) =>
       .replace(",", ".")
   );
 
-/** ====== screen ====== */
 export default function ReserveNoRateScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -64,19 +66,18 @@ export default function ReserveNoRateScreen() {
     data: rawExchangeRates,
     refetch: refetchExchangeRates,
     isLoading: isExchangeRatesLoading,
-    isError: isExchangeRatesError,
   } = useExchangeRatesCurrentQuery(
     {
       branchId: Number(branchIdParam),
       deltaPeriod: "day",
       limit: 100,
     },
-    {
-      skip: !branchIdParam,
-    }
+    { skip: !branchIdParam }
   );
 
-  /** 🔄 Автообновление данных при фокусе */
+  const [doCreateBooking, { isLoading: isCreating }] =
+    useCreateBookingMutation();
+
   const refetchAllData = useCallback(async () => {
     await Promise.all([refetchExchangeRates()]);
   }, [refetchExchangeRates]);
@@ -87,19 +88,15 @@ export default function ReserveNoRateScreen() {
     }, [refetchAllData])
   );
 
-  /** ====== Автоматическая установка валюты ====== */
   const initializedRef = useRef(false);
-
   useEffect(() => {
     if (initializedRef.current) return;
     if (rawExchangeRates?.data?.length) {
       const foundUSD = rawExchangeRates.data.find(
         (c) => c.currency?.code === "USD"
       )?.currency?.code;
-
       const firstCode = rawExchangeRates.data[0]?.currency?.code;
       const initialCode = foundUSD || firstCode;
-
       if (initialCode) {
         setToCode(initialCode);
         initializedRef.current = true;
@@ -107,10 +104,10 @@ export default function ReserveNoRateScreen() {
     }
   }, [rawExchangeRates]);
 
-  /** ====== Массив валют из API ====== */
   const currencies = useMemo(() => {
     if (!rawExchangeRates?.data) return [];
     return rawExchangeRates.data.map((item) => ({
+      id: item.id,
       code: item.currency.code,
       name: item.currency.name,
       buy: item.buy,
@@ -122,6 +119,7 @@ export default function ReserveNoRateScreen() {
 
   const findCurrency = (code: string) =>
     currencies.find((c) => c.code === code) ?? {
+      id: 0,
       code: code as CurrencyCode,
       name: "",
       buy: 1,
@@ -137,21 +135,13 @@ export default function ReserveNoRateScreen() {
     sell: 1,
   };
   const to = findCurrency(toCode);
-
   const [toText, setToText] = useState(fmt(1000 / 540));
-
   const toAmount = parse(toText);
 
-  /** ====== Пересчёт ====== */
   const computed = useMemo(() => {
     if (mode === "sell") {
-      // Продаю валюту → получаю тенге
-      return {
-        from: isFinite(toAmount) ? toAmount * to.buy : 0,
-        to: toAmount,
-      };
+      return { from: isFinite(toAmount) ? toAmount * to.buy : 0, to: toAmount };
     } else {
-      // Покупаю валюту → плачу тенге
       return {
         from: isFinite(toAmount) ? toAmount * to.sell : 0,
         to: toAmount,
@@ -159,41 +149,58 @@ export default function ReserveNoRateScreen() {
     }
   }, [mode, toAmount, to]);
 
-  /** ====== Строка курса ====== */
   const rateLineLeft = `1 ${to.code}`;
   const rateLineRight = `${(mode === "sell" ? to.buy : to.sell).toFixed(
     2
   )} KZT`;
 
-  /** ====== Изменения курса ====== */
   const deltaValue = useMemo(() => {
     if (!to) return 0;
     const val = mode === "sell" ? to.delta.buy : to.delta.sell;
     return val ?? 0;
   }, [to, mode]);
 
-  const deltaTrend = to.trend; // "up" | "down" | "same"
-
-  /** ====== Модальное окно ====== */
+  const deltaTrend = to.trend;
   const [showToModal, setShowToModal] = useState(false);
-
   const footerSum = computed.from;
 
-  // 👇 символы валют
   const fromSymbol = getCurrencySymbol(from.code);
   const toSymbol = getCurrencySymbol(to.code);
-  /** ====== Переход ====== */
-  const handleNext = () => {
-    router.push({
-      pathname: "/(stacks)/norates/moderation",
-      params: {
-        kind: "Без привязки к курсу",
-        amount: footerSum.toFixed(0),
-        currency: to.code,
-        rateText: `${rateLineLeft} = ${rateLineRight}`,
-        address: address ?? "Неизвестный филиал",
-      },
-    });
+
+  /** ====== Сабмит брони ====== */
+  const handleCreateBooking = async () => {
+    if (!branchIdParam || !to?.id) {
+      Alert.alert("Ошибка", "Не удалось определить валюту или филиал.");
+      return;
+    }
+
+    try {
+      await doCreateBooking({
+        branchId: Number(branchIdParam),
+        fromExchangeRateId: to.id, // id валюты
+        toExchangeRateId: to.id, // здесь одинаково, так как без курса
+        amount: footerSum.toFixed(2),
+        operationType: mode,
+        isRateLocked: false,
+      }).unwrap();
+
+      router.push({
+        pathname: "/(stacks)/norates/moderation",
+        params: {
+          kind: "Без привязки к курсу",
+          amount: footerSum.toFixed(0),
+          currency: to.code,
+          rateText: `${rateLineLeft} = ${rateLineRight}`,
+          address: address ?? "Неизвестный филиал",
+        },
+      });
+    } catch (err: any) {
+      const msg =
+        err?.data?.message ||
+        err?.error ||
+        "Не удалось создать бронь. Попробуйте ещё раз.";
+      Alert.alert("Ошибка", msg);
+    }
   };
 
   return (
@@ -272,7 +279,6 @@ export default function ReserveNoRateScreen() {
           <Text style={styles.rateText}>
             {rateLineLeft} = {rateLineRight}
           </Text>
-
           {deltaTrend === "up" && (
             <Text style={[styles.delta, { color: "#16A34A" }]}>
               +{deltaValue.toFixed(1)} ▲
@@ -300,8 +306,14 @@ export default function ReserveNoRateScreen() {
             {fmt(footerSum)} {fromSymbol}
           </Text>
         </View>
-        <Pressable style={styles.cta} onPress={handleNext}>
-          <Text style={styles.ctaText}>Далее</Text>
+        <Pressable
+          style={[styles.cta, isCreating && { opacity: 0.6 }]}
+          disabled={isCreating}
+          onPress={handleCreateBooking}
+        >
+          <Text style={styles.ctaText}>
+            {isCreating ? "Отправка..." : "Забронировать"}
+          </Text>
         </Pressable>
       </View>
 
