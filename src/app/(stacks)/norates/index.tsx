@@ -1,7 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -18,6 +24,7 @@ import CurrenciesListModalArchive from "../../../components/CurrenciesListModalA
 import CurrencyFlag from "../../../components/CurrencyFlag";
 import { useExchangeRatesCurrentQuery } from "../../../services/yesExchange";
 import { CurrencyCode } from "../../../types/api";
+import { getCurrencySymbol } from "../../../utils/currency"; // 👈 добавили импорт
 
 /** ====== helpers ====== */
 const ORANGE = "#F58220";
@@ -47,7 +54,7 @@ export default function ReserveNoRateScreen() {
   const { id: branchIdParam } = useLocalSearchParams<{ id?: string }>();
 
   const [mode, setMode] = useState<"sell" | "buy">("sell");
-  const [toCode, setToCode] = useState("USD");
+  const [toCode, setToCode] = useState<string>("USD");
 
   /** ====== API ====== */
   const {
@@ -65,7 +72,7 @@ export default function ReserveNoRateScreen() {
     }
   );
 
-  /** 🔄 Обновление данных при фокусе */
+  /** 🔄 Автообновление данных при фокусе */
   const refetchAllData = useCallback(async () => {
     await Promise.all([refetchExchangeRates()]);
   }, [refetchExchangeRates]);
@@ -76,6 +83,26 @@ export default function ReserveNoRateScreen() {
     }, [refetchAllData])
   );
 
+  /** ====== Автоматическая установка валюты ====== */
+  const initializedRef = useRef(false);
+
+  useEffect(() => {
+    if (initializedRef.current) return;
+    if (rawExchangeRates?.data?.length) {
+      const foundUSD = rawExchangeRates.data.find(
+        (c) => c.currency?.code === "USD"
+      )?.currency?.code;
+
+      const firstCode = rawExchangeRates.data[0]?.currency?.code;
+      const initialCode = foundUSD || firstCode;
+
+      if (initialCode) {
+        setToCode(initialCode);
+        initializedRef.current = true;
+      }
+    }
+  }, [rawExchangeRates]);
+
   /** ====== Массив валют из API ====== */
   const currencies = useMemo(() => {
     if (!rawExchangeRates?.data) return [];
@@ -84,6 +111,8 @@ export default function ReserveNoRateScreen() {
       name: item.currency.name,
       buy: item.buy,
       sell: item.sell,
+      delta: item.delta || { buy: 0, sell: 0 },
+      trend: item.trend || "same",
     }));
   }, [rawExchangeRates]);
 
@@ -93,6 +122,8 @@ export default function ReserveNoRateScreen() {
       name: "",
       buy: 1,
       sell: 1,
+      delta: { buy: 0, sell: 0 },
+      trend: "same" as const,
     };
 
   const from = {
@@ -110,35 +141,54 @@ export default function ReserveNoRateScreen() {
   const fromAmount = parse(fromText);
   const toAmount = parse(toText);
 
+  /** ====== Курс ====== */
   const rate = useMemo(() => {
-    // KZT всегда базовая
     const fromRateInKzt = 1;
-    const toRateInKzt = mode === "sell" ? to.sell : to.buy;
+    const toRateInKzt = mode === "sell" ? to.buy : to.sell;
     return fromRateInKzt / toRateInKzt;
   }, [to, mode]);
 
+  /** ====== Пересчёт ====== */
   const computed = useMemo(() => {
     if (mode === "sell") {
+      // Продаю валюту → получаю тенге
       return {
-        from: fromAmount,
-        to: isFinite(fromAmount) ? fromAmount * rate : 0,
+        from: isFinite(toAmount) ? toAmount * to.buy : 0,
+        to: toAmount,
       };
     } else {
+      // Покупаю валюту → плачу тенге
       return {
-        from: isFinite(toAmount) ? toAmount / rate : 0,
+        from: isFinite(toAmount) ? toAmount * to.sell : 0,
         to: toAmount,
       };
     }
-  }, [mode, fromAmount, toAmount, rate]);
+  }, [mode, toAmount, to]);
 
-  const rateLineLeft = `1 ${from.code}`;
-  const rateLineRight = (1 / rate).toFixed(4) + " " + to.code;
+  /** ====== Строка курса ====== */
+  const rateLineLeft = `1 ${to.code}`;
+  const rateLineRight = `${(mode === "sell" ? to.buy : to.sell).toFixed(
+    2
+  )} KZT`;
 
-  const footerSum = computed.to;
-  const footerCode = to.code;
+  /** ====== Изменения курса ====== */
+  const deltaValue = useMemo(() => {
+    if (!to) return 0;
+    const val = mode === "sell" ? to.delta.buy : to.delta.sell;
+    return val ?? 0;
+  }, [to, mode]);
 
-  // Modal
+  const deltaTrend = to.trend; // "up" | "down" | "same"
+
+  /** ====== Модальное окно ====== */
   const [showToModal, setShowToModal] = useState(false);
+
+  const footerSum = computed.from;
+  const footerCode = from.code;
+
+  // 👇 символы валют
+  const fromSymbol = getCurrencySymbol(from.code);
+  const toSymbol = getCurrencySymbol(to.code);
 
   return (
     <KeyboardAvoidingView
@@ -167,7 +217,7 @@ export default function ReserveNoRateScreen() {
                 mode === "sell" && styles.segmentTextActive,
               ]}
             >
-              Я покупаю
+              Я продаю
             </Text>
           </Pressable>
           <Pressable
@@ -180,52 +230,58 @@ export default function ReserveNoRateScreen() {
                 mode === "buy" && styles.segmentTextActive,
               ]}
             >
-              Я продаю
+              Я покупаю
             </Text>
           </Pressable>
         </View>
-        {/* TO row — вводим валюту */}
+
+        {/* TO row — валюта */}
         <FXRow
           flag={<CurrencyFlag code={to.code} size={18} />}
           code={to.code}
           name={to.name}
-          value={fmt(toAmount)}
-          onChangeText={(t) => {
-            setToText(t);
-            const v = parse(t);
-
-            if (mode === "sell") {
-              // 💸 продаём валюту, получаем тенге
-              setFromText(fmt(isFinite(v) ? v * to.buy : 0));
-            } else {
-              // 💱 покупаем валюту, платим тенге
-              setFromText(fmt(isFinite(v) ? v * to.sell : 0));
-            }
-          }}
-          editable={true} // 👈 теперь всегда редактируется именно это поле
-          suffix={to.code}
+          value={toText}
+          onChangeText={(t) => setToText(t)}
+          editable={true}
+          suffix={toSymbol}
           highlight={true}
           onPressSelect={() => setShowToModal(true)}
         />
 
-        {/* FROM row — всегда KZT, не редактируется */}
+        {/* FROM row — тенге */}
         <FXRow
           flag={<CurrencyFlag code="KZT" size={18} />}
           code="KZT"
           name="Казахстанский тенге"
-          value={fmt(computed.from)}
+          value={fmt(footerSum)}
           onChangeText={() => {}}
           editable={false}
-          suffix="KZT"
+          suffix={fromSymbol}
           highlight={false}
           mutedCard
         />
 
+        {/* Rate line */}
         <View style={styles.rateRow}>
           <Text style={styles.rateText}>
             {rateLineLeft} = {rateLineRight}
           </Text>
-          <Text style={styles.delta}>+0.2 ▲</Text>
+
+          {deltaTrend === "up" && (
+            <Text style={[styles.delta, { color: "#16A34A" }]}>
+              +{deltaValue.toFixed(1)} ▲
+            </Text>
+          )}
+          {deltaTrend === "down" && (
+            <Text style={[styles.delta, { color: "#DC2626" }]}>
+              −{deltaValue.toFixed(1)} ▼
+            </Text>
+          )}
+          {deltaTrend === "same" && (
+            <Text style={[styles.delta, { color: "#6B7280" }]}>
+              {deltaValue.toFixed(1)} ＝
+            </Text>
+          )}
         </View>
       </ScrollView>
 
@@ -233,9 +289,9 @@ export default function ReserveNoRateScreen() {
       <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
         <Text style={styles.footerTitle}>Итого</Text>
         <View style={styles.footerRow}>
-          <Text style={styles.footerLabel}>Ваша сумма</Text>
+          <Text style={styles.footerLabel}>К получению</Text>
           <Text style={styles.footerValue}>
-            {fmt(footerSum)} {footerCode}
+            {fmt(footerSum)} {fromSymbol}
           </Text>
         </View>
         <Pressable
@@ -395,10 +451,10 @@ const styles = StyleSheet.create({
     height: "100%",
     justifyContent: "center",
   },
-  suffixText: { fontSize: 14, fontWeight: "800", color: TEXT },
+  suffixText: { fontSize: 18, fontWeight: "800", color: TEXT },
   rateRow: { flexDirection: "row", alignItems: "center", marginTop: 12 },
   rateText: { color: TEXT, fontSize: 14, fontWeight: "400" },
-  delta: { marginLeft: 10, color: "#16A34A", fontWeight: "400", fontSize: 14 },
+  delta: { marginLeft: 10, fontWeight: "400", fontSize: 14 },
   footer: {
     position: "absolute",
     left: 0,
