@@ -51,7 +51,10 @@ const parse = (s: string) =>
 export default function ReserveNoRateScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { id: branchIdParam } = useLocalSearchParams<{ id?: string }>();
+  const { id: branchIdParam, address } = useLocalSearchParams<{
+    id?: string;
+    address?: string;
+  }>();
 
   const [mode, setMode] = useState<"sell" | "buy">("sell");
   const [toCode, setToCode] = useState<string>("USD");
@@ -134,19 +137,9 @@ export default function ReserveNoRateScreen() {
   };
   const to = findCurrency(toCode);
 
-  // Controlled amounts
-  const [fromText, setFromText] = useState(fmt(1000));
   const [toText, setToText] = useState(fmt(1000 / 540));
 
-  const fromAmount = parse(fromText);
   const toAmount = parse(toText);
-
-  /** ====== Курс ====== */
-  const rate = useMemo(() => {
-    const fromRateInKzt = 1;
-    const toRateInKzt = mode === "sell" ? to.buy : to.sell;
-    return fromRateInKzt / toRateInKzt;
-  }, [to, mode]);
 
   /** ====== Пересчёт ====== */
   const computed = useMemo(() => {
@@ -184,11 +177,23 @@ export default function ReserveNoRateScreen() {
   const [showToModal, setShowToModal] = useState(false);
 
   const footerSum = computed.from;
-  const footerCode = from.code;
 
   // 👇 символы валют
   const fromSymbol = getCurrencySymbol(from.code);
   const toSymbol = getCurrencySymbol(to.code);
+  /** ====== Переход ====== */
+  const handleNext = () => {
+    router.push({
+      pathname: "/(stacks)/norates/moderation",
+      params: {
+        kind: "Без привязки к курсу",
+        amount: footerSum.toFixed(0),
+        currency: to.code,
+        rateText: `${rateLineLeft} = ${rateLineRight}`,
+        address: address ?? "Неизвестный филиал",
+      },
+    });
+  };
 
   return (
     <KeyboardAvoidingView
@@ -294,10 +299,7 @@ export default function ReserveNoRateScreen() {
             {fmt(footerSum)} {fromSymbol}
           </Text>
         </View>
-        <Pressable
-          style={styles.cta}
-          onPress={() => router.push("/(stacks)/norates/moderation")}
-        >
+        <Pressable style={styles.cta} onPress={handleNext}>
           <Text style={styles.ctaText}>Далее</Text>
         </Pressable>
       </View>
