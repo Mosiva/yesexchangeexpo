@@ -153,7 +153,7 @@ export default function BranchPickerScreen() {
       <View style={styles.topBarWrapper}>
         <View style={styles.topBar}>
           <Pressable onPress={() => router.replace("/(tabs)/reserve")}>
-            <Ionicons name="chevron-back" size={24} color={TEXT} />
+            <Ionicons name="arrow-back" size={24} color={TEXT} />
           </Pressable>
 
           <View style={styles.addressRow}>
