@@ -66,7 +66,7 @@ export default function CurrencyExchangeModal({
   return (
     <Modal
       isVisible={visible}
-      onBackdropPress={onClose}
+      onBackdropPress={() => setTimeout(onClose, 50)} // 👈 задержка
       onSwipeComplete={onClose}
       swipeDirection="down"
       style={styles.modal}
@@ -75,6 +75,11 @@ export default function CurrencyExchangeModal({
       animationInTiming={250}
       animationOutTiming={250}
       avoidKeyboard
+      useNativeDriver={false}
+      backdropColor="rgba(0,0,0,0.4)"
+      backdropTransitionInTiming={0}
+      backdropTransitionOutTiming={0}
+      propagateSwipe
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
