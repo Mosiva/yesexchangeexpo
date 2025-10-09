@@ -175,20 +175,24 @@ export default function ReserveNoRateScreen() {
     }
 
     try {
-      // await doCreateBooking({
-      //   branchId: Number(branchIdParam),
-      //   fromExchangeRateId: to.id, // id валюты
-      //   toExchangeRateId: to.id, // здесь одинаково, так как без курса
-      //   amount: footerSum.toFixed(2),
-      //   operationType: mode,
-      //   isRateLocked: false,
-      // }).unwrap();
-      const displayAmount = fmt(toAmount); // это то, что пользователь вводил
+      const response = await doCreateBooking({
+        branchId: Number(branchIdParam),
+        fromExchangeRateId: to.id,
+        toExchangeRateId: to.id,
+        amount: footerSum.toFixed(2),
+        operationType: mode,
+        isRateLocked: false,
+      }).unwrap();
+
+      // 📦 извлекаем id брони из ответа
+      const bookingId = response.id;
+      const displayAmount = fmt(toAmount);
       const displayCurrency = to.code;
 
       router.push({
         pathname: "/(stacks)/norates/moderation",
         params: {
+          id: bookingId?.toString() ?? "",
           kind: "Без привязки к курсу",
           amount: displayAmount,
           currency: displayCurrency,
@@ -264,13 +268,26 @@ export default function ReserveNoRateScreen() {
         />
 
         {/* FROM row — тенге */}
+        {/* FROM row — тенге */}
         <FXRow
           flag={<CurrencyFlag code="KZT" size={18} />}
           code="KZT"
           name="Казахстанский тенге"
           value={fmt(footerSum)}
-          onChangeText={() => {}}
-          editable={false}
+          onChangeText={(t) => {
+            const val = parse(t);
+            if (!isFinite(val)) return;
+
+            // 🔁 при вводе тенге пересчитываем валюту
+            if (mode === "sell") {
+              // если продаёт валюту → KZT = валюта * buy
+              setToText(fmt(val / to.buy));
+            } else {
+              // если покупает валюту → KZT = валюта * sell
+              setToText(fmt(val / to.sell));
+            }
+          }}
+          editable={true}
           suffix={fromSymbol}
           highlight={false}
           mutedCard

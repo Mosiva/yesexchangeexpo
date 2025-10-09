@@ -33,7 +33,7 @@ export default function ModerationScreen() {
   const p = useLocalSearchParams<Params>();
 
   // Fallbacks to match the screenshot
-  const id = p.id ?? "№12356";
+  const id = p.id ?? "№00000";
   const kind = p.kind ?? "Без привязки к курсу";
   const amount = p.amount ?? "1000";
   const currency = p.currency ?? "USD";
@@ -68,7 +68,7 @@ export default function ModerationScreen() {
 
       {/* Card */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Заявка {id}</Text>
+        <Text style={styles.cardTitle}>Заявка №{id}</Text>
         <Text style={styles.cardSub}>{kind}</Text>
 
         <View style={{ height: 16 }} />
@@ -81,6 +81,13 @@ export default function ModerationScreen() {
 
         <TouchableOpacity style={styles.dangerBtn} onPress={cancelBooking}>
           <Text style={styles.dangerText}>Отменить бронь</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.dangerBtn}
+          onPress={() => router.replace("/(tabs)/(main)")}
+        >
+          <Text style={styles.dangerText}>Венуться на главную</Text>
         </TouchableOpacity>
       </View>
 

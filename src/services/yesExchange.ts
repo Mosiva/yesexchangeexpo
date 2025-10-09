@@ -226,7 +226,7 @@ export const yesExchangeApi = restApi.injectEndpoints({
         params,
       }),
     }),
-    createBooking: build.mutation<MessageResponseDto, CreateBookingDto>({
+    createBooking: build.mutation<BookingDto, CreateBookingDto>({
       query: (data) => ({ url: "/api/v1/bookings", method: "POST", data }),
     }),
     bookingById: build.query<BookingDto, { id: number }>({
