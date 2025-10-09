@@ -61,7 +61,7 @@ export default function ReserveScreen() {
       </Pressable>
 
       {/* History row */}
-      {isGuest && (
+      {!isGuest && (
         <Pressable
           style={styles.historyRow}
           onPress={() => router.push("/(tabs)/reserve/reservehistoryr")}
