@@ -38,7 +38,6 @@ export default function Layout() {
           header: () => (
             <CustomHeader title="Бронирование" showBackButton={false} />
           ),
-          gestureEnabled: false,
         }}
       />
       <Stack.Screen
@@ -48,7 +47,6 @@ export default function Layout() {
           header: () => (
             <CustomHeader title="История бронирования" showBackButton={true} />
           ),
-          gestureEnabled: false,
         }}
       />
     </Stack>
