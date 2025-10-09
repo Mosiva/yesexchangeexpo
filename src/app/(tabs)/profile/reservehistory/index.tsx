@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   RefreshControl,
   ScrollView,
@@ -30,6 +31,16 @@ export default function ReserveHistoryScreen() {
     page: 1,
     limit: 100,
   });
+  // === Обновление данных ===
+  const refetchAllData = useCallback(async () => {
+    await Promise.all([refetchBookings()]);
+  }, [refetchBookings]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refetchAllData();
+    }, [refetchAllData])
+  );
 
   /** === Transform API data === */
   const items: Reservation[] = useMemo(() => {
