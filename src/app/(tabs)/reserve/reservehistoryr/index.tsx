@@ -15,7 +15,7 @@ import ReservationCard, {
 import { Skeleton } from "../../../../components/skeleton";
 import { useBookingsHistoryQuery } from "../../../../services/yesExchange";
 
-export default function ReserveHistoryScreen() {
+export default function ReserveHistoryRScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);

@@ -35,7 +35,19 @@ export default function Layout() {
         name="index"
         options={{
           // Hide back by default + disable iOS swipe-back
-          header: () => <CustomHeader title="Бронирование" showBackButton={false} />,
+          header: () => (
+            <CustomHeader title="Бронирование" showBackButton={false} />
+          ),
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="reservehistoryr/index"
+        options={{
+          // Hide back by default + disable iOS swipe-back
+          header: () => (
+            <CustomHeader title="История бронирования" showBackButton={true} />
+          ),
           gestureEnabled: false,
         }}
       />

@@ -221,7 +221,7 @@ export const yesExchangeApi = restApi.injectEndpoints({
       }
     >({
       query: (params) => ({
-        url: "/api/v1/bookings/history",
+        url: "/api/v1/bookings",
         method: "GET",
         params,
       }),

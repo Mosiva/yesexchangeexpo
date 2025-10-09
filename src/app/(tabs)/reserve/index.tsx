@@ -4,56 +4,26 @@ import {
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
-import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import {
   Pressable,
-  RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { clientApi } from "services";
-
-const { useGetClientQuery } = clientApi;
 
 export default function ReserveScreen() {
   const { t } = useTranslation();
   const router = useRouter();
 
-  const { refetch: refetchClient, isLoading: isClientLoading } =
-    useGetClientQuery({});
-
-  useFocusEffect(
-    useCallback(() => {
-      refetchClient();
-    }, [refetchClient])
-  );
-
-  const [refreshing, setRefreshing] = useState(false);
-  const onRefresh = async () => {
-    setRefreshing(true);
-    try {
-      await refetchClient();
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing || isClientLoading}
-          onRefresh={onRefresh}
-        />
-      }
       keyboardShouldPersistTaps="handled"
     >
       <StatusBar barStyle="dark-content" />
@@ -92,7 +62,7 @@ export default function ReserveScreen() {
       {/* History row */}
       <Pressable
         style={styles.historyRow}
-        // onPress={() => router.push("/(reserve)/history")}
+        onPress={() => router.push("/(tabs)/reserve/reservehistoryr")}
       >
         <View style={styles.rowLeft}>
           <View style={[styles.iconBadge]}>
