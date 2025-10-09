@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Params = {
   id?: string; // "№12356"
@@ -30,10 +31,11 @@ const COLORS = {
 
 export default function ModerationScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const p = useLocalSearchParams<Params>();
 
   // Fallbacks to match the screenshot
-  const id = p.id ?? "№00000";
+  const id = p.id ?? "00000";
   const kind = p.kind ?? "Без привязки к курсу";
   const amount = p.amount ?? "1000";
   const currency = p.currency ?? "USD";
@@ -59,40 +61,46 @@ export default function ModerationScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
-      {/* Lead text */}
+    <View style={styles.screen}>
       <StatusBar barStyle="dark-content" />
-      <Text style={styles.lead}>
-        Ваша бронь находится на модерации,{"\n"}ожидайте
-      </Text>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 88 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.lead}>
+          Ваша бронь находится на модерации,{"\n"}ожидайте
+        </Text>
 
-      {/* Card */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Заявка №{id}</Text>
-        <Text style={styles.cardSub}>{kind}</Text>
+        {/* Card */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Заявка №{id}</Text>
+          <Text style={styles.cardSub}>{kind}</Text>
 
-        <View style={{ height: 16 }} />
+          <View style={{ height: 16 }} />
 
-        <Row label="Сумма брони:" value={`${amount} ${currency}`} big />
-        <View style={{ height: 10 }} />
-        <Row label="По курсу:" value={rateText} />
-        <View style={{ height: 10 }} />
-        <Row label="Адрес:" value={address} />
+          <Row label="Сумма брони:" value={`${amount} ${currency}`} big />
+          <View style={{ height: 10 }} />
+          <Row label="По курсу:" value={rateText} />
+          <View style={{ height: 10 }} />
+          <Row label="Адрес:" value={address} />
 
-        <TouchableOpacity style={styles.dangerBtn} onPress={cancelBooking}>
-          <Text style={styles.dangerText}>Отменить бронь</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.dangerBtn} onPress={cancelBooking}>
+            <Text style={styles.dangerText}>Отменить бронь</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
 
+      {/* Sticky bottom CTA */}
+      <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 8 }]}>
         <TouchableOpacity
-          style={styles.dangerBtn}
+          style={styles.primaryBtn}
           onPress={() => router.replace("/(tabs)/(main)")}
         >
-          <Text style={styles.dangerText}>Венуться на главную</Text>
+          <Text style={styles.primaryText}>Вернуться на главную</Text>
         </TouchableOpacity>
       </View>
-
-      <View style={{ height: 32 }} />
-    </ScrollView>
+    </View>
   );
 }
 
@@ -116,16 +124,8 @@ function Row({
 
 /* ——— Styles ——— */
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg, paddingHorizontal: 16 },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingTop: 10,
-    paddingBottom: 8,
-  },
-  headerTitle: { flex: 1, fontSize: 28, fontWeight: "800", color: COLORS.text },
-
+  screen: { flex: 1, backgroundColor: COLORS.bg },
+  container: { flex: 1, paddingHorizontal: 16 },
   lead: {
     fontSize: 16,
     lineHeight: 28,
@@ -158,4 +158,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   dangerText: { color: "#fff", fontSize: 14, fontWeight: "700" },
+
+  bottomBar: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    bottom: 0,
+  },
+  primaryBtn: {
+    backgroundColor: COLORS.orange,
+    height: 56,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  primaryText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 });
