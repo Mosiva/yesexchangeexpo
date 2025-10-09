@@ -178,7 +178,7 @@ export default function ReserveNoRateScreen() {
 
   const deltaTrend = to.trend;
   const [showToModal, setShowToModal] = useState(false);
-  const footerSum = computed.from;
+  const footerSum = toAmount;
 
   const fromSymbol = getCurrencySymbol(from.code);
   const toSymbol = getCurrencySymbol(to.code);
@@ -328,11 +328,9 @@ export default function ReserveNoRateScreen() {
       <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
         <Text style={styles.footerTitle}>Итого</Text>
         <View style={styles.footerRow}>
-          <Text style={styles.footerLabel}>
-            {mode === "sell" ? "К получению" : "К оплате"}
-          </Text>
+          <Text style={styles.footerLabel}>{"Ваша сумма"}</Text>
           <Text style={styles.footerValue}>
-            {fmt(footerSum)} {fromSymbol}
+            {fmt(footerSum)} {toSymbol}
           </Text>
         </View>
         <Pressable
