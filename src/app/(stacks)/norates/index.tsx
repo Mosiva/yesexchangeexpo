@@ -136,6 +136,22 @@ export default function ReserveNoRateScreen() {
   };
   const to = findCurrency(toCode);
   const [toText, setToText] = useState(fmt(1000 / 540));
+  const [fromText, setFromText] = useState(fmt(1000)); // тенге
+  const [activeInput, setActiveInput] = useState<"to" | "from" | null>(null);
+
+  useEffect(() => {
+    if (!to.buy || !to.sell) return;
+
+    if (activeInput === "to") {
+      const val = parse(toText);
+      const sum = mode === "sell" ? val * to.buy : val * to.sell;
+      setFromText(fmt(sum));
+    } else if (activeInput === "from") {
+      const val = parse(fromText);
+      const sum = mode === "sell" ? val / to.buy : val / to.sell;
+      setToText(fmt(sum));
+    }
+  }, [toText, fromText, mode, to, activeInput]);
   const toAmount = parse(toText);
 
   const computed = useMemo(() => {
@@ -254,45 +270,37 @@ export default function ReserveNoRateScreen() {
           </Pressable>
         </View>
 
-        {/* TO row — валюта */}
+        {/* Валюта */}
         <FXRow
           flag={<CurrencyFlag code={to.code} size={18} />}
           code={to.code}
           name={to.name}
           value={toText}
-          onChangeText={(t) => setToText(t)}
+          onChangeText={(t) => {
+            setActiveInput("to");
+            setToText(t);
+          }}
           editable={true}
           suffix={toSymbol}
-          highlight={true}
+          highlight={activeInput === "to"}
           onPressSelect={() => setShowToModal(true)}
         />
 
-        {/* FROM row — тенге */}
-        {/* FROM row — тенге */}
+        {/* Тенге */}
         <FXRow
           flag={<CurrencyFlag code="KZT" size={18} />}
           code="KZT"
           name="Казахстанский тенге"
-          value={fmt(footerSum)}
+          value={fromText}
           onChangeText={(t) => {
-            const val = parse(t);
-            if (!isFinite(val)) return;
-
-            // 🔁 при вводе тенге пересчитываем валюту
-            if (mode === "sell") {
-              // если продаёт валюту → KZT = валюта * buy
-              setToText(fmt(val / to.buy));
-            } else {
-              // если покупает валюту → KZT = валюта * sell
-              setToText(fmt(val / to.sell));
-            }
+            setActiveInput("from");
+            setFromText(t);
           }}
           editable={true}
           suffix={fromSymbol}
-          highlight={false}
+          highlight={activeInput === "from"}
           mutedCard
         />
-
         {/* Rate line */}
         <View style={styles.rateRow}>
           <Text style={styles.rateText}>
