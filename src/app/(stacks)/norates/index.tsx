@@ -20,11 +20,14 @@ import {
   TextInput,
   View,
 } from "react-native";
+import MaskInput from "react-native-mask-input";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CurrenciesListModalArchive from "../../../components/CurrenciesListModalArchive";
 import CurrencyFlag from "../../../components/CurrencyFlag";
+import { useAuth } from "../../../providers/Auth";
 import {
   useCreateBookingMutation,
+  useCreateGuestBookingMutation,
   useExchangeRatesCurrentQuery,
 } from "../../../services/yesExchange";
 import { CurrencyCode } from "../../../types/api";
@@ -49,6 +52,18 @@ const parse = (s: string) =>
       .replace(/[^\d.,]/g, "")
       .replace(",", ".")
   );
+// +7XXXXXXXXXX → +7 707 777-77-77
+function formatPhoneE164ToPretty(p?: string) {
+  if (!p) return "";
+  const d = p.replace(/\D/g, "");
+  const ten = d.startsWith("7") ? d.slice(1) : d;
+  if (ten.length !== 10) return p;
+  const a = ten.slice(0, 3);
+  const b = ten.slice(3, 6);
+  const c = ten.slice(6, 8);
+  const e = ten.slice(8, 10);
+  return `+7 ${a} ${b}-${c}-${e}`;
+}
 
 export default function ReserveNoRateScreen() {
   const insets = useSafeAreaInsets();
@@ -58,8 +73,36 @@ export default function ReserveNoRateScreen() {
     address?: string;
   }>();
 
+  const { isGuest } = useAuth();
+  // ---- Guest login (phone) state ----
+  const [digits, setDigits] = useState(""); // 10 цифр
+  const [maskedPhone, setMaskedPhone] = useState("+7"); // сразу +7
+
   const [mode, setMode] = useState<"sell" | "buy">("sell");
   const [toCode, setToCode] = useState<string>("USD");
+
+  // допустимые коды операторов Казахстана
+  const validPrefixes = [
+    "700",
+    "701",
+    "702",
+    "703",
+    "704",
+    "705",
+    "706",
+    "707",
+    "708",
+    "709",
+    "747",
+    "771",
+    "775",
+    "776",
+    "777",
+    "778",
+  ];
+  const prefix = digits.slice(0, 3);
+  const isValid = digits.length === 10 && validPrefixes.includes(prefix);
+  const e164 = `+7${digits}`;
 
   /** ====== API ====== */
   const {
@@ -77,6 +120,9 @@ export default function ReserveNoRateScreen() {
 
   const [doCreateBooking, { isLoading: isCreating }] =
     useCreateBookingMutation();
+
+  const [doCreateGuestBooking, { isLoading: isCreatingGuest }] =
+    useCreateGuestBookingMutation();
 
   const refetchAllData = useCallback(async () => {
     await Promise.all([refetchExchangeRates()]);
@@ -322,6 +368,64 @@ export default function ReserveNoRateScreen() {
             </Text>
           )}
         </View>
+        {isGuest && (
+          <View
+            style={{
+              marginTop: 20,
+              borderWidth: 0,
+              borderTopWidth: 1,
+              borderTopColor: BORDER,
+            }}
+          >
+            <View style={{ marginTop: 20 }}>
+              <Text style={styles.subtitle}>
+                Оставьте номер телефона, на который хотите оформить бронь
+              </Text>
+              <MaskInput
+                style={styles.input}
+                placeholder="+7 (___) ___-__-__"
+                keyboardType="number-pad"
+                inputMode="numeric"
+                autoCorrect={false}
+                autoCapitalize="none"
+                mask={[
+                  "+",
+                  "7",
+                  " ",
+                  "(",
+                  /\d/,
+                  /\d/,
+                  /\d/,
+                  ")",
+                  " ",
+                  /\d/,
+                  /\d/,
+                  /\d/,
+                  "-",
+                  /\d/,
+                  /\d/,
+                  "-",
+                  /\d/,
+                  /\d/,
+                ]}
+                value={maskedPhone}
+                onChangeText={(masked, unmasked) => {
+                  const next = (unmasked || "").replace(/\D/g, "").slice(0, 10);
+                  setDigits(next);
+                  setMaskedPhone(masked);
+                }}
+                maxLength={19}
+              />
+            </View>
+          </View>
+        )}
+
+        {/* Ошибка при неверном коде */}
+        {digits.length >= 3 && !validPrefixes.includes(prefix) && (
+          <Text style={styles.error}>
+            Доступны только коды операторов Казахстана
+          </Text>
+        )}
       </ScrollView>
 
       {/* Footer */}
@@ -424,6 +528,14 @@ function FXRow({
     </View>
   );
 }
+const COLORS = {
+  orange: "#F58220",
+  text: "#111827",
+  subtext: "#6B7280",
+  border: "#E5E7EB",
+  bg: "#FFFFFF",
+  error: "#DC2626",
+};
 
 /** ====== styles ====== */
 const styles = StyleSheet.create({
@@ -529,4 +641,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   ctaText: { color: "#fff", fontSize: 17, fontWeight: "600" },
+  // Guest form styles
+  input: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.bg,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    fontSize: 16,
+  },
+  error: {
+    color: COLORS.error,
+    marginTop: 6,
+    fontSize: 13,
+  },
 });

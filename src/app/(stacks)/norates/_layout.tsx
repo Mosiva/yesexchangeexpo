@@ -54,7 +54,7 @@ export default function Layout() {
         options={{
           // Hide back by default + disable iOS swipe-back
           header: () => (
-            <CustomHeader title="Модерация" showBackButton={false} />
+            <CustomHeader title="В обработке" showBackButton={false} />
           ),
         }}
       />

@@ -70,7 +70,7 @@ export default function ReserveScreen() {
             <View style={[styles.iconBadge]}>
               <MaterialCommunityIcons
                 name="history"
-                size={24}
+                size={24} 
                 color="#F58220"
               />
             </View>
