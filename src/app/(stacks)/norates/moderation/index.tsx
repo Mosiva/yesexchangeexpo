@@ -10,7 +10,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
+import { useAuth } from "../../../../providers/Auth";
 type Params = {
   id?: string; // "№12356"
   kind?: string; // "Без привязки к курсу"
@@ -33,6 +33,8 @@ export default function ModerationScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const p = useLocalSearchParams<Params>();
+
+  const { isGuest } = useAuth();
 
   // Fallbacks to match the screenshot
   const id = p.id ?? "00000";
@@ -84,10 +86,11 @@ export default function ModerationScreen() {
           <Row label="По курсу:" value={rateText} />
           <View style={{ height: 10 }} />
           <Row label="Адрес:" value={address} />
-
-          <TouchableOpacity style={styles.dangerBtn} onPress={cancelBooking}>
-            <Text style={styles.dangerText}>Отменить бронь</Text>
-          </TouchableOpacity>
+          {!isGuest && (
+            <TouchableOpacity style={styles.dangerBtn} onPress={cancelBooking}>
+              <Text style={styles.dangerText}>Отменить бронь</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
 

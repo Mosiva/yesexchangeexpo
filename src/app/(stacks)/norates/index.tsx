@@ -30,7 +30,7 @@ import {
   useCreateGuestBookingMutation,
   useExchangeRatesCurrentQuery,
 } from "../../../services/yesExchange";
-import { CurrencyCode } from "../../../types/api";
+import { BookingDto, CurrencyCode } from "../../../types/api";
 import { getCurrencySymbol } from "../../../utils/currency";
 
 const ORANGE = "#F58220";
@@ -52,18 +52,6 @@ const parse = (s: string) =>
       .replace(/[^\d.,]/g, "")
       .replace(",", ".")
   );
-// +7XXXXXXXXXX → +7 707 777-77-77
-function formatPhoneE164ToPretty(p?: string) {
-  if (!p) return "";
-  const d = p.replace(/\D/g, "");
-  const ten = d.startsWith("7") ? d.slice(1) : d;
-  if (ten.length !== 10) return p;
-  const a = ten.slice(0, 3);
-  const b = ten.slice(3, 6);
-  const c = ten.slice(6, 8);
-  const e = ten.slice(8, 10);
-  return `+7 ${a} ${b}-${c}-${e}`;
-}
 
 export default function ReserveNoRateScreen() {
   const insets = useSafeAreaInsets();
@@ -235,19 +223,38 @@ export default function ReserveNoRateScreen() {
       Alert.alert("Ошибка", "Не удалось определить валюту или филиал.");
       return;
     }
+    // Проверка телефона, если гость
+    if (isGuest) {
+      if (!isValid) {
+        Alert.alert(
+          "Ошибка",
+          "Введите корректный номер телефона Казахстана (+7 7XX XXX-XX-XX)."
+        );
+        return;
+      }
+    }
 
+    const payload = {
+      branchId: Number(branchIdParam),
+      fromExchangeRateId: to.id,
+      toExchangeRateId: to.id,
+      amount: footerSum.toFixed(2),
+      operationType: mode,
+      isRateLocked: false,
+    };
     try {
-      const response = await doCreateBooking({
-        branchId: Number(branchIdParam),
-        fromExchangeRateId: to.id,
-        toExchangeRateId: to.id,
-        amount: footerSum.toFixed(2),
-        operationType: mode,
-        isRateLocked: false,
-      }).unwrap();
+      let response;
 
+      if (isGuest) {
+        response = await doCreateGuestBooking({
+          phone: e164,
+          data: payload,
+        }).unwrap();
+      } else {
+        response = await doCreateBooking(payload).unwrap();
+      }
       // 📦 извлекаем id брони из ответа
-      const bookingId = response.id;
+      const bookingId = (response as BookingDto).id;
       const displayAmount = fmt(toAmount);
       const displayCurrency = to.code;
 
@@ -438,12 +445,17 @@ export default function ReserveNoRateScreen() {
           </Text>
         </View>
         <Pressable
-          style={[styles.cta, isCreating && { opacity: 0.6 }]}
-          disabled={isCreating}
+          style={[
+            styles.cta,
+            (isCreating || isCreatingGuest || (isGuest && !isValid)) && {
+              opacity: 0.6,
+            },
+          ]}
+          disabled={isCreating || isCreatingGuest || (isGuest && !isValid)}
           onPress={handleCreateBooking}
         >
           <Text style={styles.ctaText}>
-            {isCreating ? "Отправка..." : "Забронировать"}
+            {isCreating || isCreatingGuest ? "Отправка..." : "Забронировать"}
           </Text>
         </Pressable>
       </View>
