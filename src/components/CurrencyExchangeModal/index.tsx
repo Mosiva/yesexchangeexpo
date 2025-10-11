@@ -70,9 +70,9 @@ export default function CurrencyExchangeModal({
 
     // 👇 Исправляем передачу параметров в зависимости от режима
     const sellAmount =
-      mode === "sell" ? String(payload.sell) : String(payload.receive);
-    const receiveAmount =
       mode === "sell" ? String(payload.receive) : String(payload.sell);
+    const receiveAmount =
+      mode === "sell" ? String(payload.sell) : String(payload.receive);
 
     onConfirm(payload);
     onClose();
@@ -80,7 +80,7 @@ export default function CurrencyExchangeModal({
     router.push({
       pathname: "/(stacks)/norates/withrates",
       params: {
-        mode,
+        mode: mode === "sell" ? "buy" : "sell",
         fromCode,
         fromName,
         rate: String(rate),
