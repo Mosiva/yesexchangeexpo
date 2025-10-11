@@ -119,10 +119,8 @@ export default function ReserveWithRateScreen() {
     }, [refetchAllData])
   );
 
-  /** ====== Default / Pre-filled init ====== */
   useEffect(() => {
-    if (initializedRef.current) return;
-
+    // --- если пришли параметры из CurrencyExchangeModal ---
     if (fromCode && rateParam > 0) {
       setToCode(fromCode);
 
@@ -147,12 +145,12 @@ export default function ReserveWithRateScreen() {
         }
       }
 
-      initializedRef.current = true;
+      // 💡 теперь — НЕ ставим initializedRef, чтобы можно было заново пересчитать при новой валюте
       return;
     }
 
-    // --- обычный сценарий (если экран открыт напрямую) ---
-    if (rawExchangeRates?.data?.length) {
+    // --- обычный сценарий (открыт напрямую) ---
+    if (!initializedRef.current && rawExchangeRates?.data?.length) {
       const foundUSD = rawExchangeRates.data.find(
         (c) => c.currency?.code === "USD"
       )?.currency?.code;
@@ -160,11 +158,9 @@ export default function ReserveWithRateScreen() {
       const initialCode = foundUSD || firstCode;
       if (initialCode) setToCode(initialCode);
 
-      // ✅ теперь просто очищаем поля
       setFromText("");
       setToText("");
 
-      // ✅ и подставляем актуальный курс для выбранной валюты
       const found = rawExchangeRates.data.find(
         (c) => c.currency?.code === initialCode
       );
