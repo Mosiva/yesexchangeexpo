@@ -71,7 +71,7 @@ export default function ModerationScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.lead}>
-          Ваша бронь находится на модерации,{"\n"}ожидайте
+          Заявка принята в работу, ожидайте звонка от нашего специалиста
         </Text>
 
         {/* Card */}

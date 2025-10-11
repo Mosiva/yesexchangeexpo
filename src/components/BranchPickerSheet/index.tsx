@@ -42,6 +42,7 @@ type Props = {
   allBranches?: Branch[];
   nearbyBranches?: Branch[];
   loadingLocation?: boolean;
+  isRateLocked?: boolean;
 };
 
 export default function BranchPickerSheet({
@@ -51,6 +52,7 @@ export default function BranchPickerSheet({
   allBranches = [],
   nearbyBranches = [],
   loadingLocation = false,
+  isRateLocked = false,
 }: Props) {
   const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["35%", "85%"], []);
@@ -241,7 +243,9 @@ export default function BranchPickerSheet({
               style={styles.cta}
               onPress={() =>
                 router.push({
-                  pathname: "/(stacks)/norates",
+                  pathname: isRateLocked
+                    ? "/(stacks)/norates/withrates"
+                    : "/(stacks)/norates",
                   params: {
                     id: selectedBranch.id,
                     address: selectedBranch.address,
@@ -250,7 +254,9 @@ export default function BranchPickerSheet({
                 })
               }
             >
-              <Text style={styles.ctaText}>Забронировать тут</Text>
+              <Text style={styles.ctaText}>
+                {isRateLocked ? "Забронировать по курсу" : "Забронировать тут"}
+              </Text>
             </Pressable>
           </>
         )}

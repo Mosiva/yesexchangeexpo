@@ -44,6 +44,18 @@ export default function Layout() {
         }}
       />
       <Stack.Screen
+        name="withrates/index"
+        options={{
+          // Hide back by default + disable iOS swipe-back
+          header: () => (
+            <CustomHeader
+              title="Бронь с привязкой к курсу"
+              showBackButton={true}
+            />
+          ),
+        }}
+      />
+      <Stack.Screen
         name="branchpicker/index"
         options={{
           headerShown: false,

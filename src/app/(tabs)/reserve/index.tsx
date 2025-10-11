@@ -40,7 +40,14 @@ export default function ReserveScreen() {
           title={"С привязкой\nк курсу"}
           sub="Бронь до 30 минут"
           Icon={<MaterialIcons name="analytics" size={24} color={ORANGE} />}
-          // onPress={() => router.push("/(reserve)/withrate")}
+          onPress={() =>
+            router.push({
+              pathname: "/(stacks)/norates/branchpicker",
+              params: {
+                isRateLocked: "true",
+              },
+            })
+          }
         />
       </View>
 
@@ -70,7 +77,7 @@ export default function ReserveScreen() {
             <View style={[styles.iconBadge]}>
               <MaterialCommunityIcons
                 name="history"
-                size={24} 
+                size={24}
                 color="#F58220"
               />
             </View>

@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { getDistance } from "geolib";
 import React, {
   useCallback,
@@ -32,6 +32,9 @@ const TEXT = "#111827";
 const SUB = "#6B7280";
 
 export default function BranchPickerScreen() {
+  const p = useLocalSearchParams();
+  const isRateLocked = p.isRateLocked === 'true';
+
   const [selectedBranch, setSelectedBranch] = useState<any>(null);
   const [branchesWithDistance, setBranchesWithDistance] = useState<any[]>([]);
   const mapRef = useRef<MapView | null>(null);
@@ -254,6 +257,7 @@ export default function BranchPickerScreen() {
         allBranches={branchesWithDistance}
         nearbyBranches={nearbyBranches}
         loadingLocation={loadingLocation}
+        isRateLocked={isRateLocked}
       />
 
       {/* Если доступ к геолокации запрещён */}
