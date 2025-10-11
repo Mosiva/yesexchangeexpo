@@ -66,7 +66,15 @@ export default function CurrencyExchangeModal({
   const fromCurrSymbol = getCurrencySymbol(fromCode as CurrencyCode);
 
   const handleConfirm = () => {
-    onConfirm({ sell, receive });
+    const payload = { sell, receive };
+
+    // 👇 Исправляем передачу параметров в зависимости от режима
+    const sellAmount =
+      mode === "sell" ? String(payload.sell) : String(payload.receive);
+    const receiveAmount =
+      mode === "sell" ? String(payload.receive) : String(payload.sell);
+
+    onConfirm(payload);
     onClose();
 
     router.push({
@@ -78,8 +86,8 @@ export default function CurrencyExchangeModal({
         rate: String(rate),
         id: branchId ? String(branchId) : "",
         address: address ?? "",
-        sellAmount: String(sell),
-        receiveAmount: String(receive),
+        sellAmount,
+        receiveAmount,
       },
     });
   };
