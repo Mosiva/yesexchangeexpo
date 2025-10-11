@@ -212,6 +212,7 @@ export default function ReserveWithRateScreen() {
       Alert.alert("Ошибка", "Не удалось определить валюту или филиал.");
       return;
     }
+
     // Проверка телефона, если гость
     if (isGuest) {
       if (!isValid) {
@@ -223,17 +224,28 @@ export default function ReserveWithRateScreen() {
       }
     }
 
+    // 🔍 Ищем ID курса KZT
+    const kzt = currencies.find((c) => c.code === "KZT");
+    if (!kzt) {
+      Alert.alert("Ошибка", "Не найден курс тенге (KZT).");
+      return;
+    }
+
+    // 🔧 Определяем from / to в зависимости от режима
+    const fromExchangeRateId = mode === "sell" ? to.id : kzt.id;
+    const toExchangeRateId = mode === "sell" ? kzt.id : to.id;
+
     const payload = {
       branchId: Number(branchIdParam),
-      fromExchangeRateId: to.id,
-      toExchangeRateId: to.id,
+      fromExchangeRateId,
+      toExchangeRateId,
       amount: footerSum.toFixed(2),
       operationType: mode,
       isRateLocked: true,
     };
+
     try {
       let response;
-
       if (isGuest) {
         response = await doCreateGuestBooking({
           phone: e164,
@@ -242,9 +254,10 @@ export default function ReserveWithRateScreen() {
       } else {
         response = await doCreateBooking(payload).unwrap();
       }
-      // 📦 извлекаем id брони из ответа
+
+      // 📦 Извлекаем id брони из ответа
       const bookingId = (response as BookingDto).id;
-      const displayAmount = fmt(toAmount);
+      const displayAmount = fmt(footerSum);
       const displayCurrency = to.code;
 
       router.push({

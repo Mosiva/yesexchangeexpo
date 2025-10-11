@@ -2,7 +2,16 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export type Status = "pending" | "received" | "rejected";
+export type Status =
+  | "created"
+  | "pending_moderation"
+  | "not_confirmed"
+  | "ready_for_pickup"
+  | "cancelled"
+  | "expired"
+  | "received"
+  | "sync_failed"
+  | "external_deleted";
 
 export type Reservation = {
   id: number;
@@ -23,7 +32,7 @@ export default function ReservationCard({
   const { id, date, amount, currency, address, status } = data;
   const prettyDate = toDDMMYYYY(date);
 
-  const isPending = status === "pending";
+  const isPending = status === "pending_moderation";
   const bg = isPending ? "#F6F7F9" : "#FFFFFF";
 
   return (
@@ -58,30 +67,65 @@ export default function ReservationCard({
     </View>
   );
 }
-
 function StatusPill({ status }: { status: Status }) {
-  const map = {
-    pending: {
-      icon: "time-outline" as const,
+  const map: Record<Status, { icon: any; color: string; text: string }> = {
+    created: {
+      icon: "time-outline",
       color: "#6B7280",
+      text: "Создана",
+    },
+    pending_moderation: {
+      icon: "hourglass-outline",
+      color: "#727376",
       text: "На модерации",
     },
+    not_confirmed: {
+      icon: "help-circle-outline",
+      color: "#EAB308",
+      text: "Не подтверждена",
+    },
+    ready_for_pickup: {
+      icon: "checkmark-done-circle-outline",
+      color: "#2563EB",
+      text: "Готова к выдаче",
+    },
+    cancelled: {
+      icon: "close-circle-outline",
+      color: "#DC2626",
+      text: "Отменена",
+    },
+    expired: {
+      icon: "alert-circle-outline",
+      color: "#9CA3AF",
+      text: "Истекла",
+    },
     received: {
-      icon: "checkmark-circle" as const,
+      icon: "checkmark-circle",
       color: "#16A34A",
       text: "Получено",
     },
-    rejected: {
-      icon: "alert-circle" as const,
-      color: "#DC2626",
-      text: "Отклонена",
+    sync_failed: {
+      icon: "cloud-offline-outline",
+      color: "#F87171",
+      text: "Ошибка синхронизации",
     },
-  }[status];
+    external_deleted: {
+      icon: "trash-outline",
+      color: "#9CA3AF",
+      text: "Удалена внешне",
+    },
+  };
+
+  const item = map[status] ?? {
+    icon: "alert-circle-outline",
+    color: "#9CA3AF",
+    text: "Неизвестно",
+  };
 
   return (
     <View style={styles.pill}>
-      <Ionicons name={map.icon} size={18} color={map.color} />
-      <Text style={[styles.pillText, { color: map.color }]}>{map.text}</Text>
+      <Ionicons name={item.icon} size={18} color={item.color} />
+      <Text style={[styles.pillText, { color: item.color }]}>{item.text}</Text>
     </View>
   );
 }

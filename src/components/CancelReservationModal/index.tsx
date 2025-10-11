@@ -49,7 +49,11 @@ export default function CancelReservationModal({
               <Text style={styles.cancelText}>Отмена</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.confirmBtn} onPress={onConfirm}>
+            <TouchableOpacity
+              style={styles.confirmBtn}
+              onPress={onConfirm}
+              disabled
+            >
               <Text style={styles.confirmText}>Да</Text>
             </TouchableOpacity>
           </View>
@@ -119,7 +123,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 12,
     height: 48,
-    backgroundColor: "#F58220",
+    backgroundColor: "grey",
     alignItems: "center",
     justifyContent: "center",
   },

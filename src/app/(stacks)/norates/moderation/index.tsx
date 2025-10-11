@@ -1,7 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import {
-  Alert,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -10,7 +9,9 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import CancelReservationModal from "../../../../components/CancelReservationModal";
 import { useAuth } from "../../../../providers/Auth";
+
 type Params = {
   id?: string; // "№12356"
   kind?: string; // "Без привязки к курсу"
@@ -33,10 +34,11 @@ export default function ModerationScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const p = useLocalSearchParams<Params>();
-
   const { isGuest } = useAuth();
 
-  // Fallbacks to match the screenshot
+  const [showCancelModal, setShowCancelModal] = useState(false);
+
+  // Fallbacks
   const id = p.id ?? "00000";
   const kind = p.kind ?? "Без привязки к курсу";
   const amount = p.amount ?? "1000";
@@ -44,22 +46,12 @@ export default function ModerationScreen() {
   const rateText = p.rateText ?? "1 KZT = 0,001861123 USD";
   const address = p.address ?? "Астана, Аэропорт";
 
-  const cancelBooking = () => {
-    Alert.alert(
-      "Отменить бронь?",
-      "Заявка будет отменена и вернётся в список.",
-      [
-        { text: "Нет", style: "cancel" },
-        {
-          text: "Да, отменить",
-          style: "destructive",
-          onPress: () => {
-            // TODO: call API to cancel
-            router.back();
-          },
-        },
-      ]
-    );
+  /** 🔄 Подтверждение отмены брони */
+  const confirmCancel = () => {
+    setShowCancelModal(false);
+    // TODO: вызвать API для отмены брони
+    // await cancelBookingMutation({ id });
+    router.replace("/(tabs)/reserve"); // возвращаем пользователя в список
   };
 
   return (
@@ -86,8 +78,13 @@ export default function ModerationScreen() {
           <Row label="По курсу:" value={rateText} />
           <View style={{ height: 10 }} />
           <Row label="Адрес:" value={address} />
+
+          {/* Отменить бронь (только если не гость) */}
           {!isGuest && (
-            <TouchableOpacity style={styles.dangerBtn} onPress={cancelBooking}>
+            <TouchableOpacity
+              style={styles.dangerBtn}
+              onPress={() => setShowCancelModal(true)}
+            >
               <Text style={styles.dangerText}>Отменить бронь</Text>
             </TouchableOpacity>
           )}
@@ -103,6 +100,13 @@ export default function ModerationScreen() {
           <Text style={styles.primaryText}>Вернуться на главную</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Модалка подтверждения отмены */}
+      <CancelReservationModal
+        visible={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={confirmCancel}
+      />
     </View>
   );
 }
@@ -137,7 +141,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontWeight: "400",
   },
-
   card: {
     backgroundColor: COLORS.card,
     borderRadius: 16,
@@ -147,11 +150,9 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontSize: 17, fontWeight: "700", color: COLORS.text },
   cardSub: { marginTop: 6, color: COLORS.sub, fontSize: 12 },
-
   rowLabel: { color: COLORS.sub, fontSize: 12 },
   rowValue: { color: COLORS.text, fontSize: 12, fontWeight: "700" },
   rowValueBig: { fontSize: 18, fontWeight: "700" },
-
   dangerBtn: {
     marginTop: 16,
     backgroundColor: COLORS.orange,
@@ -161,7 +162,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   dangerText: { color: "#fff", fontSize: 14, fontWeight: "700" },
-
   bottomBar: {
     position: "absolute",
     left: 16,
