@@ -237,16 +237,21 @@ export default function ReserveWithRateScreen() {
     }
   }, [toText, fromText, mode, to, activeInput]);
 
-  /** ====== Сброс при смене режима ====== */
+  /** ====== Пересчёт при смене режима без обнуления ====== */
   useEffect(() => {
     if (!rawExchangeRates?.data?.length) return;
 
     const found = rawExchangeRates.data.find((c) => c.currency.code === toCode);
     if (found) {
-      setFromText("");
-      setToText("");
-      const currentRate = mode === "sell" ? found.sell : found.buy;
-      setRateParam(currentRate || 0);
+      const newRate = mode === "sell" ? found.sell : found.buy;
+      setRateParam(newRate || 0);
+
+      // 🔹 пересчитать тенге, если пользователь вводил валюту
+      const val = parse(toText);
+      if (val > 0) {
+        const sum = mode === "sell" ? val * found.sell : val * found.buy;
+        setFromText(fmt(sum));
+      }
     }
   }, [mode]);
 
