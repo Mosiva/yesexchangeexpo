@@ -151,6 +151,7 @@ export default function ReserveWithRateScreen() {
       return;
     }
 
+    // --- обычный сценарий (если экран открыт напрямую) ---
     if (rawExchangeRates?.data?.length) {
       const foundUSD = rawExchangeRates.data.find(
         (c) => c.currency?.code === "USD"
@@ -158,8 +159,20 @@ export default function ReserveWithRateScreen() {
       const firstCode = rawExchangeRates.data[0]?.currency?.code;
       const initialCode = foundUSD || firstCode;
       if (initialCode) setToCode(initialCode);
-      setFromText(fmt(1000));
-      setToText(fmt(1000 / 540));
+
+      // ✅ теперь просто очищаем поля
+      setFromText("");
+      setToText("");
+
+      // ✅ и подставляем актуальный курс для выбранной валюты
+      const found = rawExchangeRates.data.find(
+        (c) => c.currency?.code === initialCode
+      );
+      if (found) {
+        const currentRate = mode === "sell" ? found.sell : found.buy;
+        setRateParam(currentRate || 0);
+      }
+
       initializedRef.current = true;
     }
   }, [
