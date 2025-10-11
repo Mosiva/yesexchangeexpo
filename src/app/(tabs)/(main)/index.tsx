@@ -490,15 +490,11 @@ export default function MainScreen() {
       <View style={{ marginBottom: 16, paddingHorizontal: 10 }}>
         <ReservePromoCard onPress={() => console.log("Reserve tapped")} />
       </View>
-
       {exchangeData && (
         <CurrencyExchangeModal
           visible={exchangeVisible}
           onClose={() => setExchangeVisible(false)}
-          onConfirm={(payload) => {
-            console.log("Бронь", payload);
-            setExchangeVisible(false);
-          }}
+          onConfirm={() => setExchangeVisible(false)}
           mode={exchangeData.type}
           fromCode={exchangeData.rate.code}
           fromName={exchangeData.rate.name ?? exchangeData.rate.code}
@@ -508,6 +504,8 @@ export default function MainScreen() {
               ? Number(exchangeData.rate.sell)
               : Number(exchangeData.rate.buy)
           }
+          branchId={selectedBranch?.id}
+          address={selectedBranch?.address}
         />
       )}
 

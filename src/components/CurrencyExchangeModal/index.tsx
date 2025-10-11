@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -20,16 +21,16 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   onConfirm: (payload?: ConfirmPayload) => void;
-
-  /** Покупка или продажа */
   mode?: "buy" | "sell";
-
   fromCode?: string;
   fromName?: string;
   toCode?: string;
   rate?: number;
   fromSymbol?: string;
   toSymbol?: string;
+  /** 👇 добавляем */
+  branchId?: number;
+  address?: string;
 }
 
 export default function CurrencyExchangeModal({
@@ -42,7 +43,11 @@ export default function CurrencyExchangeModal({
   rate = 535.8,
   fromSymbol = "₽",
   toSymbol = "₸",
+  branchId,
+  address,
 }: Props) {
+  const router = useRouter();
+
   const [sellText, setSellText] = useState<string>("1");
   const sell = Number(sellText.replace(",", "."));
   const receive = useMemo(
@@ -51,22 +56,37 @@ export default function CurrencyExchangeModal({
   );
 
   const receiveText = useMemo(() => formatNum(receive), [receive]);
-
   const canConfirm = isFinite(sell) && sell > 0;
 
-  // динамические подписи
   const title = mode === "sell" ? "Продажа" : "Покупка";
   const inputLabel = mode === "sell" ? "Продать" : "Купить";
   const outputLabel = mode === "sell" ? "Получить" : "Отдать";
   const ctaLabel = "Забронировать";
 
-  // символы из словаря
   const fromCurrSymbol = getCurrencySymbol(fromCode as CurrencyCode);
 
+  const handleConfirm = () => {
+    onConfirm({ sell, receive });
+    onClose();
+
+    router.push({
+      pathname: "/(stacks)/norates/withrates",
+      params: {
+        mode,
+        fromCode,
+        fromName,
+        rate: String(rate),
+        id: branchId ? String(branchId) : "",
+        address: address ?? "",
+        sellAmount: String(sell),
+        receiveAmount: String(receive),
+      },
+    });
+  };
   return (
     <Modal
       isVisible={visible}
-      onBackdropPress={() => setTimeout(onClose, 50)} // 👈 задержка
+      onBackdropPress={() => setTimeout(onClose, 50)}
       onSwipeComplete={onClose}
       swipeDirection="down"
       style={styles.modal}
@@ -86,10 +106,7 @@ export default function CurrencyExchangeModal({
         style={styles.overlay}
       >
         <View style={styles.content}>
-          {/* Handle */}
           <View style={styles.handle} />
-
-          {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={8}>
@@ -97,7 +114,6 @@ export default function CurrencyExchangeModal({
             </TouchableOpacity>
           </View>
 
-          {/* Currency row */}
           <View style={styles.cardRow}>
             <View style={styles.left}>
               <CurrencyFlag code={fromCode as CurrencyCode} size={28} />
@@ -106,14 +122,12 @@ export default function CurrencyExchangeModal({
                 <Text style={styles.nameText}>{fromName}</Text>
               </View>
             </View>
-
             <View style={styles.right}>
               <Text style={styles.rateText}>{formatNum(rate)}</Text>
               <Text style={styles.rateHint}>По курсу</Text>
             </View>
           </View>
 
-          {/* Inputs */}
           <View style={styles.inputsRow}>
             <View style={{ flex: 1 }}>
               <Text style={styles.label}>{inputLabel}</Text>
@@ -122,7 +136,6 @@ export default function CurrencyExchangeModal({
                   value={sellText}
                   onChangeText={(t) => setSellText(t.replace(/[^\d.,]/g, ""))}
                   keyboardType="decimal-pad"
-                  returnKeyType="done"
                   style={styles.input}
                   placeholder="0"
                 />
@@ -131,9 +144,7 @@ export default function CurrencyExchangeModal({
                 </View>
               </View>
             </View>
-
             <View style={{ width: 12 }} />
-
             <View style={{ flex: 1 }}>
               <Text style={styles.label}>{outputLabel}</Text>
               <View style={[styles.inputWrap, { opacity: 0.9 }]}>
@@ -149,11 +160,10 @@ export default function CurrencyExchangeModal({
             </View>
           </View>
 
-          {/* CTA */}
           <TouchableOpacity
             style={[styles.cta, !canConfirm && styles.ctaDisabled]}
             disabled={!canConfirm}
-            onPress={() => onConfirm({ sell, receive })}
+            onPress={handleConfirm}
           >
             <Text style={styles.ctaText}>{ctaLabel}</Text>
           </TouchableOpacity>
@@ -163,7 +173,6 @@ export default function CurrencyExchangeModal({
   );
 }
 
-/* Helpers */
 function formatNum(n: number) {
   if (!isFinite(n)) return "";
   return n
@@ -171,7 +180,6 @@ function formatNum(n: number) {
     .replace(/\u00A0/g, " ");
 }
 
-/* Styles */
 const styles = StyleSheet.create({
   modal: { justifyContent: "flex-end", margin: 0 },
   overlay: {
@@ -184,7 +192,6 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: "85%",
   },
   handle: {
     width: 48,
@@ -198,37 +205,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
   },
   title: { fontSize: 20, fontWeight: "700", color: "#111827" },
-
   cardRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: "#F5F6F8",
     borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 16,
+    padding: 16,
+    marginVertical: 16,
   },
   left: { flexDirection: "row", alignItems: "center", gap: 12 },
-  flagCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
   codeText: { fontSize: 16, fontWeight: "400", color: "#111827" },
-  nameText: { fontSize: 12, color: "#6B7280", marginTop: 2, fontWeight: "400" },
+  nameText: { fontSize: 12, color: "#6B7280" },
   right: { alignItems: "flex-end" },
   rateText: { fontSize: 16, fontWeight: "700", color: "#111827" },
-  rateHint: { fontSize: 12, color: "#6B7280", marginTop: 2, fontWeight: "400" },
-
+  rateHint: { fontSize: 12, color: "#6B7280" },
   inputsRow: { flexDirection: "row", marginBottom: 16 },
-  label: { fontSize: 14, fontWeight: "400", color: "#111827", marginBottom: 8 },
+  label: { fontSize: 14, color: "#111827", marginBottom: 8 },
   inputWrap: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
@@ -243,13 +238,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingLeft: 12,
-    marginLeft: 8,
     borderLeftWidth: 1,
     borderLeftColor: "#E5E7EB",
     height: "100%",
   },
   suffixText: { fontSize: 18, fontWeight: "700", color: "#111827" },
-
   cta: {
     backgroundColor: "#F58220",
     borderRadius: 14,

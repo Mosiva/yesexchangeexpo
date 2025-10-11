@@ -2,23 +2,23 @@ import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 import MaskInput from "react-native-mask-input";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -26,9 +26,9 @@ import CurrenciesListModalArchive from "../../../../components/CurrenciesListMod
 import CurrencyFlag from "../../../../components/CurrencyFlag";
 import { useAuth } from "../../../../providers/Auth";
 import {
-    useCreateBookingMutation,
-    useCreateGuestBookingMutation,
-    useExchangeRatesCurrentQuery,
+  useCreateBookingMutation,
+  useCreateGuestBookingMutation,
+  useExchangeRatesCurrentQuery,
 } from "../../../../services/yesExchange";
 import { BookingDto, CurrencyCode } from "../../../../types/api";
 import { getCurrencySymbol } from "../../../../utils/currency";
@@ -56,20 +56,200 @@ const parse = (s: string) =>
 export default function ReserveWithRateScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { id: branchIdParam, address } = useLocalSearchParams<{
+  const {
+    id: branchIdParam,
+    address,
+    mode: modeParam,
+    fromCode,
+    fromName,
+    rate,
+    sellAmount,
+    receiveAmount, // 👈 добавь это
+  } = useLocalSearchParams<{
     id?: string;
     address?: string;
+    mode?: "buy" | "sell";
+    fromCode?: string;
+    fromName?: string;
+    rate?: string;
+    sellAmount?: string;
+    receiveAmount?: string;
   }>();
 
   const { isGuest } = useAuth();
+
   // ---- Guest login (phone) state ----
-  const [digits, setDigits] = useState(""); // 10 цифр
-  const [maskedPhone, setMaskedPhone] = useState("+7"); // сразу +7
+  const [digits, setDigits] = useState("");
+  const [maskedPhone, setMaskedPhone] = useState("+7");
 
-  const [mode, setMode] = useState<"sell" | "buy">("sell");
+  /** ====== Mode & Currency ====== */
+  const [mode, setMode] = useState<"sell" | "buy">(modeParam ?? "sell");
   const [toCode, setToCode] = useState<string>("USD");
+  const [rateParam, setRateParam] = useState<number>(Number(rate) || 0);
+  const [toText, setToText] = useState("");
+  const [fromText, setFromText] = useState("");
+  const initializedRef = useRef(false);
 
-  // допустимые коды операторов Казахстана
+  /** ====== API ====== */
+  const {
+    data: rawExchangeRates,
+    refetch: refetchExchangeRates,
+    isLoading: isExchangeRatesLoading,
+  } = useExchangeRatesCurrentQuery(
+    {
+      branchId: Number(branchIdParam),
+      deltaPeriod: "day",
+      limit: 100,
+    },
+    { skip: !branchIdParam }
+  );
+
+  const [doCreateBooking, { isLoading: isCreating }] =
+    useCreateBookingMutation();
+  const [doCreateGuestBooking, { isLoading: isCreatingGuest }] =
+    useCreateGuestBookingMutation();
+
+  const refetchAllData = useCallback(async () => {
+    await Promise.all([refetchExchangeRates()]);
+  }, [refetchExchangeRates]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refetchAllData();
+    }, [refetchAllData])
+  );
+  /** ====== Default / Pre-filled init ====== */
+  useEffect(() => {
+    if (initializedRef.current) return;
+
+    // --- если пришли параметры (из CurrencyExchangeModal) ---
+    if (fromCode && rateParam > 0) {
+      setToCode(fromCode);
+
+      const sell = Number(sellAmount);
+      const receive = Number(receiveAmount);
+
+      if (modeParam === "sell") {
+        // Пользователь продаёт валюту → получает тенге
+        if (sell && receive) {
+          setToText(fmt(sell)); // Валюта
+          setFromText(fmt(receive)); // Тенге
+        } else {
+          setToText("1");
+          setFromText(fmt(rateParam));
+        }
+      } else {
+        // Пользователь покупает валюту → отдаёт тенге
+        if (sell && receive) {
+          setFromText(fmt(sell)); // Тенге
+          setToText(fmt(receive)); // Валюта
+        } else {
+          setFromText("1");
+          setToText(fmt(1 / rateParam));
+        }
+      }
+
+      initializedRef.current = true;
+      return;
+    }
+
+    // --- обычный сценарий (если экран открыт напрямую) ---
+    if (rawExchangeRates?.data?.length) {
+      const foundUSD = rawExchangeRates.data.find(
+        (c) => c.currency?.code === "USD"
+      )?.currency?.code;
+      const firstCode = rawExchangeRates.data[0]?.currency?.code;
+      const initialCode = foundUSD || firstCode;
+      if (initialCode) setToCode(initialCode);
+      setFromText(fmt(1000));
+      setToText(fmt(1000 / 540));
+      initializedRef.current = true;
+    }
+  }, [
+    fromCode,
+    rateParam,
+    modeParam,
+    sellAmount,
+    receiveAmount,
+    rawExchangeRates,
+  ]);
+
+  const currencies = useMemo(() => {
+    if (!rawExchangeRates?.data) return [];
+    return rawExchangeRates.data.map((item) => ({
+      id: item.id,
+      code: item.currency.code,
+      name: item.currency.name,
+      buy: item.buy,
+      sell: item.sell,
+      delta: item.delta || { buy: 0, sell: 0 },
+      trend: item.trend || "same",
+    }));
+  }, [rawExchangeRates]);
+
+  /** ====== Apply rate param if passed ====== */
+  useEffect(() => {
+    if (!rateParam || !currencies.length) return;
+    const found = currencies.find((c) => c.code === toCode);
+    if (found) {
+      if (mode === "sell") found.sell = rateParam;
+      else found.buy = rateParam;
+    }
+  }, [rateParam, currencies, toCode, mode]);
+
+  const findCurrency = (code: string) =>
+    currencies.find((c) => c.code === code) ?? {
+      id: 0,
+      code: code as CurrencyCode,
+      name: "",
+      buy: 1,
+      sell: 1,
+      delta: { buy: 0, sell: 0 },
+      trend: "same" as const,
+    };
+
+  const from = {
+    code: "KZT" as CurrencyCode,
+    name: "Казахстанский тенге",
+    buy: 1,
+    sell: 1,
+  };
+  const to = findCurrency(toCode);
+  const [activeInput, setActiveInput] = useState<"to" | "from" | null>(null);
+
+  useEffect(() => {
+    if (!to.buy || !to.sell) return;
+    if (activeInput === "to") {
+      const val = parse(toText);
+      const sum = mode === "sell" ? val * to.buy : val * to.sell;
+      setFromText(fmt(sum));
+    } else if (activeInput === "from") {
+      const val = parse(fromText);
+      const sum = mode === "sell" ? val / to.buy : val / to.sell;
+      setToText(fmt(sum));
+    }
+  }, [toText, fromText, mode, to, activeInput]);
+
+  const toAmount = parse(toText);
+  const rateLineLeft = `1 ${to.code}`;
+  const rateLineRight = `${(mode === "sell" ? to.buy : to.sell).toFixed(
+    2
+  )} KZT`;
+
+  const deltaValue = useMemo(() => {
+    if (!to) return 0;
+    const val = mode === "sell" ? to.delta.buy : to.delta.sell;
+    return val ?? 0;
+  }, [to, mode]);
+
+  const deltaTrend = to.trend;
+  const [showToModal, setShowToModal] = useState(false);
+  const footerSum = toAmount;
+
+  const fromSymbol = getCurrencySymbol(from.code);
+  const toSymbol = getCurrencySymbol(to.code);
+
+  // Валидные префиксы телефонов Казахстана
   const validPrefixes = [
     "700",
     "701",
@@ -92,153 +272,25 @@ export default function ReserveWithRateScreen() {
   const isValid = digits.length === 10 && validPrefixes.includes(prefix);
   const e164 = `+7${digits}`;
 
-  /** ====== API ====== */
-  const {
-    data: rawExchangeRates,
-    refetch: refetchExchangeRates,
-    isLoading: isExchangeRatesLoading,
-  } = useExchangeRatesCurrentQuery(
-    {
-      branchId: Number(branchIdParam),
-      deltaPeriod: "day",
-      limit: 100,
-    },
-    { skip: !branchIdParam }
-  );
-
-  const [doCreateBooking, { isLoading: isCreating }] =
-    useCreateBookingMutation();
-
-  const [doCreateGuestBooking, { isLoading: isCreatingGuest }] =
-    useCreateGuestBookingMutation();
-
-  const refetchAllData = useCallback(async () => {
-    await Promise.all([refetchExchangeRates()]);
-  }, [refetchExchangeRates]);
-
-  useFocusEffect(
-    useCallback(() => {
-      refetchAllData();
-    }, [refetchAllData])
-  );
-
-  const initializedRef = useRef(false);
-  useEffect(() => {
-    if (initializedRef.current) return;
-    if (rawExchangeRates?.data?.length) {
-      const foundUSD = rawExchangeRates.data.find(
-        (c) => c.currency?.code === "USD"
-      )?.currency?.code;
-      const firstCode = rawExchangeRates.data[0]?.currency?.code;
-      const initialCode = foundUSD || firstCode;
-      if (initialCode) {
-        setToCode(initialCode);
-        initializedRef.current = true;
-      }
-    }
-  }, [rawExchangeRates]);
-
-  const currencies = useMemo(() => {
-    if (!rawExchangeRates?.data) return [];
-    return rawExchangeRates.data.map((item) => ({
-      id: item.id,
-      code: item.currency.code,
-      name: item.currency.name,
-      buy: item.buy,
-      sell: item.sell,
-      delta: item.delta || { buy: 0, sell: 0 },
-      trend: item.trend || "same",
-    }));
-  }, [rawExchangeRates]);
-
-  const findCurrency = (code: string) =>
-    currencies.find((c) => c.code === code) ?? {
-      id: 0,
-      code: code as CurrencyCode,
-      name: "",
-      buy: 1,
-      sell: 1,
-      delta: { buy: 0, sell: 0 },
-      trend: "same" as const,
-    };
-
-  const from = {
-    code: "KZT" as CurrencyCode,
-    name: "Казахстанский тенге",
-    buy: 1,
-    sell: 1,
-  };
-  const to = findCurrency(toCode);
-  const [toText, setToText] = useState(fmt(1000 / 540));
-  const [fromText, setFromText] = useState(fmt(1000)); // тенге
-  const [activeInput, setActiveInput] = useState<"to" | "from" | null>(null);
-
-  useEffect(() => {
-    if (!to.buy || !to.sell) return;
-
-    if (activeInput === "to") {
-      const val = parse(toText);
-      const sum = mode === "sell" ? val * to.buy : val * to.sell;
-      setFromText(fmt(sum));
-    } else if (activeInput === "from") {
-      const val = parse(fromText);
-      const sum = mode === "sell" ? val / to.buy : val / to.sell;
-      setToText(fmt(sum));
-    }
-  }, [toText, fromText, mode, to, activeInput]);
-  const toAmount = parse(toText);
-
-  const rateLineLeft = `1 ${to.code}`;
-  const rateLineRight = `${(mode === "sell" ? to.buy : to.sell).toFixed(
-    2
-  )} KZT`;
-
-  const deltaValue = useMemo(() => {
-    if (!to) return 0;
-    const val = mode === "sell" ? to.delta.buy : to.delta.sell;
-    return val ?? 0;
-  }, [to, mode]);
-
-  const deltaTrend = to.trend;
-  const [showToModal, setShowToModal] = useState(false);
-  const footerSum = toAmount;
-
-  const fromSymbol = getCurrencySymbol(from.code);
-  const toSymbol = getCurrencySymbol(to.code);
-
   /** ====== Сабмит брони ====== */
   const handleCreateBooking = async () => {
     if (!branchIdParam || !to?.id) {
       Alert.alert("Ошибка", "Не удалось определить валюту или филиал.");
       return;
     }
-
-    // Проверка телефона, если гость
-    if (isGuest) {
-      if (!isValid) {
-        Alert.alert(
-          "Ошибка",
-          "Введите корректный номер телефона Казахстана (+7 7XX XXX-XX-XX)."
-        );
-        return;
-      }
-    }
-
-    // 🔍 Ищем ID курса KZT
-    const kzt = currencies.find((c) => c.code === "KZT");
-    if (!kzt) {
-      Alert.alert("Ошибка", "Не найден курс тенге (KZT).");
+    if (isGuest && !isValid) {
+      Alert.alert(
+        "Ошибка",
+        "Введите корректный номер телефона Казахстана (+7 7XX XXX-XX-XX)."
+      );
       return;
     }
 
-    // 🔧 Определяем from / to в зависимости от режима
-    const fromExchangeRateId = mode === "sell" ? to.id : kzt.id;
-    const toExchangeRateId = mode === "sell" ? kzt.id : to.id;
-
     const payload = {
       branchId: Number(branchIdParam),
-      fromExchangeRateId,
-      toExchangeRateId,
+      fromExchangeRateId:
+        mode === "sell" ? to.id : findCurrency("KZT")?.id ?? 0,
+      toExchangeRateId: mode === "sell" ? findCurrency("KZT")?.id ?? 0 : to.id,
       amount: footerSum.toFixed(2),
       operationType: mode,
       isRateLocked: true,
@@ -254,10 +306,8 @@ export default function ReserveWithRateScreen() {
       } else {
         response = await doCreateBooking(payload).unwrap();
       }
-
-      // 📦 Извлекаем id брони из ответа
       const bookingId = (response as BookingDto).id;
-      const displayAmount = fmt(footerSum);
+      const displayAmount = fmt(toAmount);
       const displayCurrency = to.code;
 
       router.push({
@@ -356,6 +406,7 @@ export default function ReserveWithRateScreen() {
           highlight={activeInput === "from"}
           mutedCard
         />
+
         {/* Rate line */}
         <View style={styles.rateRow}>
           <Text style={styles.rateText}>
@@ -377,11 +428,12 @@ export default function ReserveWithRateScreen() {
             </Text>
           )}
         </View>
+
+        {/* Guest phone */}
         {isGuest && (
           <View
             style={{
               marginTop: 20,
-              borderWidth: 0,
               borderTopWidth: 1,
               borderTopColor: BORDER,
             }}
@@ -429,7 +481,6 @@ export default function ReserveWithRateScreen() {
           </View>
         )}
 
-        {/* Ошибка при неверном коде */}
         {digits.length >= 3 && !validPrefixes.includes(prefix) && (
           <Text style={styles.error}>
             Доступны только коды операторов Казахстана
@@ -462,7 +513,7 @@ export default function ReserveWithRateScreen() {
         </Pressable>
       </View>
 
-      {/* TO Modal */}
+      {/* Modal выбора валюты */}
       <CurrenciesListModalArchive
         visible={showToModal}
         onClose={() => setShowToModal(false)}
@@ -542,14 +593,6 @@ function FXRow({
     </View>
   );
 }
-const COLORS = {
-  orange: "#F58220",
-  text: "#111827",
-  subtext: "#6B7280",
-  border: "#E5E7EB",
-  bg: "#FFFFFF",
-  error: "#DC2626",
-};
 
 /** ====== styles ====== */
 const styles = StyleSheet.create({
@@ -655,19 +698,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   ctaText: { color: "#fff", fontSize: 17, fontWeight: "600" },
-  // Guest form styles
   input: {
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.bg,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     paddingVertical: 16,
     paddingHorizontal: 14,
     fontSize: 16,
   },
-  error: {
-    color: COLORS.error,
-    marginTop: 6,
-    fontSize: 13,
-  },
+  error: { color: "#DC2626", marginTop: 6, fontSize: 13 },
 });
