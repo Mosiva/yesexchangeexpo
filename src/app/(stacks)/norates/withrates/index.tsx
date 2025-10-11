@@ -86,8 +86,6 @@ export default function ReserveWithRateScreen() {
   const [mode, setMode] = useState<"sell" | "buy">(modeParam ?? "sell");
   const [toCode, setToCode] = useState<string>("USD");
   const [rateParam, setRateParam] = useState<number>(Number(rate) || 0);
-  const [toText, setToText] = useState("");
-  const [fromText, setFromText] = useState("");
   const initializedRef = useRef(false);
 
   /** ====== API ====== */
@@ -120,65 +118,19 @@ export default function ReserveWithRateScreen() {
   );
 
   useEffect(() => {
-    // --- если пришли параметры из CurrencyExchangeModal ---
-    if (fromCode && rateParam > 0) {
-      setToCode(fromCode);
-
-      const sell = Number(sellAmount);
-      const receive = Number(receiveAmount);
-
-      if (modeParam === "sell") {
-        if (sell && receive) {
-          setToText(fmt(sell));
-          setFromText(fmt(receive));
-        } else {
-          setToText("1");
-          setFromText(fmt(rateParam));
-        }
-      } else {
-        if (sell && receive) {
-          setFromText(fmt(sell));
-          setToText(fmt(receive));
-        } else {
-          setFromText("1");
-          setToText(fmt(1 / rateParam));
-        }
-      }
-
-      // 💡 теперь — НЕ ставим initializedRef, чтобы можно было заново пересчитать при новой валюте
-      return;
-    }
-
-    // --- обычный сценарий (открыт напрямую) ---
-    if (!initializedRef.current && rawExchangeRates?.data?.length) {
+    if (initializedRef.current) return;
+    if (rawExchangeRates?.data?.length) {
       const foundUSD = rawExchangeRates.data.find(
         (c) => c.currency?.code === "USD"
       )?.currency?.code;
       const firstCode = rawExchangeRates.data[0]?.currency?.code;
       const initialCode = foundUSD || firstCode;
-      if (initialCode) setToCode(initialCode);
-
-      setFromText("");
-      setToText("");
-
-      const found = rawExchangeRates.data.find(
-        (c) => c.currency?.code === initialCode
-      );
-      if (found) {
-        const currentRate = mode === "sell" ? found.sell : found.buy;
-        setRateParam(currentRate || 0);
+      if (initialCode) {
+        setToCode(initialCode);
+        initializedRef.current = true;
       }
-
-      initializedRef.current = true;
     }
-  }, [
-    fromCode,
-    rateParam,
-    modeParam,
-    sellAmount,
-    receiveAmount,
-    rawExchangeRates,
-  ]);
+  }, [rawExchangeRates]);
 
   const currencies = useMemo(() => {
     if (!rawExchangeRates?.data) return [];
@@ -221,11 +173,13 @@ export default function ReserveWithRateScreen() {
     sell: 1,
   };
   const to = findCurrency(toCode);
+  const [toText, setToText] = useState(fmt(1000 / 540));
+  const [fromText, setFromText] = useState(fmt(1000)); // тенге
   const [activeInput, setActiveInput] = useState<"to" | "from" | null>(null);
 
-  /** ====== Пересчёт сумм ====== */
   useEffect(() => {
     if (!to.buy || !to.sell) return;
+
     if (activeInput === "to") {
       const val = parse(toText);
       const sum = mode === "sell" ? val * to.buy : val * to.sell;
@@ -236,39 +190,19 @@ export default function ReserveWithRateScreen() {
       setToText(fmt(sum));
     }
   }, [toText, fromText, mode, to, activeInput]);
-
-  /** ====== Пересчёт при смене режима без обнуления ====== */
-  useEffect(() => {
-    if (!rawExchangeRates?.data?.length) return;
-
-    const found = rawExchangeRates.data.find((c) => c.currency.code === toCode);
-    if (found) {
-      const newRate = mode === "sell" ? found.sell : found.buy;
-      setRateParam(newRate || 0);
-
-      // 🔹 пересчитать тенге, если пользователь вводил валюту
-      const val = parse(toText);
-      if (val > 0) {
-        const sum = mode === "sell" ? val * found.sell : val * found.buy;
-        setFromText(fmt(sum));
-      }
-    }
-  }, [mode]);
-
-  /** ====== Сброс при смене валюты ====== */
-  useEffect(() => {
-    if (!rawExchangeRates?.data?.length) return;
-
-    const found = rawExchangeRates.data.find((c) => c.currency.code === toCode);
-    if (found) {
-      setFromText("");
-      setToText("");
-      const currentRate = mode === "sell" ? found.sell : found.buy;
-      setRateParam(currentRate || 0);
-    }
-  }, [toCode]);
-
   const toAmount = parse(toText);
+
+  const computed = useMemo(() => {
+    if (mode === "sell") {
+      return { from: isFinite(toAmount) ? toAmount * to.buy : 0, to: toAmount };
+    } else {
+      return {
+        from: isFinite(toAmount) ? toAmount * to.sell : 0,
+        to: toAmount,
+      };
+    }
+  }, [mode, toAmount, to]);
+
   const rateLineLeft = `1 ${to.code}`;
   const rateLineRight = `${(mode === "sell" ? to.buy : to.sell).toFixed(
     2
