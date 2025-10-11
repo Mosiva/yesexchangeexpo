@@ -64,7 +64,7 @@ export default function ReserveWithRateScreen() {
     fromName,
     rate,
     sellAmount,
-    receiveAmount, // 👈 добавь это
+    receiveAmount,
   } = useLocalSearchParams<{
     id?: string;
     address?: string;
@@ -118,11 +118,11 @@ export default function ReserveWithRateScreen() {
       refetchAllData();
     }, [refetchAllData])
   );
+
   /** ====== Default / Pre-filled init ====== */
   useEffect(() => {
     if (initializedRef.current) return;
 
-    // --- если пришли параметры (из CurrencyExchangeModal) ---
     if (fromCode && rateParam > 0) {
       setToCode(fromCode);
 
@@ -130,19 +130,17 @@ export default function ReserveWithRateScreen() {
       const receive = Number(receiveAmount);
 
       if (modeParam === "sell") {
-        // Пользователь продаёт валюту → получает тенге
         if (sell && receive) {
-          setToText(fmt(sell)); // Валюта
-          setFromText(fmt(receive)); // Тенге
+          setToText(fmt(sell));
+          setFromText(fmt(receive));
         } else {
           setToText("1");
           setFromText(fmt(rateParam));
         }
       } else {
-        // Пользователь покупает валюту → отдаёт тенге
         if (sell && receive) {
-          setFromText(fmt(sell)); // Тенге
-          setToText(fmt(receive)); // Валюта
+          setFromText(fmt(sell));
+          setToText(fmt(receive));
         } else {
           setFromText("1");
           setToText(fmt(1 / rateParam));
@@ -153,7 +151,6 @@ export default function ReserveWithRateScreen() {
       return;
     }
 
-    // --- обычный сценарий (если экран открыт напрямую) ---
     if (rawExchangeRates?.data?.length) {
       const foundUSD = rawExchangeRates.data.find(
         (c) => c.currency?.code === "USD"
@@ -217,6 +214,7 @@ export default function ReserveWithRateScreen() {
   const to = findCurrency(toCode);
   const [activeInput, setActiveInput] = useState<"to" | "from" | null>(null);
 
+  /** ====== Пересчёт сумм ====== */
   useEffect(() => {
     if (!to.buy || !to.sell) return;
     if (activeInput === "to") {
@@ -229,6 +227,32 @@ export default function ReserveWithRateScreen() {
       setToText(fmt(sum));
     }
   }, [toText, fromText, mode, to, activeInput]);
+
+  /** ====== Сброс при смене режима ====== */
+  useEffect(() => {
+    if (!rawExchangeRates?.data?.length) return;
+
+    const found = rawExchangeRates.data.find((c) => c.currency.code === toCode);
+    if (found) {
+      setFromText("");
+      setToText("");
+      const currentRate = mode === "sell" ? found.sell : found.buy;
+      setRateParam(currentRate || 0);
+    }
+  }, [mode]);
+
+  /** ====== Сброс при смене валюты ====== */
+  useEffect(() => {
+    if (!rawExchangeRates?.data?.length) return;
+
+    const found = rawExchangeRates.data.find((c) => c.currency.code === toCode);
+    if (found) {
+      setFromText("");
+      setToText("");
+      const currentRate = mode === "sell" ? found.sell : found.buy;
+      setRateParam(currentRate || 0);
+    }
+  }, [toCode]);
 
   const toAmount = parse(toText);
   const rateLineLeft = `1 ${to.code}`;
@@ -272,7 +296,7 @@ export default function ReserveWithRateScreen() {
   const isValid = digits.length === 10 && validPrefixes.includes(prefix);
   const e164 = `+7${digits}`;
 
-  /** ====== Сабмит брони ====== */
+  /** ====== Сабмит ====== */
   const handleCreateBooking = async () => {
     if (!branchIdParam || !to?.id) {
       Alert.alert("Ошибка", "Не удалось определить валюту или филиал.");
