@@ -24,6 +24,7 @@ import MaskInput from "react-native-mask-input";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CurrenciesListModalArchive from "../../../components/CurrenciesListModalArchive";
 import CurrencyFlag from "../../../components/CurrencyFlag";
+import RateAlert from "../../../components/RateAlert";
 import { useAuth } from "../../../providers/Auth";
 import {
   useCreateBookingMutation,
@@ -354,6 +355,8 @@ export default function ReserveNoRateScreen() {
           highlight={activeInput === "from"}
           mutedCard
         />
+
+        <RateAlert asOf={new Date()} />
         {/* Rate line */}
         <View style={styles.rateRow}>
           <Text style={styles.rateText}>
