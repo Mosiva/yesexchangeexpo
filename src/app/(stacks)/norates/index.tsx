@@ -169,8 +169,8 @@ export default function ReserveNoRateScreen() {
     sell: 1,
   };
   const to = findCurrency(toCode);
-  const [toText, setToText] = useState(fmt(1000 / 540));
-  const [fromText, setFromText] = useState(fmt(1000)); // тенге
+  const [toText, setToText] = useState("0");
+  const [fromText, setFromText] = useState("0");
   const [activeInput, setActiveInput] = useState<"to" | "from" | null>(null);
 
   useEffect(() => {
