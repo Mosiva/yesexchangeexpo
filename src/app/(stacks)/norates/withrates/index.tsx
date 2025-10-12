@@ -209,21 +209,31 @@ export default function ReserveWithRateScreen() {
     sell: 1,
   };
   const to = findCurrency(toCode);
-  const [toText, setToText] = useState(fmt(1000 / 540));
-  const [fromText, setFromText] = useState(fmt(1000)); // тенге
+  const [toText, setToText] = useState("0");
+  const [fromText, setFromText] = useState("0");
   const [activeInput, setActiveInput] = useState<"to" | "from" | null>(null);
 
   useEffect(() => {
     if (!to.buy || !to.sell) return;
 
+    const valTo = parse(toText);
+    const valFrom = parse(fromText);
+
     if (activeInput === "to") {
-      const val = parse(toText);
-      const sum = mode === "sell" ? val * to.buy : val * to.sell;
+      const sum = mode === "sell" ? valTo * to.buy : valTo * to.sell;
       setFromText(fmt(sum));
     } else if (activeInput === "from") {
-      const val = parse(fromText);
-      const sum = mode === "sell" ? val / to.buy : val / to.sell;
+      const sum = mode === "sell" ? valFrom / to.buy : valFrom / to.sell;
       setToText(fmt(sum));
+    } else {
+      // 💡 если пользователь ничего не редактирует — пересчитать по текущему режиму
+      if (valTo > 0) {
+        const sum = mode === "sell" ? valTo * to.buy : valTo * to.sell;
+        setFromText(fmt(sum));
+      } else if (valFrom > 0) {
+        const sum = mode === "sell" ? valFrom / to.buy : valFrom / to.sell;
+        setToText(fmt(sum));
+      }
     }
   }, [toText, fromText, mode, to, activeInput]);
   const toAmount = parse(toText);
