@@ -92,14 +92,14 @@ export default function ModerationScreen() {
       </ScrollView>
 
       {/* Sticky bottom CTA */}
-      <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 8 }]}>
+      {/* <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 8 }]}>
         <TouchableOpacity
           style={styles.primaryBtn}
           onPress={() => router.replace("/(tabs)/(main)")}
         >
           <Text style={styles.primaryText}>Вернуться на главную</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       {/* Модалка подтверждения отмены */}
       <CancelReservationModal
