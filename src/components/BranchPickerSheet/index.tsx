@@ -4,12 +4,15 @@ import { router } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Pressable,
+  Share,
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -43,8 +46,19 @@ type Props = {
   nearbyBranches?: Branch[];
   loadingLocation?: boolean;
   isRateLocked?: boolean;
+  isNearbyScreen?: boolean;
 };
 
+const onShare = async () => {
+  try {
+    await Share.share({
+      message:
+        "Yes Exchange — удобный обмен валют. Скачай приложение: https://yes.exchange/app",
+    });
+  } catch (e: any) {
+    Alert.alert("Не удалось поделиться", e?.message ?? "");
+  }
+};
 export default function BranchPickerSheet({
   selectedBranch,
   onSelectBranch,
@@ -53,6 +67,7 @@ export default function BranchPickerSheet({
   nearbyBranches = [],
   loadingLocation = false,
   isRateLocked = false,
+  isNearbyScreen = false,
 }: Props) {
   const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["35%", "85%"], []);
@@ -238,26 +253,38 @@ export default function BranchPickerSheet({
               </>
             )}
 
-            {/* CTA */}
-            <Pressable
-              style={styles.cta}
-              onPress={() =>
-                router.push({
-                  pathname: isRateLocked
-                    ? "/(stacks)/norates/withrates"
-                    : "/(stacks)/norates",
-                  params: {
-                    id: selectedBranch.id,
-                    address: selectedBranch.address,
-                    city: selectedBranch.city,
-                  },
-                })
-              }
-            >
-              <Text style={styles.ctaText}>
-                {isRateLocked ? "Забронировать по курсу" : "Забронировать тут"}
-              </Text>
-            </Pressable>
+            {isNearbyScreen ? (
+              <TouchableOpacity style={styles.shareRow} onPress={onShare}>
+                <Ionicons
+                  name="share-social-outline"
+                  size={22}
+                  color="#9CA3AF"
+                />
+                <Text style={styles.shareText}>Поделиться</Text>
+              </TouchableOpacity>
+            ) : (
+              <Pressable
+                style={styles.cta}
+                onPress={() =>
+                  router.push({
+                    pathname: isRateLocked
+                      ? "/(stacks)/norates/withrates"
+                      : "/(stacks)/norates",
+                    params: {
+                      id: selectedBranch.id,
+                      address: selectedBranch.address,
+                      city: selectedBranch.city,
+                    },
+                  })
+                }
+              >
+                <Text style={styles.ctaText}>
+                  {isRateLocked
+                    ? "Забронировать по курсу"
+                    : "Забронировать тут"}
+                </Text>
+              </Pressable>
+            )}
           </>
         )}
       </BottomSheetView>
@@ -343,4 +370,12 @@ const styles = StyleSheet.create({
   hours: { color: TEXT },
   row: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
   itemTime: { color: SUB },
+  shareRow: {
+    flexDirection: "row",
+    alignSelf: "center",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 24,
+  },
+  shareText: { color: "#6B7280", fontSize: 14, fontWeight: "700" },
 });
