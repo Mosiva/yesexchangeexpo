@@ -360,7 +360,7 @@ export default function ReserveWithRateScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.subtitle}>
-          Данный вид брони не подразумевает сохранения курса
+          Данный вид брони подразумевает сохранение курса
         </Text>
 
         {/* Segmented control */}
