@@ -1,6 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useMemo, useState } from "react";
 import {
+  Alert,
   RefreshControl,
   ScrollView,
   StatusBar,
@@ -14,7 +15,10 @@ import ReservationCard, {
   Reservation,
 } from "../../../../components/ReservationCard";
 import { Skeleton } from "../../../../components/skeleton";
-import { useBookingsHistoryQuery } from "../../../../services/yesExchange";
+import {
+  useBookingsHistoryQuery,
+  useCancelBookingMutation,
+} from "../../../../services/yesExchange";
 
 export default function ReserveHistoryRScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -31,6 +35,9 @@ export default function ReserveHistoryRScreen() {
     page: 1,
     limit: 100,
   });
+  const [doCancelBooking, { isLoading: isCancelling }] =
+    useCancelBookingMutation({});
+
   // === Обновление данных ===
   const refetchAllData = useCallback(async () => {
     await Promise.all([refetchBookings()]);
@@ -81,11 +88,26 @@ export default function ReserveHistoryRScreen() {
     setShowCancelModal(true);
   };
 
-  const confirmCancel = () => {
-    if (selectedIdx !== null) {
-      console.log("Отменяем бронь", items[selectedIdx].id);
-    }
+  const confirmCancel = async () => {
+    if (selectedIdx === null) return;
+
     setShowCancelModal(false);
+
+    try {
+      const bookingId = Number(items[selectedIdx].id);
+
+      await doCancelBooking({ id: bookingId, phone: "" }).unwrap();
+
+      Alert.alert("Успешно", "Бронь успешно отменена.", [
+        { text: "ОК", onPress: () => refetchBookings() },
+      ]);
+    } catch (err: any) {
+      console.error("❌ Cancel booking error:", err);
+      Alert.alert(
+        "Ошибка",
+        err?.data?.message || err?.error || "Не удалось отменить бронь."
+      );
+    }
   };
 
   /** === Render states === */
@@ -148,6 +170,7 @@ export default function ReserveHistoryRScreen() {
         visible={showCancelModal}
         onClose={() => setShowCancelModal(false)}
         onConfirm={confirmCancel}
+        isLoading={isCancelling}
       />
     </View>
   );
