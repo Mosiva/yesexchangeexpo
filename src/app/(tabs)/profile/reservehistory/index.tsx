@@ -50,27 +50,36 @@ export default function ReserveHistoryScreen() {
   );
 
   /** === Transform API data === */
-  /** === Transform API data === */
   const items: Reservation[] = useMemo(() => {
     if (!rawBookings?.data) return [];
 
-    return rawBookings.data.map((b: any) => ({
-      id: Number(b.id),
-      date: b.createdAt,
-      amount: Number(b.amount),
-      currency: b.fromExchangeRate?.currency?.code ?? "KZT",
-      address: b.branch?.address ?? "—",
-      status: (b.status ?? "created") as
-        | "created"
-        | "pending_moderation"
-        | "not_confirmed"
-        | "ready_for_pickup"
-        | "cancelled"
-        | "expired"
-        | "received"
-        | "sync_failed"
-        | "external_deleted",
-    }));
+    return rawBookings.data.map((b: any) => {
+      const operationType = b.operationType ?? "—";
+
+      const currency =
+        operationType === "buy"
+          ? b.toExchangeRate?.currency?.code ?? "KZT"
+          : b.fromExchangeRate?.currency?.code ?? "KZT";
+
+      return {
+        id: Number(b.id),
+        date: b.createdAt,
+        amount: Number(b.amount),
+        currency,
+        address: b.branch?.address ?? "—",
+        operationType,
+        status: (b.status ?? "created") as
+          | "created"
+          | "pending_moderation"
+          | "not_confirmed"
+          | "ready_for_pickup"
+          | "cancelled"
+          | "expired"
+          | "received"
+          | "sync_failed"
+          | "external_deleted",
+      };
+    });
   }, [rawBookings]);
 
   /** === Refresh === */
