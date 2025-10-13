@@ -7,12 +7,14 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  isLoading?: boolean; // 👈 для индикации "Отмена..."
 }
 
 export default function CancelReservationModal({
   visible,
   onClose,
   onConfirm,
+  isLoading = false,
 }: Props) {
   return (
     <Modal
@@ -45,16 +47,22 @@ export default function CancelReservationModal({
 
           {/* Кнопки */}
           <View style={styles.actions}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
-              <Text style={styles.cancelText}>Отмена</Text>
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={onClose}
+              disabled={isLoading}
+            >
+              <Text style={styles.cancelText}>Нет</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.confirmBtn}
-              onPress={onConfirm}
-              disabled
+              style={[styles.confirmBtn, isLoading && { opacity: 0.6 }]}
+              onPress={!isLoading ? onConfirm : undefined}
+              disabled={isLoading}
             >
-              <Text style={styles.confirmText}>Да</Text>
+              <Text style={styles.confirmText}>
+                {isLoading ? "Отмена..." : "Да"}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -63,10 +71,11 @@ export default function CancelReservationModal({
   );
 }
 
+/* ——— Styles ——— */
 const styles = StyleSheet.create({
   modal: {
     justifyContent: "flex-end",
-    margin: 0, // во всю ширину
+    margin: 0,
   },
   overlay: {
     flex: 1,
@@ -78,7 +87,6 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    height: 185,
   },
   handle: {
     width: 40,
@@ -102,7 +110,6 @@ const styles = StyleSheet.create({
   message: {
     fontSize: 14,
     color: "#6B7280",
-    textAlign: "left",
     marginBottom: 16,
   },
   actions: {
@@ -123,7 +130,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 12,
     height: 48,
-    backgroundColor: "grey",
+    backgroundColor: "#F58220", // 👈 бренд-оранжевый
     alignItems: "center",
     justifyContent: "center",
   },

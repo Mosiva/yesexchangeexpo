@@ -337,6 +337,7 @@ export default function ReserveWithRateScreen() {
           currency: displayCurrency,
           rateText: `${rateLineLeft} = ${rateLineRight}`,
           address: address ?? "Неизвестный филиал",
+          phone: e164,
         },
       });
     } catch (err: any) {

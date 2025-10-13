@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CancelReservationModal from "../../../../components/CancelReservationModal";
 import { useAuth } from "../../../../providers/Auth";
+import { useCancelBookingMutation } from "../../../../services/yesExchange";
 
 type Params = {
   id?: string; // "№12356"
@@ -19,6 +21,7 @@ type Params = {
   currency?: string; // "USD"
   rateText?: string; // "1 KZT = 0,001861123 USD"
   address?: string; // "Астана, Аэропорт"
+  phone?: string; // "+77777777777"
 };
 
 const COLORS = {
@@ -38,6 +41,9 @@ export default function ModerationScreen() {
 
   const [showCancelModal, setShowCancelModal] = useState(false);
 
+  const [doCancelBooking, { isLoading: isCancelling }] =
+    useCancelBookingMutation({});
+
   // Fallbacks
   const id = p.id ?? "00000";
   const kind = p.kind ?? "Без привязки к курсу";
@@ -46,12 +52,33 @@ export default function ModerationScreen() {
   const rateText = p.rateText ?? "1 KZT = 0,001861123 USD";
   const address = p.address ?? "Астана, Аэропорт";
 
+  const phone = p.phone ?? "+77777777777";
+
   /** 🔄 Подтверждение отмены брони */
-  const confirmCancel = () => {
+  const confirmCancel = async () => {
     setShowCancelModal(false);
-    // TODO: вызвать API для отмены брони
-    // await cancelBookingMutation({ id });
-    router.replace("/(tabs)/reserve"); // возвращаем пользователя в список
+
+    try {
+      if (isGuest) {
+        await doCancelBooking({
+          id: Number(id),
+          phone, // 👈 передаём телефон для гостя
+        }).unwrap();
+      } else {
+        await doCancelBooking({
+          id: Number(id),
+          phone: "", // 👈 можно явно не указывать
+        }).unwrap();
+      }
+
+      router.replace("/(tabs)/reserve"); // возвращаем пользователя в список
+    } catch (err: any) {
+      console.error("❌ Cancel booking error:", err);
+      Alert.alert(
+        "Ошибка",
+        err?.data?.message || err?.error || "Не удалось отменить бронь"
+      );
+    }
   };
 
   return (
@@ -106,6 +133,7 @@ export default function ModerationScreen() {
         visible={showCancelModal}
         onClose={() => setShowCancelModal(false)}
         onConfirm={confirmCancel}
+        isLoading={isCancelling}
       />
     </View>
   );
