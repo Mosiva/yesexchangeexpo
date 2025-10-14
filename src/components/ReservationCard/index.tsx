@@ -20,7 +20,6 @@ export type Reservation = {
   currency: string;
   address: string;
   status: Status;
-  operationType: string;
 };
 
 export default function ReservationCard({

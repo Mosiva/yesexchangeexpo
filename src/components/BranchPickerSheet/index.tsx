@@ -192,6 +192,26 @@ export default function BranchPickerSheet({
                   Определяем местоположение...
                 </Text>
               </View>
+            ) : dataToShow.length === 0 ? (
+              <View style={{ paddingVertical: 40, alignItems: "center" }}>
+                <Image
+                  source={require("../../../assets/icons/LocationIcon.png")}
+                  style={{ width: 32, height: 32 }}
+                />
+                <Text
+                  style={{
+                    marginTop: 12,
+                    color: SUB,
+                    fontSize: 15,
+                    textAlign: "center",
+                    fontWeight: "500",
+                  }}
+                >
+                  {tab === "nearby"
+                    ? "Нет филиалов поблизости"
+                    : "Филиалы не найдены"}
+                </Text>
+              </View>
             ) : (
               <FlatList
                 data={dataToShow}
