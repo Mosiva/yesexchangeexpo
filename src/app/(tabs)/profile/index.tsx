@@ -217,7 +217,14 @@ export default function ProfileScreen() {
           <Pressable
             style={styles.cardRow}
             accessibilityLabel="История бронирования"
-            onPress={() => router.push("/(tabs)/profile/reservehistory")}
+            onPress={() =>
+              router.push({
+                pathname: "/(tabs)/profile/reservehistory",
+                params: {
+                  phone: client.phone,
+                },
+              })
+            }
           >
             <View style={styles.cardLeft}>
               <MaterialCommunityIcons

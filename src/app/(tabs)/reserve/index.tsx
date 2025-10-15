@@ -18,10 +18,21 @@ import {
 import LoginDiscountBanner from "../../../components/LoginDiscountBanner";
 import { useAuth } from "../../../providers/Auth";
 
+import { clientApi } from "services";
+const { useGetClientQuery } = clientApi;
+
 export default function ReserveScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { isGuest } = useAuth();
+  const {
+    data: rawClient,
+    refetch: refetchClient,
+    isLoading: isClientLoading,
+    isError: isClientError,
+  } = useGetClientQuery({});
+
+  const client: any = (rawClient as any)?.data ?? rawClient ?? null;
   return (
     <ScrollView
       style={styles.container}

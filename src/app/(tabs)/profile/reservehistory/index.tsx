@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { useLocalSearchParams } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import {
   Alert,
@@ -21,6 +22,7 @@ import {
 } from "../../../../services/yesExchange";
 
 export default function ReserveHistoryScreen() {
+  const { phone } = useLocalSearchParams();
   const [refreshing, setRefreshing] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
@@ -99,14 +101,16 @@ export default function ReserveHistoryScreen() {
 
   const confirmCancel = async () => {
     if (selectedIdx === null) return;
-
+  
     setShowCancelModal(false);
-
+  
     try {
       const bookingId = Number(items[selectedIdx].id);
-
-      await doCancelBooking({ id: bookingId, phone: "" }).unwrap();
-
+      // Убираем "+"
+      const normalizedPhone = (phone as string).replace(/^\+/, "");
+  
+      await doCancelBooking({ id: bookingId, phone: normalizedPhone }).unwrap();
+  
       Alert.alert("Успешно", "Бронь успешно отменена.", [
         { text: "ОК", onPress: () => refetchBookings() },
       ]);
