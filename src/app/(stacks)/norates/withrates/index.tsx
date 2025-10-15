@@ -32,6 +32,7 @@ import {
 } from "../../../../services/yesExchange";
 import { BookingDto, CurrencyCode } from "../../../../types/api";
 import { getCurrencySymbol } from "../../../../utils/currency";
+import { formatCurrencyDisplay } from "../../../../utils/formatCurrencyDisplay";
 
 const ORANGE = "#F58220";
 const TEXT = "#111827";
@@ -348,6 +349,7 @@ export default function ReserveWithRateScreen() {
       Alert.alert("Ошибка", msg);
     }
   };
+  const { text: displayValue } = formatCurrencyDisplay(fmt(footerSum), to.code);
 
   return (
     <KeyboardAvoidingView
@@ -512,8 +514,17 @@ export default function ReserveWithRateScreen() {
         <Text style={styles.footerTitle}>Итого</Text>
         <View style={styles.footerRow}>
           <Text style={styles.footerLabel}>{"Ваша сумма"}</Text>
-          <Text style={styles.footerValue}>
-            {fmt(footerSum)} {toSymbol}
+          <Text
+            style={[
+              styles.footerValue,
+              {
+                writingDirection: "ltr",
+                textAlign: "right",
+                direction: "ltr", // на Android важно
+              },
+            ]}
+          >
+            {displayValue}
           </Text>
         </View>
         <Pressable
@@ -598,7 +609,19 @@ function FXRow({
       <View style={[styles.amountWrap, highlight && { borderColor: ORANGE }]}>
         <TextInput
           value={value}
-          onChangeText={onChangeText}
+          onChangeText={(t) => {
+            // Убираем все лишние символы, кроме цифр и запятых/точек
+            const cleaned = t.replace(/[^\d.,]/g, "");
+            // Форматируем с разделением тысяч, если возможно
+            const num = Number(cleaned.replace(",", "."));
+            const formatted =
+              isFinite(num) && cleaned !== ""
+                ? num
+                    .toLocaleString("ru-RU", { maximumFractionDigits: 2 })
+                    .replace(/\u00A0/g, " ")
+                : cleaned;
+            onChangeText(formatted);
+          }}
           editable={editable}
           keyboardType="numeric"
           style={styles.amountInput}
