@@ -15,6 +15,7 @@ import {
   Text,
   View,
 } from "react-native";
+import LoginDiscountBanner from "../../../components/LoginDiscountBanner";
 import { useAuth } from "../../../providers/Auth";
 
 export default function ReserveScreen() {
@@ -68,7 +69,7 @@ export default function ReserveScreen() {
       </Pressable>
 
       {/* History row */}
-      {!isGuest && (
+      {!isGuest ? (
         <Pressable
           style={styles.historyRow}
           onPress={() => router.push("/(tabs)/reserve/reservehistoryr")}
@@ -85,6 +86,8 @@ export default function ReserveScreen() {
           </View>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </Pressable>
+      ) : (
+        <LoginDiscountBanner onPress={() => router.push("/(tabs)/profile")} />
       )}
     </ScrollView>
   );
