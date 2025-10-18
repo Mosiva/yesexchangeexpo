@@ -101,16 +101,16 @@ export default function ReserveHistoryScreen() {
 
   const confirmCancel = async () => {
     if (selectedIdx === null) return;
-  
+
     setShowCancelModal(false);
-  
+
     try {
       const bookingId = Number(items[selectedIdx].id);
       // Убираем "+"
       const normalizedPhone = (phone as string).replace(/^\+/, "");
-  
+
       await doCancelBooking({ id: bookingId, phone: normalizedPhone }).unwrap();
-  
+
       Alert.alert("Успешно", "Бронь успешно отменена.", [
         { text: "ОК", onPress: () => refetchBookings() },
       ]);

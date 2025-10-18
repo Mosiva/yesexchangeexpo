@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
   },
   addrIcon: { marginRight: 12 },
   addrLabel: { color: "#fff", fontSize: 14, opacity: 0.95, marginBottom: 4 },
-  addrValue: { color: "#fff", fontSize: 16 },
+  addrValue: { color: "#fff", fontSize: 14 },
   localtime: {
     color: "#fff",
     fontSize: 14,

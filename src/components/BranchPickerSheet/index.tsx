@@ -8,6 +8,7 @@ import {
   FlatList,
   Image,
   Pressable,
+  ScrollView,
   Share,
   StyleSheet,
   Text,
@@ -35,6 +36,8 @@ export type Branch = {
   phone?: string;
   email?: string;
   distanceKm?: number | null;
+  photos?: string[];
+  twoGisLink?: string;
 };
 
 /** Пропсы компонента */
@@ -47,17 +50,6 @@ type Props = {
   loadingLocation?: boolean;
   isRateLocked?: boolean;
   isNearbyScreen?: boolean;
-};
-
-const onShare = async () => {
-  try {
-    await Share.share({
-      message:
-        "Yes Exchange — удобный обмен валют. Скачай приложение: https://yes.exchange/app",
-    });
-  } catch (e: any) {
-    Alert.alert("Не удалось поделиться", e?.message ?? "");
-  }
 };
 export default function BranchPickerSheet({
   selectedBranch,
@@ -74,11 +66,21 @@ export default function BranchPickerSheet({
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"nearby" | "all">("nearby");
 
+  // безопасное декодирование строк
+  const safeDecode = (str?: string | null) => {
+    if (!str) return "—";
+    try {
+      return decodeURIComponent(escape(str));
+    } catch {
+      return str;
+    }
+  };
+
   // 🔎 Фильтрация
   const filteredAll = useMemo(() => {
     if (!query.trim()) return allBranches;
     return allBranches.filter((b) =>
-      `${b.city ?? ""} ${b.address ?? ""}`
+      `${safeDecode(b.city) ?? ""} ${safeDecode(b.address) ?? ""}`
         .toLowerCase()
         .includes(query.toLowerCase())
     );
@@ -92,9 +94,18 @@ export default function BranchPickerSheet({
       onPress={() =>
         onSelectBranch({
           ...item,
-          worktimeToday: "Закрыто до 10:00",
-          schedule: { "Пн-Пт": "10:00 - 21:00", "Сб-Вс": "10:00 - 18:00" },
-          email: "info@mail.com",
+          worktimeToday: safeDecode(item.schedule?.[0]),
+          schedule: {
+            Понедельник: safeDecode(item.schedule?.[0]),
+            Вторник: safeDecode(item.schedule?.[1]),
+            Среда: safeDecode(item.schedule?.[2]),
+            Четверг: safeDecode(item.schedule?.[3]),
+            Пятница: safeDecode(item.schedule?.[4]),
+            Суббота: safeDecode(item.schedule?.[5]),
+            Воскресенье: safeDecode(item.schedule?.[6]),
+          },
+          email: item.email,
+          photos: item.photos,
         })
       }
     >
@@ -106,10 +117,10 @@ export default function BranchPickerSheet({
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.itemTitle}>
-          {item.city ?? item.title ?? "Без названия"}
+          {safeDecode(item.city ?? item.title ?? "Без названия")}
         </Text>
         <Text style={styles.itemAddress} numberOfLines={1}>
-          {item.address}
+          {safeDecode(item.address)}
         </Text>
         <View style={styles.row}>
           <Ionicons name="time-outline" size={14} color={SUB} />
@@ -126,6 +137,78 @@ export default function BranchPickerSheet({
       <Ionicons name="chevron-forward" size={18} color="#C7C9CF" />
     </Pressable>
   );
+
+  /** Возвращает текст статуса “Открыто / Закрыто” */
+  const getBranchStatusText = (schedule?: Record<string, string>) => {
+    if (!schedule) return "Нет данных";
+    const now = new Date();
+    const weekday = now.getDay(); // 0 = воскресенье, 1 = понедельник, ...
+    const days = [
+      "Воскресенье",
+      "Понедельник",
+      "Вторник",
+      "Среда",
+      "Четверг",
+      "Пятница",
+      "Суббота",
+    ];
+    const todayKey = days[weekday];
+
+    let todayHours = schedule[todayKey];
+    if (!todayHours) return "Нет данных";
+
+    // безопасная попытка декодировать
+    try {
+      todayHours = decodeURIComponent(escape(todayHours));
+    } catch {
+      // если уже нормальная строка — оставляем
+    }
+
+    if (/круглосуточно/i.test(todayHours)) return "Открыто (24 часа)";
+
+    const match = todayHours.match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
+    if (!match) return "Нет данных";
+
+    const [_, sh, sm, eh, em] = match.map(Number);
+    const start = new Date(now);
+    const end = new Date(now);
+    start.setHours(sh, sm, 0, 0);
+    end.setHours(eh, em, 0, 0);
+
+    if (now >= start && now <= end) {
+      return `Открыто до ${String(eh).padStart(2, "0")}:${String(em).padStart(
+        2,
+        "0"
+      )}`;
+    } else {
+      return `Закрыто до ${String(sh).padStart(2, "0")}:${String(sm).padStart(
+        2,
+        "0"
+      )}`;
+    }
+  };
+
+  /** Цвет статуса */
+  const getBranchStatusColor = (schedule?: Record<string, string>) => {
+    const text = getBranchStatusText(schedule);
+    if (text.startsWith("Открыто")) return "#16A34A"; // зелёный
+    if (text.startsWith("Закрыто")) return "#DC2626"; // красный
+    return "#6B7280"; // серый
+  };
+
+  const onShare = async () => {
+    try {
+      const link = selectedBranch?.twoGisLink || "https://yes.exchange/app";
+
+      await Share.share({
+        message: `📍 ${safeDecode(selectedBranch?.city ?? "")}, ${safeDecode(
+          selectedBranch?.address ?? ""
+        )}\nПосмотреть в 2ГИС: ${link}`,
+      });
+    } catch (e: any) {
+      Alert.alert("Не удалось поделиться", e?.message ?? "");
+    }
+  };
 
   return (
     <BottomSheet
@@ -229,23 +312,45 @@ export default function BranchPickerSheet({
             <View style={styles.header}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.title}>
-                  {selectedBranch.city ?? selectedBranch.title ?? "Филиал"}
+                  {safeDecode(
+                    selectedBranch.city ?? selectedBranch.title ?? "Филиал"
+                  )}
                 </Text>
-                <Text style={styles.address}>{selectedBranch.address}</Text>
+                <Text style={styles.address}>
+                  {safeDecode(selectedBranch.address)}
+                </Text>
               </View>
               <Pressable onPress={onCloseDetails}>
                 <Ionicons name="close" size={22} color={TEXT} />
               </Pressable>
             </View>
-            {/* Галерея-заглушка */}
-            <View style={styles.galleryRow}>
-              <View style={styles.galleryItem} />
-              <View style={styles.galleryItem} />
-              <View style={styles.galleryItem} />
-            </View>
+
+            {/* Галерея */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.galleryRow}
+            >
+              {(selectedBranch.photos ?? []).map((url, idx) => (
+                <Image
+                  key={idx}
+                  source={{ uri: url }}
+                  style={styles.galleryImage}
+                  resizeMode="cover"
+                />
+              ))}
+            </ScrollView>
+
             {/* Время работы */}
-            <Text style={styles.workLabel}>Время работы</Text>
-            <Text style={styles.workNow}>{selectedBranch.worktimeToday}</Text>
+            <Text style={styles.workLabel}>Время работы сегодня</Text>
+            <Text
+              style={[
+                styles.workNow,
+                { color: getBranchStatusColor(selectedBranch.schedule) },
+              ]}
+            >
+              {getBranchStatusText(selectedBranch.schedule)}
+            </Text>
 
             {/* График */}
             <Text style={styles.workLabel}>График</Text>
@@ -256,6 +361,7 @@ export default function BranchPickerSheet({
                   <Text style={styles.hours}>{hours}</Text>
                 </View>
               ))}
+
             {/* Контакты */}
             {selectedBranch.contactPhone && (
               <>
@@ -268,7 +374,7 @@ export default function BranchPickerSheet({
                 </View>
                 <View style={styles.contactRow}>
                   <Ionicons name="mail" size={18} color={ORANGE} />
-                  <Text style={styles.contactText}>info@yesx.kz</Text>
+                  <Text style={styles.contactText}>{selectedBranch.email}</Text>
                 </View>
               </>
             )}
@@ -378,13 +484,13 @@ const styles = StyleSheet.create({
   },
   ctaText: { color: "#fff", fontWeight: "700", fontSize: 16 },
   galleryRow: { flexDirection: "row", gap: 8, marginVertical: 12 },
-  galleryItem: {
-    flex: 1,
-    height: 60,
-    backgroundColor: "#E5E7EB",
+  galleryImage: {
+    width: 120,
+    height: 80,
     borderRadius: 8,
+    marginRight: 8,
   },
-  workNow: { color: "red", fontSize: 16, fontWeight: "700", marginBottom: 6 },
+  workNow: { fontSize: 16, fontWeight: "700", marginBottom: 6 },
   scheduleRow: { flexDirection: "row", justifyContent: "space-between" },
   day: { fontWeight: "700", color: TEXT },
   hours: { color: TEXT },
