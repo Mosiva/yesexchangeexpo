@@ -1,11 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import BottomSheet, {
+  BottomSheetFlatList,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   Image,
   Pressable,
   ScrollView,
@@ -14,7 +16,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 const ORANGE = "#F58220";
@@ -327,13 +329,15 @@ export default function BranchPickerSheet({
                 </Text>
               </View>
             ) : (
-              <FlatList
+              <BottomSheetFlatList
                 data={dataToShow}
                 keyExtractor={(b) => String(b.id)}
                 renderItem={renderBranchItem}
                 ItemSeparatorComponent={() => <View style={styles.sep} />}
-                contentContainerStyle={{ paddingBottom: 24 }}
+                contentContainerStyle={{ paddingBottom: 150 }}
                 showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+           
               />
             )}
           </>
