@@ -88,55 +88,86 @@ export default function BranchPickerSheet({
 
   const dataToShow = tab === "nearby" ? nearbyBranches : filteredAll;
 
-  const renderBranchItem = ({ item }: { item: Branch }) => (
-    <Pressable
-      style={styles.item}
-      onPress={() =>
-        onSelectBranch({
-          ...item,
-          worktimeToday: safeDecode(item.schedule?.[0]),
-          schedule: {
-            Понедельник: safeDecode(item.schedule?.[0]),
-            Вторник: safeDecode(item.schedule?.[1]),
-            Среда: safeDecode(item.schedule?.[2]),
-            Четверг: safeDecode(item.schedule?.[3]),
-            Пятница: safeDecode(item.schedule?.[4]),
-            Суббота: safeDecode(item.schedule?.[5]),
-            Воскресенье: safeDecode(item.schedule?.[6]),
-          },
-          email: item.email,
-          photos: item.photos,
-        })
+  const renderBranchItem = ({ item }: { item: Branch }) => {
+    const fullSchedule = {
+      Понедельник: safeDecode(item.schedule?.[0]),
+      Вторник: safeDecode(item.schedule?.[1]),
+      Среда: safeDecode(item.schedule?.[2]),
+      Четверг: safeDecode(item.schedule?.[3]),
+      Пятница: safeDecode(item.schedule?.[4]),
+      Суббота: safeDecode(item.schedule?.[5]),
+      Воскресенье: safeDecode(item.schedule?.[6]),
+    };
+
+    const allDays = Object.values(fullSchedule);
+
+    let shortSchedule = "—";
+
+    // ✅ 1. Если все дни одинаковые
+    if (allDays.every((v) => v === allDays[0])) {
+      shortSchedule = `пн–вс: ${allDays[0]}`;
+    }
+    // ✅ 2. Если пн–сб одинаковые, а вс другое
+    else if (
+      allDays.slice(0, 6).every((v) => v === allDays[0]) &&
+      allDays[6] !== allDays[0]
+    ) {
+      const sunday = fullSchedule.Воскресенье;
+      if (/выход/i.test(sunday)) {
+        shortSchedule = `пн–сб: ${allDays[0]}, вс: выходной`;
+      } else {
+        shortSchedule = `пн–сб: ${allDays[0]}, вс: ${sunday}`;
       }
-    >
-      <View style={styles.pin}>
-        <Image
-          source={require("../../../assets/icons/LocationIcon.png")}
-          style={{ width: 28, height: 28 }}
-        />
-      </View>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.itemTitle}>
-          {safeDecode(item.city ?? item.title ?? "Без названия")}
-        </Text>
-        <Text style={styles.itemAddress} numberOfLines={1}>
-          {safeDecode(item.address)}
-        </Text>
-        <View style={styles.row}>
-          <Ionicons name="time-outline" size={14} color={SUB} />
-          <Text style={styles.itemTime}>
-            {"пн-пт: 8:00-21:00, вс: выходной"}
-          </Text>
+    }
+    // ✅ 3. Иначе — fallback
+    else {
+      shortSchedule = `пн–пт: ${fullSchedule.Понедельник}, сб: ${fullSchedule.Суббота}, вс: ${fullSchedule.Воскресенье}`;
+    }
+
+    return (
+      <Pressable
+        style={styles.item}
+        onPress={() =>
+          onSelectBranch({
+            ...item,
+            worktimeToday: fullSchedule.Понедельник,
+            schedule: fullSchedule,
+            email: item.email,
+            photos: item.photos,
+          })
+        }
+      >
+        <View style={styles.pin}>
+          <Image
+            source={require("../../../assets/icons/LocationIcon.png")}
+            style={{ width: 28, height: 28 }}
+          />
         </View>
-        {item.distanceKm != null && (
-          <Text style={styles.itemDistance}>
-            {item.distanceKm.toFixed(1)} км от вас
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.itemTitle}>
+            {safeDecode(item.city ?? item.title ?? "Без названия")}
           </Text>
-        )}
-      </View>
-      <Ionicons name="chevron-forward" size={18} color="#C7C9CF" />
-    </Pressable>
-  );
+          <Text style={styles.itemAddress} numberOfLines={1}>
+            {safeDecode(item.address)}
+          </Text>
+
+          <View style={styles.row}>
+            <Ionicons name="time-outline" size={14} color={SUB} />
+            <Text style={styles.itemTime}>{shortSchedule}</Text>
+          </View>
+
+          {item.distanceKm != null && (
+            <Text style={styles.itemDistance}>
+              {item.distanceKm.toFixed(1)} км от вас
+            </Text>
+          )}
+        </View>
+
+        <Ionicons name="chevron-forward" size={18} color="#C7C9CF" />
+      </Pressable>
+    );
+  };
 
   /** Возвращает текст статуса “Открыто / Закрыто” */
   const getBranchStatusText = (schedule?: Record<string, string>) => {
