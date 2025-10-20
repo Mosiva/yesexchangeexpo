@@ -386,12 +386,61 @@ export default function BranchPickerSheet({
             {/* График */}
             <Text style={styles.workLabel}>График</Text>
             {selectedBranch.schedule &&
-              Object.entries(selectedBranch.schedule).map(([day, hours]) => (
-                <View style={styles.scheduleRow} key={day}>
-                  <Text style={styles.day}>{day}</Text>
-                  <Text style={styles.hours}>{hours}</Text>
-                </View>
-              ))}
+              (() => {
+                const daysOrder = [
+                  "Понедельник",
+                  "Вторник",
+                  "Среда",
+                  "Четверг",
+                  "Пятница",
+                  "Суббота",
+                  "Воскресенье",
+                ];
+
+                // преобразуем в массив [день, часы]
+                const entries = daysOrder.map((day) => [
+                  day,
+                  selectedBranch.schedule?.[day] ?? "—",
+                ]);
+
+                // сгруппировать одинаковые часы
+                const groups: { days: string[]; hours: string }[] = [];
+                for (const [day, hours] of entries) {
+                  const last = groups[groups.length - 1];
+                  if (last && last.hours === hours) {
+                    last.days.push(day);
+                  } else {
+                    groups.push({ days: [day], hours });
+                  }
+                }
+
+                // сокращения для дней
+                const shortDay = (day: string) =>
+                  ({
+                    Понедельник: "пн",
+                    Вторник: "вт",
+                    Среда: "ср",
+                    Четверг: "чт",
+                    Пятница: "пт",
+                    Суббота: "сб",
+                    Воскресенье: "вс",
+                  }[day] || day);
+
+                return groups.map((g, idx) => {
+                  const range =
+                    g.days.length > 1
+                      ? `${shortDay(g.days[0])}–${shortDay(
+                          g.days[g.days.length - 1]
+                        )}`
+                      : shortDay(g.days[0]);
+                  return (
+                    <View style={styles.scheduleRow} key={idx}>
+                      <Text style={styles.day}>{range}</Text>
+                      <Text style={styles.hours}>{g.hours}</Text>
+                    </View>
+                  );
+                });
+              })()}
 
             {/* Контакты */}
             {selectedBranch.contactPhone && (
