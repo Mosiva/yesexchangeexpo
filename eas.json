@@ -23,6 +23,10 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "appleId": "sultabsk@gmail.com",
+      "ascAppId": "6754240337",
+      "appleTeamId": "BBZPUBBT84"
+    }
   }
 }
