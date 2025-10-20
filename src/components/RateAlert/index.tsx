@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#EAF1FF", // мягкий голубой фон
     borderRadius: 16,
     padding: 14,
-    height: 92,
+    height: 105,
   },
   titleRow: {
     flexDirection: "row",

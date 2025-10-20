@@ -35,7 +35,7 @@ import type {
   UserViolationDto,
   VerifyOtpDto,
   // violations
-  ViolationTypeDto
+  ViolationTypeDto,
 } from "../types/api";
 
 export const yesExchangeApi = restApi.injectEndpoints({
@@ -251,14 +251,10 @@ export const yesExchangeApi = restApi.injectEndpoints({
         params: { phone },
       }),
     }),
-    cancelBooking: build.mutation<
-      MessageResponseDto,
-      { id: number; phone: string }
-    >({
-      query: ({ id, phone }) => ({
+    cancelBooking: build.mutation<MessageResponseDto, { id: number }>({
+      query: ({ id }) => ({
         url: `/api/v1/bookings/${id}/cancel`,
         method: "POST",
-        params: { phone },
       }),
     }),
     toAmount: build.mutation<ToAmountResponseDto, ToAmountQueryDto>({

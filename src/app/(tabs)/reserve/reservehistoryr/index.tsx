@@ -105,7 +105,7 @@ export default function ReserveHistoryRScreen() {
     try {
       const bookingId = Number(items[selectedIdx].id);
 
-      await doCancelBooking({ id: bookingId, phone: "" }).unwrap();
+      await doCancelBooking({ id: bookingId }).unwrap();
 
       Alert.alert("Успешно", "Бронь успешно отменена.", [
         { text: "ОК", onPress: () => refetchBookings() },
