@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-end",
     backgroundColor: BAR_BG,
-    height: 100,
+    height: 88,
   },
   tabItem: {
     flex: 1,
