@@ -106,13 +106,13 @@ export default function ModerationScreen() {
               <TouchableOpacity
                 onPress={() => setShowTooltip(!showTooltip)}
                 hitSlop={7}
-                style={{ marginLeft: 5 }}
+                style={{ marginLeft: 1, paddingBottom: 2 }}
               >
                 <Ionicons
                   name="information-circle"
                   size={16}
                   color={"#727376"}
-                  style={{ marginTop: -1 }} // Отрегулируем иконку, чтобы она была на уровне текста
+                  style={{ marginTop: 2 }}
                 />
               </TouchableOpacity>
 
@@ -156,18 +156,33 @@ function Row({
   label,
   value,
   big,
-  children, // Добавляем поддержку детей (для иконки и подсказки)
+  children,
 }: {
   label: string;
   value: string;
   big?: boolean;
-  children?: React.ReactNode; // Новое свойство для дочерних элементов
+  children?: React.ReactNode;
 }) {
   return (
-    <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+    <View
+      style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap" }}
+    >
       <Text style={styles.rowLabel}>{label} </Text>
-      <Text style={[styles.rowValue, big && styles.rowValueBig]}>{value}</Text>
-      {children} {/* Отображаем дочерние элементы (иконку и подсказку) */}
+      <Text
+        style={[
+          styles.rowValue,
+          big && styles.rowValueBig,
+          { flexWrap: "wrap" },
+        ]}
+      >
+        {value}
+      </Text>
+
+      {children && (
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          {children}
+        </View>
+      )}
     </View>
   );
 }
@@ -195,7 +210,7 @@ const styles = StyleSheet.create({
   cardSub: { marginTop: 6, color: COLORS.sub, fontSize: 12 },
   rowLabel: { color: COLORS.sub, fontSize: 12 },
   rowValue: { color: COLORS.text, fontSize: 12, fontWeight: "700" },
-  rowValueBig: { fontSize: 18, fontWeight: "700" },
+  rowValueBig: { fontSize: 12, fontWeight: "700" },
   dangerBtn: {
     marginTop: 16,
     backgroundColor: COLORS.orange,
