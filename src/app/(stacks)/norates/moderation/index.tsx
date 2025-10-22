@@ -112,6 +112,7 @@ export default function ModerationScreen() {
                   name="information-circle"
                   size={16}
                   color={"#727376"}
+                  style={{ marginTop: -1 }} // Отрегулируем иконку, чтобы она была на уровне текста
                 />
               </TouchableOpacity>
 
@@ -193,7 +194,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 17, fontWeight: "700", color: COLORS.text },
   cardSub: { marginTop: 6, color: COLORS.sub, fontSize: 12 },
   rowLabel: { color: COLORS.sub, fontSize: 12 },
-  rowValue: { color: COLORS.text, fontSize: 12, fontWeight: "700", },
+  rowValue: { color: COLORS.text, fontSize: 12, fontWeight: "700" },
   rowValueBig: { fontSize: 18, fontWeight: "700" },
   dangerBtn: {
     marginTop: 16,
@@ -223,7 +224,7 @@ const styles = StyleSheet.create({
   tooltip: {
     position: "absolute",
     top: -40, // above the row
-    left: 0,
+    left: -100,
     backgroundColor: "#35353599",
     paddingHorizontal: 12,
     paddingVertical: 6,
