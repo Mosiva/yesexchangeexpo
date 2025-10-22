@@ -289,7 +289,7 @@ export default function ReserveNoRateScreen() {
       <StatusBar barStyle="dark-content" />
       <ScrollView
         style={styles.container}
-        contentContainerStyle={{ paddingBottom: 160 }}
+        contentContainerStyle={{ paddingBottom: 210 }}
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.subtitle}>
