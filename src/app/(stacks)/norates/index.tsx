@@ -269,6 +269,7 @@ export default function ReserveNoRateScreen() {
           currency: displayCurrency,
           rateText: `${rateLineLeft} = ${rateLineRight}`,
           address: address ?? "Неизвестный филиал",
+          isNoRate: "true",
         },
       });
     } catch (err: any) {

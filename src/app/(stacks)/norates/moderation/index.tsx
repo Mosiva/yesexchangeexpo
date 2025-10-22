@@ -23,6 +23,7 @@ type Params = {
   rateText?: string; // "1 KZT = 0,001861123 USD"
   address?: string; // "Астана, Аэропорт"
   phone?: string; // "+77777777777"
+  isNoRate?: string; // true
 };
 
 const COLORS = {
@@ -52,7 +53,7 @@ export default function ModerationScreen() {
   const currency = p.currency ?? "USD";
   const rateText = p.rateText ?? "1 KZT = 0,001861123 USD";
   const address = p.address ?? "Астана, Аэропорт";
-
+  const isNoRate = p.isNoRate ?? false;
   /** 🔄 Подтверждение отмены брони */
   const confirmCancel = async () => {
     setShowCancelModal(false);
@@ -101,29 +102,31 @@ export default function ModerationScreen() {
           <Row label="Сумма брони:" value={`${amount} ${currency}`} big />
           <View style={{ height: 10 }} />
           <Row label="По курсу:" value={rateText}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              {/* Info icon + tooltip */}
-              <TouchableOpacity
-                onPress={() => setShowTooltip(!showTooltip)}
-                hitSlop={7}
-                style={{ marginLeft: 1, paddingBottom: 2 }}
-              >
-                <Ionicons
-                  name="information-circle"
-                  size={16}
-                  color={"#727376"}
-                  style={{ marginTop: 2 }}
-                />
-              </TouchableOpacity>
+            {isNoRate && (
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                {/* Info icon + tooltip */}
+                <TouchableOpacity
+                  onPress={() => setShowTooltip(!showTooltip)}
+                  hitSlop={7}
+                  style={{ marginLeft: 1, paddingBottom: 2 }}
+                >
+                  <Ionicons
+                    name="information-circle"
+                    size={16}
+                    color={"#727376"}
+                    style={{ marginTop: 2 }}
+                  />
+                </TouchableOpacity>
 
-              {showTooltip && (
-                <View style={styles.tooltip}>
-                  <Text style={styles.tooltipText}>
-                    Курс на момент создания заявки
-                  </Text>
-                </View>
-              )}
-            </View>
+                {showTooltip && (
+                  <View style={styles.tooltip}>
+                    <Text style={styles.tooltipText}>
+                      Курс на момент создания заявки
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
           </Row>
           <View style={{ height: 10 }} />
           <Row label="Адрес:" value={address} />
