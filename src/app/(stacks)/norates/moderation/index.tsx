@@ -52,8 +52,6 @@ export default function ModerationScreen() {
   const rateText = p.rateText ?? "1 KZT = 0,001861123 USD";
   const address = p.address ?? "Астана, Аэропорт";
 
-  const phone = p.phone ?? "+77777777777";
-
   /** 🔄 Подтверждение отмены брони */
   const confirmCancel = async () => {
     setShowCancelModal(false);
@@ -62,12 +60,10 @@ export default function ModerationScreen() {
       if (isGuest) {
         await doCancelBooking({
           id: Number(id),
-          phone, // 👈 передаём телефон для гостя
         }).unwrap();
       } else {
         await doCancelBooking({
           id: Number(id),
-          phone: "", // 👈 можно явно не указывать
         }).unwrap();
       }
 
@@ -117,16 +113,6 @@ export default function ModerationScreen() {
           )}
         </View>
       </ScrollView>
-
-      {/* Sticky bottom CTA */}
-      {/* <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 8 }]}>
-        <TouchableOpacity
-          style={styles.primaryBtn}
-          onPress={() => router.replace("/(tabs)/(main)")}
-        >
-          <Text style={styles.primaryText}>Вернуться на главную</Text>
-        </TouchableOpacity>
-      </View> */}
 
       {/* Модалка подтверждения отмены */}
       <CancelReservationModal
