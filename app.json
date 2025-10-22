@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "yesexchangeexpo",
+    "name": "Yesexchange",
     "slug": "yesexchangeexpo",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "buildNumber": "2",
+      "buildNumber": "3",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Ваше местоположение нужно, чтобы показать ближайшие филиалы обмена валют.",
         "ITSAppUsesNonExemptEncryption": false
@@ -34,7 +34,7 @@
         "backgroundColor": "#ffffff"
       },
       "softwareKeyboardLayoutMode": "pan",
-      "versionCode": 2,
+      "versionCode": 3,
       "edgeToEdgeEnabled": true,
       "package": "com.mosiva.yesexchangeexpo"
     },
