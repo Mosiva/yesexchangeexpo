@@ -1,3 +1,4 @@
+import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -76,6 +77,7 @@ export default function ModerationScreen() {
       );
     }
   };
+  const [showTooltip, setShowTooltip] = useState(false);
 
   return (
     <View style={styles.screen}>
@@ -98,7 +100,30 @@ export default function ModerationScreen() {
 
           <Row label="Сумма брони:" value={`${amount} ${currency}`} big />
           <View style={{ height: 10 }} />
-          <Row label="По курсу:" value={rateText} />
+          <Row label="По курсу:" value={rateText}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              {/* Info icon + tooltip */}
+              <TouchableOpacity
+                onPress={() => setShowTooltip(!showTooltip)}
+                hitSlop={7}
+                style={{ marginLeft: 5 }}
+              >
+                <Ionicons
+                  name="information-circle"
+                  size={16}
+                  color={"#727376"}
+                />
+              </TouchableOpacity>
+
+              {showTooltip && (
+                <View style={styles.tooltip}>
+                  <Text style={styles.tooltipText}>
+                    Курс на момент создания заявки
+                  </Text>
+                </View>
+              )}
+            </View>
+          </Row>
           <View style={{ height: 10 }} />
           <Row label="Адрес:" value={address} />
 
@@ -130,15 +155,18 @@ function Row({
   label,
   value,
   big,
+  children, // Добавляем поддержку детей (для иконки и подсказки)
 }: {
   label: string;
   value: string;
   big?: boolean;
+  children?: React.ReactNode; // Новое свойство для дочерних элементов
 }) {
   return (
     <View style={{ flexDirection: "row", alignItems: "baseline" }}>
       <Text style={styles.rowLabel}>{label} </Text>
       <Text style={[styles.rowValue, big && styles.rowValueBig]}>{value}</Text>
+      {children} {/* Отображаем дочерние элементы (иконку и подсказку) */}
     </View>
   );
 }
@@ -165,7 +193,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 17, fontWeight: "700", color: COLORS.text },
   cardSub: { marginTop: 6, color: COLORS.sub, fontSize: 12 },
   rowLabel: { color: COLORS.sub, fontSize: 12 },
-  rowValue: { color: COLORS.text, fontSize: 12, fontWeight: "700" },
+  rowValue: { color: COLORS.text, fontSize: 12, fontWeight: "700", },
   rowValueBig: { fontSize: 18, fontWeight: "700" },
   dangerBtn: {
     marginTop: 16,
@@ -190,4 +218,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   primaryText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+
+  // tooltip bubble
+  tooltip: {
+    position: "absolute",
+    top: -40, // above the row
+    left: 0,
+    backgroundColor: "#35353599",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    zIndex: 5,
+  },
+  tooltipText: { color: "#fff", fontSize: 14, fontWeight: "700" },
 });

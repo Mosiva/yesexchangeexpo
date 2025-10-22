@@ -342,7 +342,7 @@ export default function BranchPickerSheet({
             )}
           </>
         ) : (
-          <>
+          <View style={{ flex: 1, marginBottom: 30 }}>
             {/* --- ДЕТАЛИ ФИЛИАЛА --- */}
             <View style={styles.header}>
               <View style={{ flex: 1 }}>
@@ -495,7 +495,7 @@ export default function BranchPickerSheet({
                 </Text>
               </Pressable>
             )}
-          </>
+          </View>
         )}
       </BottomSheetView>
     </BottomSheet>
