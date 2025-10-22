@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     backgroundColor: BAR_BG,
     height: Platform.select({
       ios: 88,
-      android: 95,
+      android: 99,
       default: 90,
     }),
   },

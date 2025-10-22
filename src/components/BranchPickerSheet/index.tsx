@@ -334,7 +334,7 @@ export default function BranchPickerSheet({
                 keyExtractor={(b) => String(b.id)}
                 renderItem={renderBranchItem}
                 ItemSeparatorComponent={() => <View style={styles.sep} />}
-                contentContainerStyle={{ paddingBottom: 210}}
+                contentContainerStyle={{ paddingBottom: 170}}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
            
@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
   tabActive: { backgroundColor: "#F0F1F3" },
   tabText: { color: SUB, fontSize: 16, fontWeight: "700" },
   tabTextActive: { color: TEXT },
-  item: { flexDirection: "row", alignItems: "center", paddingVertical: 14 },
+  item: { flexDirection: "row", alignItems: "center", paddingVertical: 7 },
   pin: {
     marginRight: 10,
   },
