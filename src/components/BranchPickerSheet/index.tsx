@@ -334,7 +334,7 @@ export default function BranchPickerSheet({
                 keyExtractor={(b) => String(b.id)}
                 renderItem={renderBranchItem}
                 ItemSeparatorComponent={() => <View style={styles.sep} />}
-                contentContainerStyle={{ paddingBottom: 150 }}
+                contentContainerStyle={{ paddingBottom: 165}}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
            

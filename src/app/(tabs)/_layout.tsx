@@ -3,7 +3,7 @@ import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Tabs } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ORANGE = "#F58220";
@@ -121,7 +121,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-end",
     backgroundColor: BAR_BG,
-    height: 88,
+    height: Platform.select({
+      ios: 88,
+      android: 95,
+      default: 90,
+    }),
   },
   tabItem: {
     flex: 1,
