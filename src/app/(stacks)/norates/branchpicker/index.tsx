@@ -106,7 +106,7 @@ export default function BranchPickerScreen() {
   const nearbyBranches = useMemo(
     () =>
       branchesWithDistance.filter(
-        (b) => b.distanceKm !== null && b.distanceKm <= 15
+        (b) => b.distanceKm !== null && b.distanceKm <= 30
       ),
     [branchesWithDistance]
   );
