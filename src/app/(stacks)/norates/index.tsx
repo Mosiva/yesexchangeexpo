@@ -235,11 +235,17 @@ export default function ReserveNoRateScreen() {
         return;
       }
     }
+    // ✅ Найдём курс тенге (KZT)
+    const kztRate = currencies.find((c) => c.code === "KZT");
+    if (!kztRate) {
+      Alert.alert("Ошибка", "Не найден курс KZT.");
+      return;
+    }
 
     const payload = {
       branchId: Number(branchIdParam),
-      fromExchangeRateId: to.id,
-      toExchangeRateId: to.id,
+      fromExchangeRateId: to.id, // выбранная валюта
+      toExchangeRateId: kztRate.id,
       amount: footerSum.toFixed(2),
       operationType: mode,
       isRateLocked: false,
@@ -257,6 +263,7 @@ export default function ReserveNoRateScreen() {
       }
       // 📦 извлекаем id брони из ответа
       const bookingId = (response as BookingDto).id;
+      const bookingBitrixId = (response as BookingDto).number;
       const displayAmount = fmt(toAmount);
       const displayCurrency = to.code;
 
@@ -264,6 +271,7 @@ export default function ReserveNoRateScreen() {
         pathname: "/(stacks)/norates/moderation",
         params: {
           id: bookingId?.toString() ?? "",
+          bitrixId: bookingBitrixId?.toString() ?? "",
           kind: "Без привязки к курсу",
           amount: displayAmount,
           currency: displayCurrency,

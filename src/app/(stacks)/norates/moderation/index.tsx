@@ -24,6 +24,7 @@ type Params = {
   address?: string; // "Астана, Аэропорт"
   phone?: string; // "+77777777777"
   isNoRate?: string; // true
+  bitrixId?: string; // "00000"
 };
 
 const COLORS = {
@@ -54,6 +55,7 @@ export default function ModerationScreen() {
   const rateText = p.rateText ?? "1 KZT = 0,001861123 USD";
   const address = p.address ?? "Астана, Аэропорт";
   const isNoRate = p.isNoRate ?? false;
+  const bitrixId = p.bitrixId ?? "00000";
   /** 🔄 Подтверждение отмены брони */
   const confirmCancel = async () => {
     setShowCancelModal(false);
@@ -94,7 +96,7 @@ export default function ModerationScreen() {
 
         {/* Card */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Заявка №{id}</Text>
+          <Text style={styles.cardTitle}>Заявка №{bitrixId}</Text>
           <Text style={styles.cardSub}>{kind}</Text>
 
           <View style={{ height: 16 }} />
