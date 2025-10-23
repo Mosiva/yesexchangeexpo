@@ -20,6 +20,7 @@ export type Reservation = {
   currency: string;
   address: string;
   status: Status;
+  number: string;
 };
 
 export default function ReservationCard({
@@ -29,7 +30,7 @@ export default function ReservationCard({
   data: Reservation;
   onCancel?: () => void;
 }) {
-  const { id, date, amount, currency, address, status } = data;
+  const { date, amount, currency, address, status, number } = data;
   const prettyDate = toDDMMYYYY(date);
 
   const isPending = status === "pending_moderation";
@@ -39,7 +40,7 @@ export default function ReservationCard({
     <View style={[styles.card, { backgroundColor: bg }]}>
       {/* title + status */}
       <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>Заявка №{id}</Text>
+        <Text style={styles.cardTitle}>Заявка №{number}</Text>
         <StatusPill status={status} />
       </View>
       <Text style={styles.cardDate}>{prettyDate}</Text>

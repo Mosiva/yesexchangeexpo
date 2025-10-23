@@ -68,6 +68,7 @@ export default function ReserveHistoryScreen() {
         currency,
         address: b.branch?.address ?? "—",
         operationType,
+        number: b.number,
         status: (b.status ?? "created") as
           | "created"
           | "pending_moderation"
