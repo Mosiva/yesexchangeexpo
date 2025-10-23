@@ -70,6 +70,7 @@ export default function Layout() {
       <Stack.Screen
         name="moderation/index"
         options={{
+          gestureEnabled: false,
           header: () => (
             <CustomHeader
               title="В обработке"
