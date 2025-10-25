@@ -61,17 +61,12 @@ export default function ModerationScreen() {
     setShowCancelModal(false);
 
     try {
-      if (isGuest) {
-        await doCancelBooking({
-          id: Number(id),
-        }).unwrap();
-      } else {
-        await doCancelBooking({
-          id: Number(id),
-        }).unwrap();
-      }
-
-      router.replace("/(tabs)/reserve"); // возвращаем пользователя в список
+      await doCancelBooking({
+        id: Number(id),
+      }).unwrap();
+      Alert.alert("Успешно", "Бронь успешно отменена.", [
+        { text: "ОК", onPress: () => router.replace("/(tabs)/reserve") },
+      ]);
     } catch (err: any) {
       console.error("❌ Cancel booking error:", err);
       Alert.alert(
