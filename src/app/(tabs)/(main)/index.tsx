@@ -26,7 +26,7 @@ import { useUserLocation } from "../../../hooks/useUserLocation";
 import {
   useBranchesQuery,
   useExchangeRatesCurrentQuery,
-  // useNbkAverageQuery,
+  useNbkRatesQuery,
   useNearestBranchQuery,
 } from "../../../services/yesExchange";
 import { CurrencyCode } from "../../../types/api";
@@ -40,9 +40,16 @@ const getYesterdayDate = () => {
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
-  return `${year}-${day}-${month}`;
+  return `${year}-${month}-${day}`;
 };
 
+const getTodayDate = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 // Текущее локальное время
 const LocalTime = () => {
   const [now, setNow] = useState(new Date());
@@ -109,18 +116,18 @@ export default function MainScreen() {
   );
 
   const yesterdayDate = getYesterdayDate();
+  const todayDate = getTodayDate();
 
-  // const {
-  //   data: rawNbkAverage,
-  //   refetch: refetchNbkAverage,
-  //   isLoading: isNbkAverageLoading,
-  //   isError: isNbkAverageError,
-  // } = useNbkAverageQuery({
-  //   from: yesterdayDate,
-  //   to: yesterdayDate,
-  //   limit: 48,
-  //   page: 1,
-  // });
+  const {
+    data: rawNbkRates,
+    refetch: refetchNbkRates,
+    isLoading: isNbkRatesLoading,
+    isError: isNbkRatesError,
+  } = useNbkRatesQuery({
+    from: yesterdayDate,
+    to: todayDate,
+    limit: 10,
+  });
 
   const branches = React.useMemo(() => {
     return Array.isArray(rawBranches) ? rawBranches : [];
