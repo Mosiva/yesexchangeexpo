@@ -60,7 +60,11 @@ export type CurrencyCode =
 
 export type MessageResponseDto = { message: string };
 
-export type DeltaPeriod = "day" | "week" | "month";
+// В спеках используется ChangePeriodEnum
+export type ChangePeriod = "day" | "week" | "month";
+// Сохранён алиас для обратной совместимости
+export type DeltaPeriod = ChangePeriod;
+
 export type Trend = "up" | "down" | "same";
 
 // Универсальная обёртка для пагинации
@@ -86,7 +90,7 @@ export type Paginated<T, F = unknown> = {
   };
 };
 
-// --- Auth DTOs ---
+// --- Auth DTOs (по openapi) ---
 
 export type RegisterDto = {
   phone: string;
@@ -94,10 +98,23 @@ export type RegisterDto = {
   lastName?: string | null;
   residentRK: boolean;
 };
-
 export type LoginDto = { phone: string };
 export type VerifyOtpDto = { phone: string; code: string };
 export type ResendOtpDto = { phone: string };
+
+export type OtpRequestResultDto = {
+  ttl: number;
+  resendAt: number;
+};
+export type VerifyOtpResponseDto = {
+  accessToken: string;
+  refreshToken: string;
+};
+export type RefreshTokenResponseDto = {
+  accessToken: string;
+  refreshToken: string;
+};
+export type LogoutResponseDto = { ok: boolean };
 
 // --- User DTOs ---
 
@@ -112,6 +129,7 @@ export type UserDto = {
   phoneVerified: boolean;
   blocked: boolean;
   role: UserRole;
+  defaultCurrency?: CurrencyDto; // из спеки поле присутствует
   createdAt?: string; // ISO
   updatedAt?: string; // ISO
 };
@@ -120,24 +138,10 @@ export type UpdateUserDto = Partial<
   Pick<UserDto, "phone" | "firstName" | "lastName" | "residentRK" | "role">
 >;
 
-export type CreateUserDto = {
-  phone: string;
-  firstName: string;
-  lastName?: string | null;
-  residentRK: boolean;
-  role: UserRole;
-};
-
-// --- Предпочтения пользователя ---
-
-export type SetFavoriteCurrenciesDto = {
-  currencyCodes: string[]; // ISO-4217
-};
-
 // --- Currency DTOs ---
 
 export type CurrencyDto = {
-  code: CurrencyCode;
+  code: string; // по спекам строка
   name: string;
   iconUrl: string;
 };
@@ -146,17 +150,30 @@ export type CurrencyDto = {
 
 export type BranchDto = {
   id: number;
+  externalId: number | null;
   city: string;
   address: string;
   lat: number;
   lng: number;
+  email: string;
   contactPhone: string;
+  twoGisLink: string;
+  photos: string[];
+  schedule: string[];
+};
+
+// Упрощённый филиал для BookingDto
+export type BranchDtoWithIdCityAndAddress = {
+  id: number;
+  city: string;
+  address: string;
 };
 
 // --- Exchange Rates DTOs ---
 
-export type DeltaDto = { buy: number; sell: number };
-export type DeltaPercentDto = { buy: number; sell: number };
+export type ChangeDto = { buy: number; sell: number };
+export type ChangePercentDto = { buy: number; sell: number };
+export type TrendDto = { buy: Trend; sell: Trend };
 
 export type ExchangeRateDto = {
   id: number;
@@ -164,9 +181,9 @@ export type ExchangeRateDto = {
   buy: number;
   sell: number;
   changedAt: string; // ISO datetime
-  delta?: DeltaDto | null;
-  deltaPercent?: DeltaPercentDto | null;
-  trend?: Trend | null;
+  change?: ChangeDto;
+  changePercent?: ChangePercentDto;
+  trend?: TrendDto;
 };
 
 export type ExchangeRateDtoWithIdCurrencySellAndBuy = {
@@ -182,44 +199,55 @@ export type ExchangeRateHistoryRecordDto = {
   buy: number;
   sell: number;
   changedAt: string; // ISO datetime
-  delta?: DeltaDto | null;
-  deltaPercent?: DeltaPercentDto | null;
-  trend?: Trend | null;
+  change?: ChangeDto;
+  changePercent?: ChangePercentDto;
+  trend?: TrendDto;
 };
 
-// --- Nbk (Нацбанк) DTOs ---
+// --- НБК (Нацбанк) DTOs ---
 
-export type NbkExchangeRateDto = {
-  amount: number;
-  currencyCode: string; // ISO-4217
+export type NbkRateDto = {
+  currency: CurrencyDto;
+  rate: number;
+  quantity: number;
+  change?: number;
+  changePercent?: number;
+  trend?: Trend;
   date: string; // dd.MM.yyyy
 };
 
 // --- Booking DTOs ---
 
 export type BookingStatus =
+  | "created"
   | "pending_moderation"
   | "not_confirmed"
   | "ready_for_pickup"
   | "cancelled"
   | "expired"
-  | "received";
+  | "received"
+  | "sync_failed"
+  | "external_deleted";
 
 export type BookingOperationType = "buy" | "sell";
 
 export type CreateBookingDto = {
   branchId: number;
-  fromExchangeRateId: number;
+  exchangeRateId: number;
   amount: string; // decimal-string
-  toExchangeRateId: number;
   operationType: BookingOperationType;
   isRateLocked: boolean;
 };
 
+export type CreateGuestBookingDto = CreateBookingDto & {
+  otpCode?: string; // опционально
+};
+
 export type ToAmountQueryDto = {
-  fromExchangeRateId: number;
-  fromAmount: string; // decimal-string
-  toExchangeRateId: number;
+  branchId: number;
+  exchangeRateId: number;
+  amount: string; // decimal-string
+  operationType: BookingOperationType;
 };
 
 export type ToAmountResponseDto = {
@@ -230,9 +258,9 @@ export type ToAmountResponseDto = {
 export type BookingDto = {
   id: number;
   number: string; // ровно 8 цифр
-  branch: { id: number; city: string; address: string };
+  branch: BranchDtoWithIdCityAndAddress;
   fromExchangeRate: ExchangeRateDtoWithIdCurrencySellAndBuy;
-  toExchangeRate: ExchangeRateDto;
+  toExchangeRate: ExchangeRateDtoWithIdCurrencySellAndBuy;
   amount: string;
   isRateLocked: boolean;
   toAmount: string | null;
@@ -243,60 +271,59 @@ export type BookingDto = {
   createdAt: string;
 };
 
-// --- Admin Bookings DTOs ---
+export type CancelBookingResponseDto = { message: string };
 
-export type AdminBookingDto = BookingDto & {
-  // расширенная версия с полным BranchDto и UserDto
-  branch: BranchDto;
-  user: UserDto | null;
-  discountPercentApplied: string | null;
-  lockedRate: string | null;
-  lockedAt: string | null;
-  phone: string | null;
-  canceledAt: string | null;
-  canceledBy: string | null;
-};
+// --- Contact Forms DTOs ---
 
-export type UpdateBookingStatusDto = {
-  status: BookingStatus;
-  canceledBy?: "admin" | "automatic" | "external" | "user";
-};
-
-// --- Violations DTOs ---
-
-export type ViolationSeverity = "none" | "low" | "medium" | "high" | "critical";
-
-export type ViolationTypeDto = {
-  code: string;
-  title: string;
-  description?: string;
-  severity: ViolationSeverity;
-  retiredAt?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-};
-
-export type CreateViolationTypeDto = {
-  code: string;
-  title: string;
-  description?: string;
-  severity?: ViolationSeverity; // default: none
-};
-
-export type UpdateViolationTypeDto = Partial<
-  Pick<ViolationTypeDto, "title" | "description" | "severity" | "retiredAt">
->;
-
-export type UserViolationDto = {
-  userId?: number | null;
+export type CreateJobApplicationDto = {
+  fullName: string;
+  email: string;
   phone: string;
-  violationTypeCode: string;
-  description?: string | Record<string, unknown> | null;
+  coverLetter: string;
 };
 
-export type CreateUserViolationDto = {
-  userId?: number | null;
+export type CreateFeedbackDto = {
+  fullName: string;
+  email: string;
   phone: string;
-  violationTypeCode: string;
-  description?: string | Record<string, unknown> | null;
+  message: string;
+};
+
+export type ContactFormResponseDto = {
+  success: boolean;
+  message: string;
+  id: number;
+};
+
+// --- News DTOs ---
+
+export type NewsSource = "YesNews" | "KASE" | "Zakon.kz";
+
+export type NewsDto = {
+  id: number;
+  title: string;
+  content?: unknown;
+  excerpt?: unknown;
+  imageUrl?: unknown;
+  source: NewsSource;
+  url: string;
+  publishedAt?: unknown;
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+};
+
+// --- Bitrix DTOs (на будущее, если понадобятся) ---
+
+export type BitrixWebhookDto = {
+  event: string;
+  data: Record<string, unknown>;
+  auth: Record<string, unknown>;
+};
+export type BitrixEventDto = BitrixWebhookDto & {
+  event_handler_id: string;
+  ts: string;
+};
+export type BitrixResponseDto = {
+  success: boolean;
+  jobId: string;
 };

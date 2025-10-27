@@ -102,7 +102,7 @@ export default function ReserveNoRateScreen() {
   } = useExchangeRatesCurrentQuery(
     {
       branchId: Number(branchIdParam),
-      deltaPeriod: "day",
+      changePeriod: "day",
       limit: 100,
     },
     { skip: !branchIdParam }
@@ -148,7 +148,7 @@ export default function ReserveNoRateScreen() {
       name: item.currency.name,
       buy: item.buy,
       sell: item.sell,
-      delta: item.delta || { buy: 0, sell: 0 },
+      change: item.change || { buy: 0, sell: 0 },
       trend: item.trend || "same",
     }));
   }, [rawExchangeRates]);
@@ -160,7 +160,7 @@ export default function ReserveNoRateScreen() {
       name: "",
       buy: 1,
       sell: 1,
-      delta: { buy: 0, sell: 0 },
+      change: { buy: 0, sell: 0 },
       trend: "same" as const,
     };
 
@@ -208,7 +208,7 @@ export default function ReserveNoRateScreen() {
 
   const deltaValue = useMemo(() => {
     if (!to) return 0;
-    const val = mode === "sell" ? to.delta.buy : to.delta.sell;
+    const val = mode === "sell" ? to.change.buy : to.change.sell;
     return val ?? 0;
   }, [to, mode]);
 
@@ -217,7 +217,7 @@ export default function ReserveNoRateScreen() {
   const footerSum = toAmount;
 
   const fromSymbol = getCurrencySymbol(from.code);
-  const toSymbol = getCurrencySymbol(to.code);
+  const toSymbol = getCurrencySymbol(to.code as CurrencyCode);
 
   /** ====== Сабмит брони ====== */
   const handleCreateBooking = async () => {
@@ -244,15 +244,13 @@ export default function ReserveNoRateScreen() {
 
     const payload = {
       branchId: Number(branchIdParam),
-      fromExchangeRateId: to.id, // выбранная валюта
-      toExchangeRateId: kztRate.id,
+      exchangeRateId: to.id, // выбранная валюта
       amount: footerSum.toFixed(2),
       operationType: mode,
       isRateLocked: false,
     };
     try {
       let response;
-
       if (isGuest) {
         response = await doCreateGuestBooking({
           phone: e164,
@@ -337,7 +335,7 @@ export default function ReserveNoRateScreen() {
 
         {/* Валюта */}
         <FXRow
-          flag={<CurrencyFlag code={to.code} size={18} />}
+          flag={<CurrencyFlag code={to.code as CurrencyCode} size={18} />}
           code={to.code}
           name={to.name}
           value={toText}
@@ -496,7 +494,7 @@ export default function ReserveNoRateScreen() {
         items={currencies.map((c) => ({
           code: c.code,
           name: c.name,
-          flag: <CurrencyFlag code={c.code} size={24} />,
+          flag: <CurrencyFlag code={c.code as CurrencyCode} size={24} />,
         }))}
       />
     </KeyboardAvoidingView>

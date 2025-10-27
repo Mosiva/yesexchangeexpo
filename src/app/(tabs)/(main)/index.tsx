@@ -26,9 +26,10 @@ import { useUserLocation } from "../../../hooks/useUserLocation";
 import {
   useBranchesQuery,
   useExchangeRatesCurrentQuery,
-  useNbkAverageQuery,
+  // useNbkAverageQuery,
   useNearestBranchQuery,
 } from "../../../services/yesExchange";
+import { CurrencyCode } from "../../../types/api";
 
 // === Вспомогательные функции ===
 
@@ -109,17 +110,17 @@ export default function MainScreen() {
 
   const yesterdayDate = getYesterdayDate();
 
-  const {
-    data: rawNbkAverage,
-    refetch: refetchNbkAverage,
-    isLoading: isNbkAverageLoading,
-    isError: isNbkAverageError,
-  } = useNbkAverageQuery({
-    from: yesterdayDate,
-    to: yesterdayDate,
-    limit: 48,
-    page: 1,
-  });
+  // const {
+  //   data: rawNbkAverage,
+  //   refetch: refetchNbkAverage,
+  //   isLoading: isNbkAverageLoading,
+  //   isError: isNbkAverageError,
+  // } = useNbkAverageQuery({
+  //   from: yesterdayDate,
+  //   to: yesterdayDate,
+  //   limit: 48,
+  //   page: 1,
+  // });
 
   const branches = React.useMemo(() => {
     return Array.isArray(rawBranches) ? rawBranches : [];
@@ -145,7 +146,7 @@ export default function MainScreen() {
   } = useExchangeRatesCurrentQuery(
     {
       branchId: selectedBranch?.id?.toString() || "",
-      deltaPeriod: "day",
+      changePeriod: "day",
       limit: 100,
     },
     {
@@ -154,7 +155,7 @@ export default function MainScreen() {
   );
 
   const exchangeRates = rawExchangeRates?.data || [];
-  const nbkAverage = rawNbkAverage || [];
+  // const nbkAverage = rawNbkAverage || [];
 
   React.useEffect(() => {
     // 🕓 1️⃣ Идёт загрузка ближайшего филиала
@@ -235,13 +236,13 @@ export default function MainScreen() {
   const refetchAllData = useCallback(async () => {
     await Promise.all([
       refetchBranches(),
-      refetchNbkAverage(),
+      // refetchNbkAverage(),
       refetchExchangeRates(),
       refetchNearestBranch(),
     ]);
   }, [
     refetchBranches,
-    refetchNbkAverage,
+    // refetchNbkAverage,
     refetchExchangeRates,
     refetchNearestBranch,
   ]);
@@ -399,7 +400,7 @@ export default function MainScreen() {
         ) : (
           <CurrenciesMainCardList
             data={exchangeRates.map((rate) => ({
-              code: rate.currency.code,
+              code: rate.currency.code as CurrencyCode,
               name: rate.currency.name,
               buy: rate.buy.toString(),
               sell: rate.sell.toString(),
@@ -502,7 +503,7 @@ export default function MainScreen() {
       )}
 
       <View style={{ marginBottom: 16, paddingHorizontal: 10 }}>
-        <ReservePromoCard onPress={() => console.log("Reserve tapped")} />
+        <ReservePromoCard onPress={() => router.push("/(tabs)/reserve")} />
       </View>
       {exchangeData && (
         <CurrencyExchangeModal

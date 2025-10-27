@@ -16,7 +16,7 @@ import ReservationCard, {
 } from "../../../../components/ReservationCard";
 import { Skeleton } from "../../../../components/skeleton";
 import {
-  useBookingsHistoryQuery,
+  useBookingsQuery,
   useCancelBookingMutation,
 } from "../../../../services/yesExchange";
 
@@ -31,7 +31,7 @@ export default function ReserveHistoryRScreen() {
     refetch: refetchBookings,
     isFetching,
     isError,
-  } = useBookingsHistoryQuery({
+  } = useBookingsQuery({
     page: 1,
     limit: 100,
   });
