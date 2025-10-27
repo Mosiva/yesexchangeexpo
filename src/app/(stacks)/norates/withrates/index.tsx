@@ -261,7 +261,13 @@ export default function ReserveWithRateScreen() {
     return val ?? 0;
   }, [to, mode]);
 
-  const deltaTrend = to.trend;
+  const deltaTrend = useMemo(() => {
+    if (!to?.trend) return "same";
+    if (typeof to.trend === "object") {
+      return mode === "sell" ? to.trend.buy ?? "same" : to.trend.sell ?? "same";
+    }
+    return to.trend;
+  }, [to, mode]);
   const [showToModal, setShowToModal] = useState(false);
   const footerSum = toAmount;
 

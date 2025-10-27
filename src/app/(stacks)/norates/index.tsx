@@ -212,7 +212,14 @@ export default function ReserveNoRateScreen() {
     return val ?? 0;
   }, [to, mode]);
 
-  const deltaTrend = to.trend;
+  const deltaTrend = useMemo(() => {
+    if (!to?.trend) return "same";
+    if (typeof to.trend === "object") {
+      return mode === "sell" ? to.trend.buy ?? "same" : to.trend.sell ?? "same";
+    }
+    return to.trend;
+  }, [to, mode]);
+
   const [showToModal, setShowToModal] = useState(false);
   const footerSum = toAmount;
 
@@ -371,6 +378,7 @@ export default function ReserveNoRateScreen() {
           <Text style={styles.rateText}>
             {rateLineLeft} = {rateLineRight}
           </Text>
+
           {deltaTrend === "up" && (
             <Text style={[styles.delta, { color: "#16A34A" }]}>
               +{deltaValue.toFixed(1)} ▲
