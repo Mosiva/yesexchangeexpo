@@ -45,14 +45,20 @@ export default function ArchivesScreen() {
       value: r.rate,
       delta: Number(r.changePercent) || 0,
       label: "Курс НБ РК",
+      name: r.currency?.name ?? "",
     }));
   }, [rawNbkRates]);
 
   const filteredItems = React.useMemo(() => {
-    if (!query) return nbkItems;
-    return nbkItems.filter((i) =>
-      i.code.toUpperCase().includes(query.toUpperCase())
-    );
+    if (!query.trim()) return nbkItems;
+
+    const q = query.trim().toLowerCase();
+
+    return nbkItems.filter((i) => {
+      const code = i.code?.toLowerCase() ?? "";
+      const name = i.name?.toLowerCase() ?? "";
+      return code.includes(q) || name.includes(q);
+    });
   }, [query, nbkItems]);
 
   const refetchAllData = useCallback(async () => {
@@ -85,8 +91,8 @@ export default function ArchivesScreen() {
         />
         <TextInput
           value={query}
-          onChangeText={(t) => setQuery(t.replace(/\s/g, "").toUpperCase())}
-          placeholder="Поиск по коду валюты"
+          onChangeText={(t) => setQuery(t.trim())}
+          placeholder="Поиск: USD / Доллар"
           placeholderTextColor="#9CA3AF"
           style={styles.searchInput}
           returnKeyType="search"
