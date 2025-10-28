@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from "react-native";
-
+import CurrencyFlag from "../CurrencyFlag";
 /* ================== Types ================== */
 type Item = {
   code: string; // e.g. "USD"
@@ -83,11 +83,9 @@ function RateCard({ item }: { item: Item }) {
       {/* Left side */}
       <View style={styles.leftCol}>
         <View style={styles.flagWrap}>
-          {item.flagSource ? (
-            <Image source={item.flagSource} style={styles.flagImg} />
-          ) : (
-            <Text style={styles.flagEmoji}>{item.flagEmoji ?? "🏳️"}</Text>
-          )}
+          <View style={styles.flagWrap}>
+            <CurrencyFlag code={item.code as any} size={48} />
+          </View>
         </View>
 
         <View>
@@ -184,15 +182,7 @@ const styles = StyleSheet.create({
   },
 
   leftCol: { flexDirection: "row", alignItems: "center", flex: 1 },
-  flagWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#F3F4F6",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
+  flagWrap: {},
   flagImg: { width: 40, height: 40, borderRadius: 20 },
   flagEmoji: { fontSize: 28 },
 

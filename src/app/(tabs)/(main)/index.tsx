@@ -163,7 +163,15 @@ export default function MainScreen() {
 
   const exchangeRates = rawExchangeRates?.data || [];
 
-  const nbkRates = rawNbkRates?.data || [];
+  // внутри MainScreen, рядом с nbkRates
+  const nbkItems = React.useMemo(() => {
+    return (Array.isArray(rawNbkRates) ? rawNbkRates : []).map((r: any) => ({
+      code: r.currency?.code, // ✅ code
+      value: r.rate, // ✅ value = rate
+      delta: Number(r.changePercent) || 0, // ✅ delta = changePercent (fallback 0)
+      label: "Курс НБ РК",
+    }));
+  }, [rawNbkRates]);
 
   React.useEffect(() => {
     // 🕓 1️⃣ Идёт загрузка ближайшего филиала
@@ -499,15 +507,24 @@ export default function MainScreen() {
             })
           }
         />
+      ) : isNbkRatesLoading ? (
+        <View style={styles.skeletonContainer}>
+          <Skeleton width="90%" height={60} style={styles.skeletonItem} />
+          <Skeleton width="90%" height={60} style={styles.skeletonItem} />
+          <Skeleton width="90%" height={60} style={styles.skeletonItem} />
+        </View>
+      ) : isNbkRatesError ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Ошибка загрузки курсов НБК</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => refetchNbkRates()}
+          >
+            <Text style={styles.retryButtonText}>Повторить</Text>
+          </TouchableOpacity>
+        </View>
       ) : (
-        <LineUpDownChartCard
-          items={[
-            { code: "USD", value: 544.36, delta: +23.2, flagEmoji: "🇺🇸" },
-            { code: "RUB", value: 6.53, delta: 0.0, flagEmoji: "🇷🇺" },
-            { code: "EUR", value: 637.0, delta: -23.2, flagEmoji: "🇪🇺" },
-            { code: "KZT", value: 1.0, delta: +23.2, flagEmoji: "🇰🇿" },
-          ]}
-        />
+        <LineUpDownChartCard items={nbkItems} />
       )}
 
       <View style={{ marginBottom: 16, paddingHorizontal: 10 }}>
