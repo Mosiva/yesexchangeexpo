@@ -73,12 +73,12 @@ function RateCard({ item }: { item: Item }) {
         styles.card,
         pressed && { opacity: 0.7 }, // эффект при нажатии
       ]}
-      // onPress={() =>
-      //   router.push({
-      //     pathname: "/(stacks)/archives/[id]",
-      //     params: { id: item.code },
-      //   })
-      // }
+      onPress={() =>
+        router.push({
+          pathname: "/(stacks)/archives/[id]",
+          params: { id: item.code },
+        })
+      }
     >
       {/* Left side */}
       <View style={styles.leftCol}>

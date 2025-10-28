@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import FxLineChart from "../FxLineChart";
@@ -17,13 +17,16 @@ type Props = {
 const COLORS = {
   bg: "#FFFFFF",
   card: "#F7F7F9",
-  text: "#111827",
+  text: "#727376",
   sub: "#6B7280",
   border: "#ECECEC",
   orangeDot: "#F59E0B",
   blueDot: "#2563EB",
   green: "#16A34A",
   red: "#DC2626",
+  pillBg: "#FFFFF",
+  pillActiveBg: "#F9F9F9",
+  pillActiveText: "#080420",
 };
 
 export default function ArchiveDetailCard({
@@ -33,7 +36,6 @@ export default function ArchiveDetailCard({
   flagEmoji = "🇺🇸",
   onPressHeader,
 }: Props) {
-
   const data = useMemo(
     () =>
       rows ?? [
@@ -43,9 +45,22 @@ export default function ArchiveDetailCard({
       ],
     [rows]
   );
+  const [source, setSource] = useState<"yes" | "nbrk">("yes");
 
   return (
     <ScrollView style={styles.container} bounces>
+      <View style={styles.tabsRow}>
+        <Pill
+          label="Yes Exchange"
+          active={source === "yes"}
+          onPress={() => setSource("yes")}
+        />
+        <Pill
+          label="НБ КР"
+          active={source === "nbrk"}
+          onPress={() => setSource("nbrk")}
+        />
+      </View>
       {/* Currency header card */}
       <Pressable style={styles.fxCard} onPress={onPressHeader}>
         <View style={styles.fxHead}>
@@ -99,12 +114,53 @@ export default function ArchiveDetailCard({
     </ScrollView>
   );
 }
+function Pill({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[styles.pill, active && { backgroundColor: COLORS.pillActiveBg }]}
+    >
+      <Text
+        style={[
+          styles.pillText,
+          active && { color: COLORS.pillActiveText, fontWeight: "800" },
+        ]}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
 
 /* ---------- styles ---------- */
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
+  tabsRow: {
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
+  },
 
+  pill: {
+    paddingHorizontal: 16,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: COLORS.pillBg,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pillText: { color: COLORS.text, fontSize: 16, fontWeight: "700" },
 
   fxCard: {
     marginHorizontal: 16,
@@ -147,7 +203,6 @@ const styles = StyleSheet.create({
   deltaUp: { color: COLORS.green },
   deltaDown: { color: COLORS.red },
   caption: { marginTop: 4, color: COLORS.sub, fontSize: 14 },
-
 
   tableTitle: {
     marginTop: 18,
