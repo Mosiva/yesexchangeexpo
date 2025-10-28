@@ -36,7 +36,6 @@ const DEFAULT_NEUTRAL_IMG = require("../../../assets/images/neutral.png");
 export default function LineUpDownChartCard({
   items,
   initial = 3,
-  onMorePress,
   expanded: initialExpanded = false,
 }: Props) {
   const router = useRouter();

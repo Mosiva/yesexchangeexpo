@@ -11,8 +11,10 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { CurrencyCode } from "../../types/api";
+import CurrencyFlag from "../CurrencyFlag";
 
-type Currency = { code: string; name: string; flag: React.ReactNode };
+type Currency = { code: string; name: string };
 
 interface Props {
   visible: boolean;
@@ -63,7 +65,9 @@ export default function CurrenciesListModalArchive({
         </View>
 
         {/* flag — теперь React-элемент */}
-        <View style={{ marginRight: 4 }}>{item.flag}</View>
+        <View style={{ marginRight: 4 }}>
+          <CurrencyFlag code={item.code as CurrencyCode} size={24} />
+        </View>
 
         {/* code + name */}
         <View style={{ flex: 1 }}>
