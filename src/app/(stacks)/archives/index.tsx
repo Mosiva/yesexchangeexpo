@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   FlatList,
   RefreshControl,
@@ -14,15 +14,12 @@ import {
 import LineUpDownChartCard from "../../../components/LineUpDownChartCard";
 import { Skeleton } from "../../../components/skeleton";
 import { useNbkRatesQuery } from "../../../services/yesExchange";
-
-// === Helpers ===
-const getYesterdayDate = () => {
-  const now = new Date();
-  now.setDate(now.getDate() - 1);
-  return now.toISOString().split("T")[0];
-};
-
-const getTodayDate = () => new Date().toISOString().split("T")[0];
+import {
+  dmyLocal,
+  pickLatestPerCode,
+  ymdLocal,
+} from "../../../utils/nbkDateUtils";
+/* ================= Helpers ================= */
 
 export default function ArchivesScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -34,26 +31,45 @@ export default function ArchivesScreen() {
     isLoading: isNbkRatesLoading,
     isError: isNbkRatesError,
   } = useNbkRatesQuery({
-    from: getYesterdayDate(),
-    to: getTodayDate(),
+    from: ymdLocal(new Date(Date.now() - 24 * 3600 * 1000)), // вчера (локально)
+    to: ymdLocal(new Date()), // сегодня (локально)
     limit: 30,
   });
 
-  const nbkItems = React.useMemo(() => {
-    return (Array.isArray(rawNbkRates) ? rawNbkRates : []).map((r: any) => ({
+  // 1) Фильтруем только сегодняшние записи
+  const todayYMD = ymdLocal();
+  const todayDMY = dmyLocal();
+
+  const todayOnly = useMemo(() => {
+    const arr = Array.isArray(rawNbkRates) ? rawNbkRates : [];
+    const todays = arr.filter((r: any) => {
+      const s = String(r?.date ?? "");
+      return s === todayYMD || s === todayDMY;
+    });
+
+    // 2) Если за сегодня ничего не пришло, падаем на «самую свежую на код»
+    if (todays.length === 0) {
+      return pickLatestPerCode(arr);
+    }
+    // На всякий: если по одному коду пришли и сегодня/вчера, оставим только сегодняшнюю запись
+    return pickLatestPerCode(todays);
+  }, [rawNbkRates, todayYMD, todayDMY]);
+
+  // 3) Приводим к items для LineUpDownChartCard
+  const nbkItems = useMemo(() => {
+    return (Array.isArray(todayOnly) ? todayOnly : []).map((r: any) => ({
       code: r.currency?.code ?? "",
       value: r.rate,
       delta: Number(r.changePercent) || 0,
       label: "Курс НБ РК",
       name: r.currency?.name ?? "",
     }));
-  }, [rawNbkRates]);
+  }, [todayOnly]);
 
-  const filteredItems = React.useMemo(() => {
+  // Поиск по коду/названию
+  const filteredItems = useMemo(() => {
     if (!query.trim()) return nbkItems;
-
     const q = query.trim().toLowerCase();
-
     return nbkItems.filter((i) => {
       const code = i.code?.toLowerCase() ?? "";
       const name = i.name?.toLowerCase() ?? "";
@@ -61,6 +77,7 @@ export default function ArchivesScreen() {
     });
   }, [query, nbkItems]);
 
+  // === Обновление данных ===
   const refetchAllData = useCallback(async () => {
     await refetchNbkRates();
   }, [refetchNbkRates]);
@@ -91,7 +108,7 @@ export default function ArchivesScreen() {
         />
         <TextInput
           value={query}
-          onChangeText={(t) => setQuery(t.trim())}
+          onChangeText={(t) => setQuery(t)}
           placeholder="Поиск: USD / Доллар"
           placeholderTextColor="#9CA3AF"
           style={styles.searchInput}
@@ -141,7 +158,8 @@ export default function ArchivesScreen() {
   );
 }
 
-// === Styles ===
+/* ================= Styles ================= */
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
 

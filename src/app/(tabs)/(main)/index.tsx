@@ -30,7 +30,11 @@ import {
   useNearestBranchQuery,
 } from "../../../services/yesExchange";
 import { CurrencyCode } from "../../../types/api";
-
+import {
+  dmyLocal,
+  pickLatestPerCode,
+  ymdLocal
+} from "../../../utils/nbkDateUtils";
 // === Вспомогательные функции ===
 
 // вчерашняя дата в формате YYYY-MM-DD
@@ -163,13 +167,27 @@ export default function MainScreen() {
 
   const exchangeRates = rawExchangeRates?.data || [];
 
-  // внутри MainScreen, рядом с nbkRates
+  // ✅ NBRK items safe filtered (only today)
   const nbkItems = React.useMemo(() => {
-    return (Array.isArray(rawNbkRates) ? rawNbkRates : []).map((r: any) => ({
-      code: r.currency?.code, // ✅ code
-      value: r.rate, // ✅ value = rate
-      delta: Number(r.changePercent) || 0, // ✅ delta = changePercent (fallback 0)
+    const arr = Array.isArray(rawNbkRates) ? rawNbkRates : [];
+
+    const todayYMD = ymdLocal();
+    const todayDMY = dmyLocal();
+
+    const todays = arr.filter((r: any) => {
+      const s = String(r?.date ?? "");
+      return s === todayYMD || s === todayDMY;
+    });
+
+    const latestRows =
+      todays.length > 0 ? pickLatestPerCode(todays) : pickLatestPerCode(arr);
+
+    return latestRows.map((r: any) => ({
+      code: r.currency?.code ?? "",
+      value: r.rate,
+      delta: Number(r.changePercent) || 0,
       label: "Курс НБ РК",
+      name: r.currency?.name ?? "",
     }));
   }, [rawNbkRates]);
 

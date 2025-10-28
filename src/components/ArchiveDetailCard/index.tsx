@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import CurrencyFlag from "../CurrencyFlag";
 import FxLineChart from "../FxLineChart";
 
 type Row = { ts: string; buy: number; sell: number };
@@ -17,7 +18,7 @@ type Props = {
 const COLORS = {
   bg: "#FFFFFF",
   card: "#F7F7F9",
-  text: "#727376",
+  text: "#111827",
   sub: "#6B7280",
   border: "#ECECEC",
   orangeDot: "#F59E0B",
@@ -31,9 +32,8 @@ const COLORS = {
 
 export default function ArchiveDetailCard({
   rows,
-  code = "USD",
-  name = "Доллар США",
-  flagEmoji = "🇺🇸",
+  code,
+  name,
   onPressHeader,
 }: Props) {
   const data = useMemo(
@@ -45,7 +45,7 @@ export default function ArchiveDetailCard({
       ],
     [rows]
   );
-  const [source, setSource] = useState<"yes" | "nbrk">("yes");
+  const [source, setSource] = useState<"yes" | "nbrk">("nbrk");
 
   return (
     <ScrollView style={styles.container} bounces>
@@ -65,7 +65,9 @@ export default function ArchiveDetailCard({
       <Pressable style={styles.fxCard} onPress={onPressHeader}>
         <View style={styles.fxHead}>
           <View style={styles.flagWrap}>
-            <Text style={{ fontSize: 20 }}>{flagEmoji}</Text>
+            <View style={styles.flagWrap}>
+              <CurrencyFlag code={code as any} size={48} />
+            </View>
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.fxTitle}>{code}</Text>
@@ -146,13 +148,13 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
   tabsRow: {
     flexDirection: "row",
-    gap: 10,
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 12,
   },
 
   pill: {
+    flex: 1,
     paddingHorizontal: 16,
     height: 44,
     borderRadius: 12,
@@ -171,17 +173,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   fxHead: { flexDirection: "row", alignItems: "center" },
-  flagWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-  },
+  flagWrap: {},
   fxTitle: {
     fontSize: 22,
     fontWeight: "800",
