@@ -52,7 +52,7 @@ export default function LineUpDownChartCard({
       {items.length > initial && !expanded && (
         <Pressable
           style={styles.moreBtn}
-          // onPress={() => router.push("/(stacks)/archives")}
+          onPress={() => router.push("/(stacks)/archives")}
         >
           <Text style={styles.moreText}>Показать больше</Text>
         </Pressable>
