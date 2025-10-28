@@ -30,6 +30,7 @@ type Props = {
 /* ================== Defaults ================== */
 const DEFAULT_UP_IMG = require("../../../assets/images/upline.png");
 const DEFAULT_DOWN_IMG = require("../../../assets/images/downline.png");
+const DEFAULT_NEUTRAL_IMG = require("../../../assets/images/neutral.png");
 
 /* ================== Component ================== */
 export default function LineUpDownChartCard({
@@ -62,7 +63,8 @@ export default function LineUpDownChartCard({
 
 /* ------------------------ subcomponents ------------------------ */
 function RateCard({ item }: { item: Item }) {
-  const up = item.delta >= 0;
+  const trend: "up" | "down" | "same" =
+    item.delta === 0 ? "same" : item.delta > 0 ? "up" : "down";
   const router = useRouter();
 
   return (
@@ -93,31 +95,44 @@ function RateCard({ item }: { item: Item }) {
           <View style={styles.row}>
             <Text style={styles.code}>{item.code}</Text>
             <Text style={styles.value}>{formatNum(item.value)}</Text>
-            <Text
-              style={[styles.delta, up ? styles.deltaUp : styles.deltaDown]}
-            >
-              {up ? " +" : " "}
-              {formatNum(Math.abs(item.delta))}
-              {up ? " ▲" : " ▼"}
-            </Text>
+            {trend !== "same" ? (
+              <Text
+                style={[
+                  styles.delta,
+                  trend === "up" ? styles.deltaUp : styles.deltaDown,
+                ]}
+              >
+                {trend === "up" ? " +" : " -"}
+                {formatNum(Math.abs(item.delta))}
+                {trend === "up" ? " ▲" : " ▼"}
+              </Text>
+            ) : (
+              <Text style={[styles.delta, styles.deltaSame]}>0.0 ＝</Text>
+            )}
           </View>
         </View>
       </View>
 
       {/* Right side */}
-      <Sparkline up={up} chartSource={item.chartSource} />
+      <Sparkline trend={trend} chartSource={item.chartSource} />
     </Pressable>
   );
 }
 
 function Sparkline({
-  up,
+  trend,
   chartSource,
 }: {
-  up: boolean;
+  trend: "up" | "down" | "same";
   chartSource?: ImageSourcePropType;
 }) {
-  const src = chartSource ?? (up ? DEFAULT_UP_IMG : DEFAULT_DOWN_IMG);
+  const src =
+    chartSource ??
+    (trend === "up"
+      ? DEFAULT_UP_IMG
+      : trend === "down"
+      ? DEFAULT_DOWN_IMG
+      : DEFAULT_NEUTRAL_IMG);
 
   return (
     <View style={styles.sparkWrap}>
@@ -125,7 +140,14 @@ function Sparkline({
       <View
         style={[
           styles.sparkDot,
-          { backgroundColor: up ? "#10A44A" : "#DC3545" },
+          {
+            backgroundColor:
+              trend === "up"
+                ? "#10A44A"
+                : trend === "down"
+                ? "#DC3545"
+                : "#9CA3AF", // серый цвет для нейтрального
+          },
         ]}
       />
     </View>
@@ -187,11 +209,12 @@ const styles = StyleSheet.create({
   delta: { marginLeft: 10, fontSize: 11, fontWeight: "400" },
   deltaUp: { color: "#16A34A" },
   deltaDown: { color: "#DC2626" },
+  deltaSame: { color: "#6B7280" },
 
   /* sparkline image container */
   sparkWrap: {
     width: 150,
-    height: 64,
+    height: 66,
     borderRadius: 12,
     overflow: "hidden",
     justifyContent: "center",

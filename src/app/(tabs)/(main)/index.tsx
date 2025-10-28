@@ -126,7 +126,7 @@ export default function MainScreen() {
   } = useNbkRatesQuery({
     from: yesterdayDate,
     to: todayDate,
-    limit: 10,
+    limit: 30,
   });
 
   const branches = React.useMemo(() => {
@@ -162,7 +162,8 @@ export default function MainScreen() {
   );
 
   const exchangeRates = rawExchangeRates?.data || [];
-  // const nbkAverage = rawNbkAverage || [];
+
+  const nbkRates = rawNbkRates?.data || [];
 
   React.useEffect(() => {
     // 🕓 1️⃣ Идёт загрузка ближайшего филиала
@@ -243,13 +244,13 @@ export default function MainScreen() {
   const refetchAllData = useCallback(async () => {
     await Promise.all([
       refetchBranches(),
-      // refetchNbkAverage(),
+      refetchNbkRates(),
       refetchExchangeRates(),
       refetchNearestBranch(),
     ]);
   }, [
     refetchBranches,
-    // refetchNbkAverage,
+    refetchNbkRates,
     refetchExchangeRates,
     refetchNearestBranch,
   ]);
@@ -502,8 +503,8 @@ export default function MainScreen() {
         <LineUpDownChartCard
           items={[
             { code: "USD", value: 544.36, delta: +23.2, flagEmoji: "🇺🇸" },
-            { code: "RUB", value: 6.53, delta: -23.2, flagEmoji: "🇷🇺" },
-            { code: "EUR", value: 637.0, delta: +23.2, flagEmoji: "🇪🇺" },
+            { code: "RUB", value: 6.53, delta: 0.0, flagEmoji: "🇷🇺" },
+            { code: "EUR", value: 637.0, delta: -23.2, flagEmoji: "🇪🇺" },
             { code: "KZT", value: 1.0, delta: +23.2, flagEmoji: "🇰🇿" },
           ]}
         />
