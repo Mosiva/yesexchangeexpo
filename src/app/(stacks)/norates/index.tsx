@@ -381,12 +381,12 @@ export default function ReserveNoRateScreen() {
 
           {deltaTrend === "up" && (
             <Text style={[styles.delta, { color: "#16A34A" }]}>
-              +{deltaValue.toFixed(1)} ▲
+              {deltaValue.toFixed(1)} ▲
             </Text>
           )}
           {deltaTrend === "down" && (
             <Text style={[styles.delta, { color: "#DC2626" }]}>
-              −{deltaValue.toFixed(1)} ▼
+              {deltaValue.toFixed(1)} ▼
             </Text>
           )}
           {deltaTrend === "same" && (
