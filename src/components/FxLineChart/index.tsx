@@ -27,12 +27,17 @@ const COLORS = {
 
 export default function FxLineChart({ rows, onChangePeriod }: Props) {
   const [period, setPeriod] = useState<"day" | "week" | "month">("day");
-  const screenWidth = Dimensions.get("window").width;
+  const [selectedPoint, setSelectedPoint] = useState<{
+    x: number;
+    y: number;
+    value: number;
+    label: string;
+  } | null>(null);
 
-  // ✅ Animated opacity value
+  const screenWidth = Dimensions.get("window").width;
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
-  // 🔄 Плавный fade-in при изменении rows
+  // Плавное появление графика при смене данных
   useEffect(() => {
     fadeAnim.setValue(0);
     Animated.timing(fadeAnim, {
@@ -45,16 +50,31 @@ export default function FxLineChart({ rows, onChangePeriod }: Props) {
   const handleChangePeriod = (p: "day" | "week" | "month") => {
     if (p === period) return;
     setPeriod(p);
+    setSelectedPoint(null);
     onChangePeriod?.(p);
   };
 
-  const labels = rows.map((r) => r.ts.split(" ")[1]);
-  const buyData = rows.map((r) => r.buy);
-  const sellData = rows.map((r) => r.sell);
+  const sortedRows = React.useMemo(() => {
+    return [...rows].reverse(); // старые -> новые
+  }, [rows]);
+
+  const labels = React.useMemo(() => {
+    const all = sortedRows.map((r) => r.ts.split(" ")[1]);
+    // Показываем каждое чётное время
+    return all.filter((_, i) => i % 2 === 0);
+  }, [sortedRows]);
+
+  // 👇 те же индексы применяем к данным
+  const filteredData = React.useMemo(() => {
+    return sortedRows.filter((_, i) => i % 2 === 0);
+  }, [sortedRows]);
+
+  const buyData = filteredData.map((r) => r.buy);
+  const sellData = filteredData.map((r) => r.sell);
 
   return (
     <View>
-      {/* Segmented control */}
+      {/* Переключатели периода */}
       <View style={styles.segmentRow}>
         <Segment
           label="День"
@@ -77,14 +97,14 @@ export default function FxLineChart({ rows, onChangePeriod }: Props) {
         </Pressable>
       </View>
 
-      {/* ✅ Animated chart */}
+      {/* График */}
       <Animated.View style={{ opacity: fadeAnim }}>
         <LineChart
           data={{
             labels,
             datasets: [
-              { data: buyData, color: () => "#F59E0B" },
-              { data: sellData, color: () => "#2563EB" },
+              { data: buyData, color: () => "#F59E0B" }, // Покупка
+              { data: sellData, color: () => "#2563EB" }, // Продажа
             ],
             legend: ["Покупка", "Продажа"],
           }}
@@ -101,13 +121,38 @@ export default function FxLineChart({ rows, onChangePeriod }: Props) {
           }}
           bezier
           style={styles.chart}
+          onDataPointClick={(data) => {
+            setSelectedPoint({
+              x: data.x,
+              y: data.y,
+              value: data.value,
+              label: labels[data.index] ?? "",
+            });
+          }}
         />
       </Animated.View>
+
+      {/* Тултип при клике на точку */}
+      {selectedPoint && (
+        <Animated.View
+          style={[
+            styles.tooltip,
+            {
+              left: selectedPoint.x + 20,
+              top: selectedPoint.y + 60,
+            },
+          ]}
+        >
+          <Text style={styles.tooltipText}>
+            {`${selectedPoint.label}\n${selectedPoint.value.toFixed(1)}`}
+          </Text>
+        </Animated.View>
+      )}
     </View>
   );
 }
 
-/* --- Segment --- */
+/* --- Кнопки сегментов --- */
 function Segment({
   label,
   active,
@@ -137,6 +182,7 @@ function Segment({
   );
 }
 
+/* --- Стили --- */
 const styles = StyleSheet.create({
   segmentRow: {
     flexDirection: "row",
@@ -167,5 +213,19 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 8,
     borderRadius: 12,
+  },
+  tooltip: {
+    position: "absolute",
+    backgroundColor: "#111827",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    zIndex: 999,
+  },
+  tooltipText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+    textAlign: "center",
   },
 });
