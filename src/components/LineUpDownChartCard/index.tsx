@@ -25,6 +25,7 @@ type Props = {
   initial?: number; // how many to show initially
   onMorePress?: () => void;
   expanded?: boolean;
+  branchId?: string;
 };
 
 /* ================== Defaults ================== */
@@ -37,6 +38,7 @@ export default function LineUpDownChartCard({
   items,
   initial = 3,
   expanded: initialExpanded = false,
+  branchId,
 }: Props) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(initialExpanded);
@@ -45,13 +47,18 @@ export default function LineUpDownChartCard({
   return (
     <View>
       {visible.map((it, idx) => (
-        <RateCard key={`${it.code}-${idx}`} item={it} />
+        <RateCard key={`${it.code}-${idx}`} item={it} branchId={branchId} />
       ))}
 
       {items.length > initial && !expanded && (
         <Pressable
           style={styles.moreBtn}
-          onPress={() => router.push("/(stacks)/archives")}
+          onPress={() =>
+            router.push({
+              pathname: "/(stacks)/archives",
+              params: { branchId },
+            })
+          }
         >
           <Text style={styles.moreText}>Показать больше</Text>
         </Pressable>
@@ -61,7 +68,7 @@ export default function LineUpDownChartCard({
 }
 
 /* ------------------------ subcomponents ------------------------ */
-function RateCard({ item }: { item: Item }) {
+function RateCard({ item, branchId }: { item: Item; branchId?: string }) {
   const trend: "up" | "down" | "same" =
     item.delta === 0 ? "same" : item.delta > 0 ? "up" : "down";
   const router = useRouter();
@@ -75,7 +82,10 @@ function RateCard({ item }: { item: Item }) {
       onPress={() =>
         router.push({
           pathname: "/(stacks)/archives/[id]",
-          params: { id: item.code },
+          params: {
+            id: item.code,
+            branchId,
+          },
         })
       }
     >

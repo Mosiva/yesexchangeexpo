@@ -33,7 +33,7 @@ import { CurrencyCode } from "../../../types/api";
 import {
   dmyLocal,
   pickLatestPerCode,
-  ymdLocal
+  ymdLocal,
 } from "../../../utils/nbkDateUtils";
 // === Вспомогательные функции ===
 
@@ -542,7 +542,7 @@ export default function MainScreen() {
           </TouchableOpacity>
         </View>
       ) : (
-        <LineUpDownChartCard items={nbkItems} />
+        <LineUpDownChartCard items={nbkItems} branchId={selectedBranch?.id} />
       )}
 
       <View style={{ marginBottom: 16, paddingHorizontal: 10 }}>

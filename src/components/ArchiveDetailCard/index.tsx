@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import CurrencyFlag from "../CurrencyFlag";
+
 import FxLineChart from "../FxLineChart";
 
 type Row = { ts: string; buy: number; sell: number };
@@ -13,6 +14,8 @@ type Props = {
   name?: string; // e.g. "Доллар США"
   flagEmoji?: string; // e.g. "🇺🇸"
   onPressHeader?: () => void;
+  latest?: Row | null; // ✅ добавлено
+  onChangePeriod?: (period: "day" | "week" | "month") => void; // ✅ добавлено
 };
 
 const COLORS = {
@@ -35,16 +38,10 @@ export default function ArchiveDetailCard({
   code,
   name,
   onPressHeader,
+  latest,
+  onChangePeriod,
 }: Props) {
-  const data = useMemo(
-    () =>
-      rows ?? [
-        { ts: "21.08.2025 10:11", buy: 533.4, sell: 533.4 },
-        { ts: "21.08.2025 11:54", buy: 549.4, sell: 538.4 },
-        { ts: "21.08.2025 12:54", buy: 540.4, sell: 530.4 },
-      ],
-    [rows]
-  );
+  const data = rows ?? [];
   const [source, setSource] = useState<"yes" | "nbrk">("nbrk");
 
   return (
@@ -80,30 +77,33 @@ export default function ArchiveDetailCard({
         <View style={styles.fxRow}>
           <View style={styles.sideBlock}>
             <View style={[styles.dot, { backgroundColor: COLORS.orangeDot }]} />
-            <Text style={styles.fxValue}>533,4</Text>
-            <Text style={[styles.delta, styles.deltaDown]}>+23,2 ▼</Text>
-            <Text style={styles.caption}>Покупка</Text>
+            <Text style={styles.fxValue}>
+              {latest ? latest.buy.toFixed(1) : "-"}
+            </Text>
+            <Text style={[styles.caption]}>Покупка</Text>
           </View>
 
           <View style={styles.sideBlock}>
             <View style={[styles.dot, { backgroundColor: COLORS.blueDot }]} />
-            <Text style={styles.fxValue}>535,8</Text>
-            <Text style={[styles.delta, styles.deltaUp]}>+23,2 ▲</Text>
-            <Text style={styles.caption}>Продажа</Text>
+            <Text style={styles.fxValue}>
+              {latest ? latest.sell.toFixed(1) : "-"}
+            </Text>
+            <Text style={[styles.caption]}>Продажа</Text>
           </View>
         </View>
       </Pressable>
 
       {/* Chart */}
-      <FxLineChart rows={data} />
+      <FxLineChart rows={data} onChangePeriod={onChangePeriod} />
 
-      {/* Details table */}
+      {/* ✅ Таблица */}
       <Text style={styles.tableTitle}>Детали</Text>
       <View style={styles.tableHeader}>
         <Text style={[styles.th, { flex: 1.4 }]}>Дата</Text>
         <Text style={[styles.th, { flex: 1 }]}>Покупка</Text>
         <Text style={[styles.th, { flex: 1 }]}>Продажа</Text>
       </View>
+
       {data.map((r, i) => (
         <View key={`${r.ts}-${i}`} style={styles.tr}>
           <Text style={[styles.td, { flex: 1.4 }]}>{r.ts}</Text>

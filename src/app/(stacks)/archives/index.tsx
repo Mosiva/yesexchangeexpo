@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
+import { useLocalSearchParams } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import {
   FlatList,
@@ -24,6 +25,7 @@ import {
 export default function ArchivesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState("");
+  const { branchId } = useLocalSearchParams<{ branchId: string }>();
 
   const {
     data: rawNbkRates,
@@ -121,7 +123,7 @@ export default function ArchivesScreen() {
         data={filteredItems}
         keyExtractor={(item, index) => `${item.code}-${index}`}
         renderItem={({ item }) => (
-          <LineUpDownChartCard items={[item]} initial={1} />
+          <LineUpDownChartCard items={[item]} initial={1} branchId={branchId} />
         )}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 60 }}

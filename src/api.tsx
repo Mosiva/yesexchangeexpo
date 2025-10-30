@@ -18,6 +18,19 @@ export const setOnAuthFail = (cb: () => void) => {
 
 export const axiosInstance = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
+  paramsSerializer: {
+    serialize: (params) => {
+      const query = new URLSearchParams();
+      Object.entries(params || {}).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((v) => query.append(key, v)); // ✅ без []
+        } else if (value !== undefined && value !== null) {
+          query.append(key, String(value));
+        }
+      });
+      return query.toString();
+    },
+  },
 });
 
 // отдельный инстанс без интерсепторов — для refresh запроса
