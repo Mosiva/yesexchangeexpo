@@ -58,7 +58,7 @@ export default function ArchiveDetailCard({
           onPress={() => setSource("yes")}
         />
         <Pill
-          label="НБ КР"
+          label="НБ РК"
           active={source === "nbrk"}
           onPress={() => setSource("nbrk")}
         />
@@ -112,7 +112,7 @@ export default function ArchiveDetailCard({
               <Text style={styles.fxValue}>
                 {latestNbkRates ? latestNbkRates.rate.toFixed(2) : "-"}
               </Text>
-              <Text style={[styles.caption]}>Курс НБКР</Text>
+              <Text style={[styles.caption]}>Курс НБРК</Text>
             </View>
           )}
         </View>
