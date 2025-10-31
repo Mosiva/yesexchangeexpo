@@ -11,9 +11,12 @@ import {
 import { LineChart } from "react-native-chart-kit";
 
 type Row = { ts: string; buy: number; sell: number };
+type NbkRow = { ts: string; rate: number };
 
 type Props = {
   rows: Row[];
+  nbkRows?: NbkRow[];
+  source: "yes" | "nbrk";
   onChangePeriod?: (p: "day" | "week" | "month") => void;
 };
 
@@ -25,7 +28,7 @@ const COLORS = {
   pillActiveText: "#FFFFFF",
 };
 
-export default function FxLineChart({ rows, onChangePeriod }: Props) {
+export default function FxLineChart({ rows, onChangePeriod, nbkRows, source }: Props) {
   const [period, setPeriod] = useState<"day" | "week" | "month">("day");
   const [selectedPoint, setSelectedPoint] = useState<{
     x: number;

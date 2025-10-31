@@ -120,7 +120,12 @@ export default function ArchiveDetailCard({
 
       {/* Chart */}
       {data.length > 0 ? (
-        <FxLineChart rows={data} onChangePeriod={onChangePeriod} />
+        <FxLineChart
+          rows={data}
+          onChangePeriod={onChangePeriod}
+          nbkRows={nbkRows}
+          source={source}
+        />
       ) : (
         <View style={{ paddingVertical: 40, alignItems: "center" }}>
           <Text style={{ color: COLORS.sub, fontSize: 15 }}>
