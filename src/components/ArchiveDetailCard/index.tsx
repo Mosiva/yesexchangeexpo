@@ -5,17 +5,20 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import CurrencyFlag from "../CurrencyFlag";
 
 import FxLineChart from "../FxLineChart";
+type NbkRow = { ts: string; rate: number };
 
 type Row = { ts: string; buy: number; sell: number };
 
 type Props = {
   rows?: Row[];
-  code?: string; // e.g. "USD"
-  name?: string; // e.g. "Доллар США"
-  flagEmoji?: string; // e.g. "🇺🇸"
+  nbkRows?: NbkRow[];
+  latest?: Row | null;
+  latestNbkRates?: NbkRow | null;
+  code?: string;
+  name?: string;
+  flagEmoji?: string;
   onPressHeader?: () => void;
-  latest?: Row | null; // ✅ добавлено
-  onChangePeriod?: (period: "day" | "week" | "month") => void; // ✅ добавлено
+  onChangePeriod?: (period: "day" | "week" | "month") => void;
 };
 
 const COLORS = {
@@ -35,10 +38,12 @@ const COLORS = {
 
 export default function ArchiveDetailCard({
   rows,
+  nbkRows,
   code,
   name,
   onPressHeader,
   latest,
+  latestNbkRates,
   onChangePeriod,
 }: Props) {
   const data = rows ?? [];
@@ -72,45 +77,104 @@ export default function ArchiveDetailCard({
           </View>
           <Ionicons name="chevron-down" size={22} color="#111827" />
         </View>
-
         {/* значения */}
         <View style={styles.fxRow}>
-          <View style={styles.sideBlock}>
-            <View style={[styles.dot, { backgroundColor: COLORS.orangeDot }]} />
-            <Text style={styles.fxValue}>
-              {latest ? latest.buy.toFixed(1) : "-"}
-            </Text>
-            <Text style={[styles.caption]}>Покупка</Text>
-          </View>
+          {source === "yes" ? (
+            <>
+              <View style={styles.sideBlock}>
+                <View
+                  style={[styles.dot, { backgroundColor: COLORS.orangeDot }]}
+                />
+                <Text style={styles.fxValue}>
+                  {latest ? latest.buy.toFixed(1) : "-"}
+                </Text>
+                <Text style={[styles.caption]}>Покупка</Text>
+              </View>
 
-          <View style={styles.sideBlock}>
-            <View style={[styles.dot, { backgroundColor: COLORS.blueDot }]} />
-            <Text style={styles.fxValue}>
-              {latest ? latest.sell.toFixed(1) : "-"}
-            </Text>
-            <Text style={[styles.caption]}>Продажа</Text>
-          </View>
+              <View style={styles.sideBlock}>
+                <View
+                  style={[styles.dot, { backgroundColor: COLORS.blueDot }]}
+                />
+                <Text style={styles.fxValue}>
+                  {latest ? latest.sell.toFixed(1) : "-"}
+                </Text>
+                <Text style={[styles.caption]}>Продажа</Text>
+              </View>
+            </>
+          ) : (
+            <View
+              style={[
+                styles.sideBlock,
+                { width: "100%", alignItems: "flex-start" },
+              ]}
+            >
+              <View style={[styles.dot, { backgroundColor: COLORS.green }]} />
+              <Text style={styles.fxValue}>
+                {latestNbkRates ? latestNbkRates.rate.toFixed(2) : "-"}
+              </Text>
+              <Text style={[styles.caption]}>Курс НБКР</Text>
+            </View>
+          )}
         </View>
       </Pressable>
 
       {/* Chart */}
-      <FxLineChart rows={data} onChangePeriod={onChangePeriod} />
+      {data.length > 0 ? (
+        <FxLineChart rows={data} onChangePeriod={onChangePeriod} />
+      ) : (
+        <View style={{ paddingVertical: 40, alignItems: "center" }}>
+          <Text style={{ color: COLORS.sub, fontSize: 15 }}>
+            Нет данных для отображения
+          </Text>
+        </View>
+      )}
 
       {/* ✅ Таблица */}
       <Text style={styles.tableTitle}>Детали</Text>
-      <View style={styles.tableHeader}>
-        <Text style={[styles.th, { flex: 1.4 }]}>Дата</Text>
-        <Text style={[styles.th, { flex: 1 }]}>Покупка</Text>
-        <Text style={[styles.th, { flex: 1 }]}>Продажа</Text>
-      </View>
 
-      {data.map((r, i) => (
-        <View key={`${r.ts}-${i}`} style={styles.tr}>
-          <Text style={[styles.td, { flex: 1.4 }]}>{r.ts}</Text>
-          <Text style={[styles.td, { flex: 1 }]}>{r.buy.toFixed(1)}</Text>
-          <Text style={[styles.td, { flex: 1 }]}>{r.sell.toFixed(1)}</Text>
-        </View>
-      ))}
+      {source === "yes" ? (
+        <>
+          <View style={styles.tableHeader}>
+            <Text style={[styles.th, { flex: 1.4 }]}>Дата</Text>
+            <Text style={[styles.th, { flex: 1 }]}>Покупка</Text>
+            <Text style={[styles.th, { flex: 1 }]}>Продажа</Text>
+          </View>
+
+          {data.map((r, i) => {
+            return (
+              <View key={`${r.ts}-${i}`} style={styles.tr}>
+                <Text style={[styles.td, { flex: 1.4 }]}>{r.ts}</Text>
+                <Text style={[styles.td, { flex: 1 }]}>{r.buy.toFixed(1)}</Text>
+                <Text style={[styles.td, { flex: 1 }]}>
+                  {r.sell.toFixed(1)}
+                </Text>
+              </View>
+            );
+          })}
+        </>
+      ) : (
+        <>
+          <View style={styles.tableHeader}>
+            <Text style={[styles.th, { flex: 1.4 }]}>Дата</Text>
+            <Text style={[styles.th, { flex: 1 }]}>Курс НБКР</Text>
+          </View>
+
+          {nbkRows?.map((r, i) => {
+            // гарантированно корректный парсинг ISO-строки
+            const [year, month, day] = r.ts.split("T")[0].split("-");
+            const formattedDate = `${day}.${month}.${year.slice(2)}`;
+
+            return (
+              <View key={`${r.ts}-${i}`} style={styles.tr}>
+                <Text style={[styles.td, { flex: 1.4 }]}>{formattedDate}</Text>
+                <Text style={[styles.td, { flex: 1 }]}>
+                  {r.rate.toFixed(2)}
+                </Text>
+              </View>
+            );
+          })}
+        </>
+      )}
 
       <View style={{ height: 24 }} />
     </ScrollView>

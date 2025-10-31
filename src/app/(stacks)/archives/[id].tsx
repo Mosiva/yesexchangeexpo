@@ -75,6 +75,11 @@ export default function ArchiveDetailScreen() {
     sell: Number(r.sell),
   }));
 
+  // ✅ получаем самый свежий по дате элемент
+  const latest = exchangeRows.length
+    ? exchangeRows.reduce((a, b) => (new Date(a.ts) < new Date(b.ts) ? b : a))
+    : null;
+
   const {
     data: rawNbkRatesItem,
     refetch: refetchNbkRatesItem,
@@ -87,6 +92,29 @@ export default function ArchiveDetailScreen() {
   });
 
   const nbkRatesItem = Array.isArray(rawNbkRatesItem) ? rawNbkRatesItem : [];
+  // НБКР → приводим к формату Row { ts, buy, sell }
+  const nbkRows = Array.isArray(nbkRatesItem)
+    ? nbkRatesItem.map((r: any) => {
+        // r.date = "31.10.2025" → парсим
+        const [day, month, year] = r.date.split(".");
+        const isoDate = `${year}-${month}-${day}T00:00:00`;
+        return {
+          ts: isoDate,
+          rate: Number(r.rate),
+        };
+      })
+    : [];
+
+  console.log("nbkRows", nbkRows);
+
+  // ✅ получаем последний курс НБКР по дате
+  const latestNbkRates = nbkRows.length
+    ? nbkRows.reduce((a, b) => {
+        const dateA = new Date(a.ts);
+        const dateB = new Date(b.ts);
+        return dateA < dateB ? b : a;
+      }, nbkRows[0])
+    : null;
 
   // ✅ получаем список валют
   const { data: rawCurrencies } = useCurrenciesQuery();
@@ -98,11 +126,6 @@ export default function ArchiveDetailScreen() {
     setModalVisible(false);
     router.setParams({ id: val[0] });
   };
-
-  // ✅ получаем самый свежий по дате элемент
-  const latest = exchangeRows.length
-    ? exchangeRows.reduce((a, b) => (new Date(a.ts) < new Date(b.ts) ? b : a))
-    : null;
 
   // === Загрузка / Ошибка ===
   if (isExchangeRatesChangesLoading) {
@@ -139,7 +162,9 @@ export default function ArchiveDetailScreen() {
         code={currentCode}
         name={nbkRatesItem[0]?.currency?.name ?? ""}
         rows={exchangeRows}
+        nbkRows={nbkRows}
         latest={latest}
+        latestNbkRates={latestNbkRates}
         onPressHeader={() => setModalVisible(true)}
         onChangePeriod={(p) => setPeriod(p)}
       />
