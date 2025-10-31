@@ -149,39 +149,48 @@ export default function FxLineChart({
       </View>
 
       {/* График */}
+      {/* График */}
       <Animated.View style={{ opacity: fadeAnim }}>
-        <LineChart
-          data={{
-            labels,
-            datasets,
-            legend,
-          }}
-          width={screenWidth - 32}
-          height={250}
-          chartConfig={{
-            backgroundColor: "#fff",
-            backgroundGradientFrom: "#fff",
-            backgroundGradientTo: "#fff",
-            decimalPlaces: 2,
-            color: (opacity = 1) => `rgba(17, 24, 39, ${opacity})`,
-            labelColor: (opacity = 1) => `rgba(107, 114, 128, ${opacity})`,
-            propsForDots: {
-              r: "4",
-              strokeWidth: "1",
-              stroke: "#fff",
-            },
-          }}
-          bezier
-          style={styles.chart}
-          onDataPointClick={(data) => {
-            setSelectedPoint({
-              x: data.x,
-              y: data.y,
-              value: data.value,
-              label: labels[data.index] ?? "",
-            });
-          }}
-        />
+        {filtered.length > 0 ? (
+          <LineChart
+            data={{
+              labels,
+              datasets,
+              legend,
+            }}
+            width={screenWidth - 32}
+            height={250}
+            chartConfig={{
+              backgroundColor: "#fff",
+              backgroundGradientFrom: "#fff",
+              backgroundGradientTo: "#fff",
+              decimalPlaces: 2,
+              color: (opacity = 1) => `rgba(17, 24, 39, ${opacity})`,
+              labelColor: (opacity = 1) => `rgba(107, 114, 128, ${opacity})`,
+              propsForDots: {
+                r: "4",
+                strokeWidth: "1",
+                stroke: "#fff",
+              },
+            }}
+            bezier
+            style={styles.chart}
+            onDataPointClick={(data) => {
+              setSelectedPoint({
+                x: data.x,
+                y: data.y,
+                value: data.value,
+                label: labels[data.index] ?? "",
+              });
+            }}
+          />
+        ) : (
+          <View style={{ paddingVertical: 40, alignItems: "center" }}>
+            <Text style={{ color: COLORS.sub, fontSize: 15 }}>
+              Нет данных для отображения
+            </Text>
+          </View>
+        )}
       </Animated.View>
 
       {/* Тултип */}

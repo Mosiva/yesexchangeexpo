@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "buildNumber": "7",
+      "buildNumber": "8",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Ваше местоположение нужно, чтобы показать ближайшие филиалы обмена валют.",
         "ITSAppUsesNonExemptEncryption": false
@@ -20,7 +20,7 @@
     "android": {
       "config": {
         "googleMaps": {
-          "apiKey": ""
+          "apiKey": "AIzaSyDcUoJDgUXjiwXDV97kEOwsTX1_ZDnFjfs"
         }
       },
       "permissions": [
@@ -34,7 +34,7 @@
         "backgroundColor": "#ffffff"
       },
       "softwareKeyboardLayoutMode": "pan",
-      "versionCode": 7,
+      "versionCode": 8,
       "edgeToEdgeEnabled": true,
       "package": "com.mosiva.yesexchangeexpo"
     },
