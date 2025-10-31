@@ -26,9 +26,17 @@ const COLORS = {
   pillBg: "#F3F4F6",
   pillActiveBg: "#111827",
   pillActiveText: "#FFFFFF",
+  buy: "#F59E0B",
+  sell: "#2563EB",
+  nbkr: "#16A34A",
 };
 
-export default function FxLineChart({ rows, onChangePeriod, nbkRows, source }: Props) {
+export default function FxLineChart({
+  rows,
+  nbkRows,
+  source,
+  onChangePeriod,
+}: Props) {
   const [period, setPeriod] = useState<"day" | "week" | "month">("day");
   const [selectedPoint, setSelectedPoint] = useState<{
     x: number;
@@ -40,7 +48,7 @@ export default function FxLineChart({ rows, onChangePeriod, nbkRows, source }: P
   const screenWidth = Dimensions.get("window").width;
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
-  // Плавное появление графика при смене данных
+  // Плавная анимация появления
   useEffect(() => {
     fadeAnim.setValue(0);
     Animated.timing(fadeAnim, {
@@ -48,7 +56,7 @@ export default function FxLineChart({ rows, onChangePeriod, nbkRows, source }: P
       duration: 400,
       useNativeDriver: true,
     }).start();
-  }, [rows]);
+  }, [rows, nbkRows, source]);
 
   const handleChangePeriod = (p: "day" | "week" | "month") => {
     if (p === period) return;
@@ -57,12 +65,16 @@ export default function FxLineChart({ rows, onChangePeriod, nbkRows, source }: P
     onChangePeriod?.(p);
   };
 
-  // Сортировка (новые сверху → показываем в хронологическом порядке)
+  // --- Выбор данных ---
   const sortedRows = React.useMemo(() => {
+    if (source === "nbrk" && nbkRows?.length) {
+      return [...nbkRows].sort(
+        (a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime()
+      );
+    }
     return [...rows].reverse();
-  }, [rows]);
+  }, [rows, nbkRows, source]);
 
-  // Ограничиваем количество меток (макс. 5)
   const filtered = React.useMemo(() => {
     const maxLabels = 5;
     const step =
@@ -72,19 +84,44 @@ export default function FxLineChart({ rows, onChangePeriod, nbkRows, source }: P
     return sortedRows.filter((_, i) => i % step === 0);
   }, [sortedRows]);
 
-  // Подписи для оси X — динамически по period
+  // --- Формат подписей ---
   const labels = React.useMemo(() => {
     return filtered.map((r) => {
+      if (source === "nbrk") {
+        const [year, month, day] = r.ts.split("T")[0].split("-");
+        return `${day}.${month}`;
+      }
       const [datePart, timePart] = r.ts.split(" ");
-      if (period === "day") return timePart; // показываем только время
+      if (period === "day") return timePart;
       const [d, m] = datePart.split(".");
-      return `${d}.${m}`; // для week / month показываем день и месяц
+      return `${d}.${m}`;
     });
-  }, [filtered, period]);
+  }, [filtered, period, source]);
 
-  // Данные для графика
-  const buyData = filtered.map((r) => r.buy);
-  const sellData = filtered.map((r) => r.sell);
+  // --- Формируем данные для графика ---
+  const datasets =
+    source === "nbrk"
+      ? [
+          {
+            data: filtered.map((r: any) => r.rate),
+            color: () => COLORS.nbkr,
+            strokeWidth: 2,
+          },
+        ]
+      : [
+          {
+            data: filtered.map((r: any) => r.buy),
+            color: () => COLORS.buy,
+            strokeWidth: 2,
+          },
+          {
+            data: filtered.map((r: any) => r.sell),
+            color: () => COLORS.sell,
+            strokeWidth: 2,
+          },
+        ];
+
+  const legend = source === "nbrk" ? ["Курс НБКР"] : ["Покупка", "Продажа"];
 
   return (
     <View>
@@ -116,11 +153,8 @@ export default function FxLineChart({ rows, onChangePeriod, nbkRows, source }: P
         <LineChart
           data={{
             labels,
-            datasets: [
-              { data: buyData, color: () => "#F59E0B" }, // Покупка
-              { data: sellData, color: () => "#2563EB" }, // Продажа
-            ],
-            legend: ["Покупка", "Продажа"],
+            datasets,
+            legend,
           }}
           width={screenWidth - 32}
           height={250}
@@ -128,10 +162,14 @@ export default function FxLineChart({ rows, onChangePeriod, nbkRows, source }: P
             backgroundColor: "#fff",
             backgroundGradientFrom: "#fff",
             backgroundGradientTo: "#fff",
-            decimalPlaces: 1,
+            decimalPlaces: 2,
             color: (opacity = 1) => `rgba(17, 24, 39, ${opacity})`,
             labelColor: (opacity = 1) => `rgba(107, 114, 128, ${opacity})`,
-            propsForDots: { r: "3", strokeWidth: "1", stroke: "#fff" },
+            propsForDots: {
+              r: "4",
+              strokeWidth: "1",
+              stroke: "#fff",
+            },
           }}
           bezier
           style={styles.chart}
@@ -146,19 +184,16 @@ export default function FxLineChart({ rows, onChangePeriod, nbkRows, source }: P
         />
       </Animated.View>
 
-      {/* Тултип при клике на точку */}
+      {/* Тултип */}
       {selectedPoint && (
         <Animated.View
           style={[
             styles.tooltip,
-            {
-              left: selectedPoint.x + 20,
-              top: selectedPoint.y + 60,
-            },
+            { left: selectedPoint.x + 20, top: selectedPoint.y + 60 },
           ]}
         >
           <Text style={styles.tooltipText}>
-            {`${selectedPoint.label}\n${selectedPoint.value.toFixed(1)}`}
+            {`${selectedPoint.label}\n${selectedPoint.value.toFixed(2)}`}
           </Text>
         </Animated.View>
       )}
