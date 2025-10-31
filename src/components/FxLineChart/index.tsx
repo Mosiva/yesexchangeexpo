@@ -69,8 +69,15 @@ export default function FxLineChart({ rows, onChangePeriod }: Props) {
     return sortedRows.filter((_, i) => i % step === 0);
   }, [sortedRows]);
 
-  // Подписи для оси X
-  const labels = filtered.map((r) => r.ts.split(" ")[1]);
+  // Подписи для оси X — динамически по period
+  const labels = React.useMemo(() => {
+    return filtered.map((r) => {
+      const [datePart, timePart] = r.ts.split(" ");
+      if (period === "day") return timePart; // показываем только время
+      const [d, m] = datePart.split(".");
+      return `${d}.${m}`; // для week / month показываем день и месяц
+    });
+  }, [filtered, period]);
 
   // Данные для графика
   const buyData = filtered.map((r) => r.buy);
