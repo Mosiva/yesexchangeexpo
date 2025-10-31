@@ -119,7 +119,22 @@ export default function ArchiveDetailCard({
       </Pressable>
 
       {/* Chart */}
-      {data.length > 0 ? (
+      {source === "yes" ? (
+        data.length > 0 ? (
+          <FxLineChart
+            rows={data}
+            onChangePeriod={onChangePeriod}
+            nbkRows={nbkRows}
+            source={source}
+          />
+        ) : (
+          <View style={{ paddingVertical: 40, alignItems: "center" }}>
+            <Text style={{ color: COLORS.sub, fontSize: 15 }}>
+              Нет данных для отображения
+            </Text>
+          </View>
+        )
+      ) : nbkRows && nbkRows.length > 0 ? (
         <FxLineChart
           rows={data}
           onChangePeriod={onChangePeriod}

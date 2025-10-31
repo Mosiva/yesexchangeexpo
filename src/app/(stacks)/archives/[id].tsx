@@ -45,7 +45,7 @@ export default function ArchiveDetailScreen() {
   // 🔁 Определяем диапазон для текущего периода
   const range = getDateRange(period);
 
-  // ✅ основной запрос курсов (без changePeriod)
+  // ✅ основной запрос курсов (Yes Exchange)
   const {
     data: rawExchangeRatesChanges,
     isLoading: isExchangeRatesChangesLoading,
@@ -75,14 +75,13 @@ export default function ArchiveDetailScreen() {
     sell: Number(r.sell),
   }));
 
-  // ✅ получаем самый свежий по дате элемент
   const latest = exchangeRows.length
     ? exchangeRows.reduce((a, b) => (new Date(a.ts) < new Date(b.ts) ? b : a))
     : null;
 
+  // ✅ запрос курсов НБКР
   const {
     data: rawNbkRatesItem,
-    refetch: refetchNbkRatesItem,
     isLoading: isNbkRatesItemLoading,
     isError: isNbkRatesItemError,
   } = useNbkRatesQuery({
@@ -92,10 +91,9 @@ export default function ArchiveDetailScreen() {
   });
 
   const nbkRatesItem = Array.isArray(rawNbkRatesItem) ? rawNbkRatesItem : [];
-  // НБКР → приводим к формату Row { ts, buy, sell }
+
   const nbkRows = Array.isArray(nbkRatesItem)
     ? nbkRatesItem.map((r: any) => {
-        // r.date = "31.10.2025" → парсим
         const [day, month, year] = r.date.split(".");
         const isoDate = `${year}-${month}-${day}T00:00:00`;
         return {
@@ -105,15 +103,8 @@ export default function ArchiveDetailScreen() {
       })
     : [];
 
-  console.log("nbkRows", nbkRows);
-
-  // ✅ получаем последний курс НБКР по дате
   const latestNbkRates = nbkRows.length
-    ? nbkRows.reduce((a, b) => {
-        const dateA = new Date(a.ts);
-        const dateB = new Date(b.ts);
-        return dateA < dateB ? b : a;
-      }, nbkRows[0])
+    ? nbkRows.reduce((a, b) => (new Date(a.ts) < new Date(b.ts) ? b : a))
     : null;
 
   // ✅ получаем список валют
@@ -128,7 +119,7 @@ export default function ArchiveDetailScreen() {
   };
 
   // === Загрузка / Ошибка ===
-  if (isExchangeRatesChangesLoading) {
+  if (isExchangeRatesChangesLoading || isNbkRatesItemLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Loader />
@@ -136,7 +127,7 @@ export default function ArchiveDetailScreen() {
     );
   }
 
-  if (isExchangeRatesChangesError) {
+  if (isExchangeRatesChangesError || isNbkRatesItemError) {
     return (
       <View
         style={{
