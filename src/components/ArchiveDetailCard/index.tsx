@@ -42,7 +42,7 @@ export default function ArchiveDetailCard({
   onChangePeriod,
 }: Props) {
   const data = rows ?? [];
-  const [source, setSource] = useState<"yes" | "nbrk">("nbrk");
+  const [source, setSource] = useState<"yes" | "nbrk">("yes");
 
   return (
     <ScrollView style={styles.container} bounces>

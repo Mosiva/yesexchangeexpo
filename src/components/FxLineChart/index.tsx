@@ -54,23 +54,27 @@ export default function FxLineChart({ rows, onChangePeriod }: Props) {
     onChangePeriod?.(p);
   };
 
+  // Сортировка (новые сверху → показываем в хронологическом порядке)
   const sortedRows = React.useMemo(() => {
-    return [...rows].reverse(); // старые -> новые
+    return [...rows].reverse();
   }, [rows]);
 
-  const labels = React.useMemo(() => {
-    const all = sortedRows.map((r) => r.ts.split(" ")[1]);
-    // Показываем каждое чётное время
-    return all.filter((_, i) => i % 2 === 0);
+  // Ограничиваем количество меток (макс. 5)
+  const filtered = React.useMemo(() => {
+    const maxLabels = 5;
+    const step =
+      sortedRows.length > maxLabels
+        ? Math.ceil(sortedRows.length / maxLabels)
+        : 1;
+    return sortedRows.filter((_, i) => i % step === 0);
   }, [sortedRows]);
 
-  // 👇 те же индексы применяем к данным
-  const filteredData = React.useMemo(() => {
-    return sortedRows.filter((_, i) => i % 2 === 0);
-  }, [sortedRows]);
+  // Подписи для оси X
+  const labels = filtered.map((r) => r.ts.split(" ")[1]);
 
-  const buyData = filteredData.map((r) => r.buy);
-  const sellData = filteredData.map((r) => r.sell);
+  // Данные для графика
+  const buyData = filtered.map((r) => r.buy);
+  const sellData = filtered.map((r) => r.sell);
 
   return (
     <View>

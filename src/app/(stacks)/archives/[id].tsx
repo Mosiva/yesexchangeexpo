@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { StatusBar } from "react-native";
+import { StatusBar, Text, View } from "react-native";
+import { Loader } from "../../../components";
 import ArchiveDetailCard from "../../../components/ArchiveDetailCard";
 import CurrenciesListModalArchive from "../../../components/CurrenciesListModalArchive";
 import {
@@ -18,18 +19,17 @@ export default function ArchiveDetailScreen() {
   }>();
 
   const branchIdNumber = Number(branchId);
-
   const initialCode = id || "USD";
 
   const [selected, setSelected] = useState<string[]>([initialCode]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [period, setPeriod] = useState<"day" | "week" | "month">("day"); // ✅ добавлено
+  const [period, setPeriod] = useState<"day" | "week" | "month">("day");
 
   const currentCode = selected[0];
 
+  // ✅ основной запрос курсов
   const {
     data: rawExchangeRatesChanges,
-    refetch: refetchExchangeRatesChanges,
     isLoading: isExchangeRatesChangesLoading,
     isError: isExchangeRatesChangesError,
   } = useExchangeRatesChangesQuery({
@@ -69,21 +69,49 @@ export default function ArchiveDetailScreen() {
 
   const nbkRatesItem = Array.isArray(rawNbkRatesItem) ? rawNbkRatesItem : [];
 
+  // ✅ получаем список валют
   const { data: rawCurrencies } = useCurrenciesQuery();
-
   const currencies = Array.isArray(rawCurrencies) ? rawCurrencies : [];
 
+  // ✅ выбор валюты
   const onSelectCurrency = (val: string[]) => {
     setSelected(val);
     setModalVisible(false);
     router.setParams({ id: val[0] });
   };
 
-  // Получаем последний по времени элемент
+  // ✅ получаем самый свежий по дате элемент
   const latest = exchangeRows.length
-    ? exchangeRows.reduce((a, b) => (new Date(a.ts) > new Date(b.ts) ? a : b))
+    ? exchangeRows.reduce((a, b) => (new Date(a.ts) < new Date(b.ts) ? b : a))
     : null;
 
+  // === Загрузка / Ошибка ===
+  if (isExchangeRatesChangesLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Loader />
+      </View>
+    );
+  }
+
+  if (isExchangeRatesChangesError) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          paddingHorizontal: 24,
+        }}
+      >
+        <Text style={{ fontSize: 16, color: "#6B7280", textAlign: "center" }}>
+          Не удалось загрузить данные курса. Попробуйте позже.
+        </Text>
+      </View>
+    );
+  }
+
+  // === Основное содержимое ===
   return (
     <>
       <StatusBar barStyle="dark-content" />
@@ -91,10 +119,10 @@ export default function ArchiveDetailScreen() {
       <ArchiveDetailCard
         code={currentCode}
         name={nbkRatesItem[0]?.currency?.name ?? ""}
-        rows={exchangeRows} // ✅ передаем реальные данные
+        rows={exchangeRows}
+        latest={latest}
         onPressHeader={() => setModalVisible(true)}
-        latest={latest} // ✅ передаем последний (актуальный)
-        onChangePeriod={(p) => setPeriod(p)} // ✅ слушаем из графика
+        onChangePeriod={(p) => setPeriod(p)}
       />
 
       <CurrenciesListModalArchive
