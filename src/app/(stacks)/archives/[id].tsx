@@ -27,14 +27,33 @@ export default function ArchiveDetailScreen() {
 
   const currentCode = selected[0];
 
-  // ✅ основной запрос курсов
+  // 📅 Вспомогательная функция для диапазона дат
+  const getDateRange = (period: "day" | "week" | "month") => {
+    const now = new Date();
+    let days = 1;
+
+    if (period === "week") days = 7;
+    if (period === "month") days = 30;
+
+    const from = new Date(now.getTime() - days * 24 * 3600 * 1000);
+    return {
+      from: ymdLocal(from),
+      to: ymdLocal(now),
+    };
+  };
+
+  // 🔁 Определяем диапазон для текущего периода
+  const range = getDateRange(period);
+
+  // ✅ основной запрос курсов (без changePeriod)
   const {
     data: rawExchangeRatesChanges,
     isLoading: isExchangeRatesChangesLoading,
     isError: isExchangeRatesChangesError,
   } = useExchangeRatesChangesQuery({
     branchId: branchIdNumber,
-    changePeriod: period,
+    from: range.from,
+    to: range.to,
     currencyCodes: [currentCode],
   });
 
@@ -62,8 +81,8 @@ export default function ArchiveDetailScreen() {
     isLoading: isNbkRatesItemLoading,
     isError: isNbkRatesItemError,
   } = useNbkRatesQuery({
-    from: ymdLocal(new Date(Date.now() - 24 * 3600 * 1000)),
-    to: ymdLocal(new Date()),
+    from: range.from,
+    to: range.to,
     currencyCode: currentCode,
   });
 
