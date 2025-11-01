@@ -91,7 +91,20 @@ export const DateRangePickerModal = ({
           />
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={handleConfirm}>
+            <TouchableOpacity
+              style={[styles.button, styles.cancelButton]}
+              onPress={onClose}
+            >
+              <Text style={[styles.buttonText, styles.cancelButtonText]}>
+                Отмена
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, { flex: 1 }]}
+              onPress={handleConfirm}
+              disabled={!fromDate || !toDate}
+            >
               <Text style={styles.buttonText}>Применить</Text>
             </TouchableOpacity>
           </View>
@@ -121,9 +134,6 @@ const styles = StyleSheet.create({
     color: "#111827",
     marginBottom: 16,
   },
-  buttonContainer: {
-    marginTop: 16,
-  },
   button: {
     backgroundColor: ORANGE,
     borderRadius: 12,
@@ -135,5 +145,17 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "700",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 16,
+  },
+  cancelButton: {
+    backgroundColor: "#F3F4F6",
+    flex: 1,
+  },
+  cancelButtonText: {
+    color: "#111827",
   },
 });

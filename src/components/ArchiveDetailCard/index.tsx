@@ -18,7 +18,10 @@ type Props = {
   name?: string;
   flagEmoji?: string;
   onPressHeader?: () => void;
-  onChangePeriod?: (period: "day" | "week" | "month") => void;
+  onChangePeriod?: (
+    period: "day" | "week" | "month",
+    range?: { fromIso: string; toIso: string }
+  ) => void;
 };
 
 const COLORS = {

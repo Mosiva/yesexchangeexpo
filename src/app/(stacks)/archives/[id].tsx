@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StatusBar, Text, View } from "react-native";
 import { Loader } from "../../../components";
 import ArchiveDetailCard from "../../../components/ArchiveDetailCard";
@@ -24,38 +24,54 @@ export default function ArchiveDetailScreen() {
   const [selected, setSelected] = useState<string[]>([initialCode]);
   const [modalVisible, setModalVisible] = useState(false);
   const [period, setPeriod] = useState<"day" | "week" | "month">("day");
+  const [customRange, setCustomRange] = useState<{
+    fromIso: string;
+    toIso: string;
+  } | null>(null);
 
   const currentCode = selected[0];
 
-  // 📅 Вспомогательная функция для диапазона дат
+  // 📅 диапазон по умолчанию
   const getDateRange = (period: "day" | "week" | "month") => {
     const now = new Date();
     let days = 1;
-
     if (period === "week") days = 7;
     if (period === "month") days = 30;
-
     const from = new Date(now.getTime() - days * 24 * 3600 * 1000);
-    return {
-      from: ymdLocal(from),
-      to: ymdLocal(now),
-    };
+    return { from: ymdLocal(from), to: ymdLocal(now) };
   };
 
-  // 🔁 Определяем диапазон для текущего периода
-  const range = getDateRange(period);
+  // --- итоговый диапазон ---
+  const range = customRange
+    ? { from: customRange.fromIso, to: customRange.toIso }
+    : getDateRange(period);
 
   // ✅ основной запрос курсов (Yes Exchange)
   const {
     data: rawExchangeRatesChanges,
     isLoading: isExchangeRatesChangesLoading,
     isError: isExchangeRatesChangesError,
+    refetch: refetchExchangeRatesChanges,
   } = useExchangeRatesChangesQuery({
     branchId: branchIdNumber,
     from: range.from,
     to: range.to,
     currencyCodes: [currentCode],
   });
+
+  // ✅ Автоматический refetch при изменении периода, диапазона или валюты
+  useEffect(() => {
+    refetchExchangeRatesChanges();
+  }, [period, customRange, currentCode]);
+
+  // ✅ обработчик при смене периода или ручного диапазона
+  const handleChangePeriod = (
+    p: "day" | "week" | "month",
+    range?: { fromIso: string; toIso: string }
+  ) => {
+    setPeriod(p);
+    setCustomRange(range ?? null);
+  };
 
   const rawList = Array.isArray(rawExchangeRatesChanges)
     ? rawExchangeRatesChanges
@@ -96,10 +112,7 @@ export default function ArchiveDetailScreen() {
     ? nbkRatesItem.map((r: any) => {
         const [day, month, year] = r.date.split(".");
         const isoDate = `${year}-${month}-${day}T00:00:00`;
-        return {
-          ts: isoDate,
-          rate: Number(r.rate),
-        };
+        return { ts: isoDate, rate: Number(r.rate) };
       })
     : [];
 
@@ -107,7 +120,7 @@ export default function ArchiveDetailScreen() {
     ? nbkRows.reduce((a, b) => (new Date(a.ts) < new Date(b.ts) ? b : a))
     : null;
 
-  // ✅ получаем список валют
+  // ✅ список валют
   const { data: rawCurrencies } = useCurrenciesQuery();
   const currencies = Array.isArray(rawCurrencies) ? rawCurrencies : [];
 
@@ -157,7 +170,7 @@ export default function ArchiveDetailScreen() {
         latest={latest}
         latestNbkRates={latestNbkRates}
         onPressHeader={() => setModalVisible(true)}
-        onChangePeriod={(p) => setPeriod(p)}
+        onChangePeriod={handleChangePeriod}
       />
 
       <CurrenciesListModalArchive

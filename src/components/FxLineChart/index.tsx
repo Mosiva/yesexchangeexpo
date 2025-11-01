@@ -71,8 +71,9 @@ export default function FxLineChart({
     }).start();
   }, [rows, nbkRows, source]);
 
-  const handleChangePeriod = (p: "day" | "week" | "month") => {
-    if (p === period) return;
+  const handleChangePeriod = (p: "day" | "week" | "month", force?: boolean) => {
+    // 🧠 Не блокируем повторный вызов, если явно нужно "форсировать"
+    if (p === period && !force) return;
     setPeriod(p);
     setSelectedPoint(null);
     setSelectedRange(null);
@@ -92,9 +93,9 @@ export default function FxLineChart({
 
   const handleResetRange = () => {
     setSelectedRange(null);
-    handleChangePeriod("day");
+    // ⬇️ форсируем "day", чтобы обновился запрос
+    handleChangePeriod("day", true);
   };
-
   // --- Данные ---
   const sortedRows = useMemo(() => {
     if (source === "nbrk" && nbkRows?.length) {
