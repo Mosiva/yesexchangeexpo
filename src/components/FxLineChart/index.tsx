@@ -175,22 +175,24 @@ export default function FxLineChart({
           </>
         ) : (
           <>
-            <Segment
-              label="День"
-              active={period === "day"}
-              onPress={() => handleChangePeriod("day")}
-            />
-            <Segment
-              label="Неделя"
-              active={period === "week"}
-              onPress={() => handleChangePeriod("week")}
-            />
-            <Segment
-              label="Месяц"
-              active={period === "month"}
-              onPress={() => handleChangePeriod("month")}
-            />
-            <View style={{ flex: 1 }} />
+            <View style={styles.segmentGroup}>
+              <Segment
+                label="День"
+                active={period === "day"}
+                onPress={() => handleChangePeriod("day")}
+              />
+              <Segment
+                label="Неделя"
+                active={period === "week"}
+                onPress={() => handleChangePeriod("week")}
+              />
+              <Segment
+                label="Месяц"
+                active={period === "month"}
+                onPress={() => handleChangePeriod("month")}
+              />
+            </View>
+
             {source === "yes" && (
               <Pressable
                 style={styles.calendarBtn}
@@ -306,34 +308,6 @@ function Segment({
 
 /* --- Стили --- */
 const styles = StyleSheet.create({
-  segmentRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginTop: 5,
-    marginBottom: 8,
-    backgroundColor: COLORS.pillBg,
-    borderRadius: 16,
-    marginHorizontal: 12,
-    paddingHorizontal: 6,
-    paddingVertical: 4,
-  },
-  segment: {
-    paddingHorizontal: 18,
-    height: 44,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  segmentText: { color: COLORS.text, fontSize: 16, fontWeight: "700" },
-  calendarBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: COLORS.pillBg,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   rangeTextInline: {
     fontSize: 15,
     fontWeight: "700",
@@ -363,5 +337,45 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     textAlign: "center",
+  },
+  segmentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 5,
+    marginBottom: 8,
+    backgroundColor: COLORS.pillBg,
+    borderRadius: 16,
+    marginHorizontal: 12,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+  },
+  segmentGroup: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  segment: {
+    flex: 1, // 👈 делает каждую кнопку равной по ширине
+    height: 44,
+    marginHorizontal: 3, // небольшой отступ между кнопками
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.pillBg,
+  },
+  segmentText: {
+    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  calendarBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: COLORS.pillBg,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 6,
   },
 });
