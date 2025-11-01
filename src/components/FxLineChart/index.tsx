@@ -246,9 +246,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     marginTop: 14,
     marginBottom: 8,
+    backgroundColor: COLORS.pillBg,
+    borderRadius: 20,
   },
   segment: {
     paddingHorizontal: 18,
