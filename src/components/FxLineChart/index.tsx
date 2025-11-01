@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
+import { DateRangePickerModal } from "../DateRangePickerModal"; // ✅ подключён календарь
 
 type Row = { ts: string; buy: number; sell: number };
 type NbkRow = { ts: string; rate: number };
@@ -17,7 +18,10 @@ type Props = {
   rows: Row[];
   nbkRows?: NbkRow[];
   source: "yes" | "nbrk";
-  onChangePeriod?: (p: "day" | "week" | "month") => void;
+  onChangePeriod?: (
+    p: "day" | "week" | "month",
+    range?: { fromIso: string; toIso: string }
+  ) => void;
 };
 
 const COLORS = {
@@ -29,6 +33,7 @@ const COLORS = {
   buy: "#F59E0B",
   sell: "#2563EB",
   nbkr: "#16A34A",
+  orange: "#F58220",
 };
 
 export default function FxLineChart({
@@ -45,10 +50,18 @@ export default function FxLineChart({
     label: string;
   } | null>(null);
 
+  // 📅 состояния календаря
+  const [isCalendarVisible, setCalendarVisible] = useState(false);
+  const [selectedRange, setSelectedRange] = useState<{
+    fromDisplay: string;
+    toDisplay: string;
+    fromIso: string;
+    toIso: string;
+  } | null>(null);
+
   const screenWidth = Dimensions.get("window").width;
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
-  // Плавная анимация появления
   useEffect(() => {
     fadeAnim.setValue(0);
     Animated.timing(fadeAnim, {
@@ -62,11 +75,28 @@ export default function FxLineChart({
     if (p === period) return;
     setPeriod(p);
     setSelectedPoint(null);
+    setSelectedRange(null);
     onChangePeriod?.(p);
   };
 
-  // --- Выбор данных ---
-  const sortedRows = React.useMemo(() => {
+  const handleConfirmRange = (range: {
+    fromIso: string;
+    toIso: string;
+    fromDisplay: string;
+    toDisplay: string;
+  }) => {
+    setSelectedRange(range);
+    setPeriod("day");
+    onChangePeriod?.("day", { fromIso: range.fromIso, toIso: range.toIso });
+  };
+
+  const handleResetRange = () => {
+    setSelectedRange(null);
+    handleChangePeriod("day");
+  };
+
+  // --- Данные ---
+  const sortedRows = useMemo(() => {
     if (source === "nbrk" && nbkRows?.length) {
       return [...nbkRows].sort(
         (a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime()
@@ -75,7 +105,7 @@ export default function FxLineChart({
     return [...rows].reverse();
   }, [rows, nbkRows, source]);
 
-  const filtered = React.useMemo(() => {
+  const filtered = useMemo(() => {
     const maxLabels = 5;
     const step =
       sortedRows.length > maxLabels
@@ -84,8 +114,7 @@ export default function FxLineChart({
     return sortedRows.filter((_, i) => i % step === 0);
   }, [sortedRows]);
 
-  // --- Формат подписей ---
-  const labels = React.useMemo(() => {
+  const labels = useMemo(() => {
     return filtered.map((r) => {
       if (source === "nbrk") {
         const [year, month, day] = r.ts.split("T")[0].split("-");
@@ -98,7 +127,6 @@ export default function FxLineChart({
     });
   }, [filtered, period, source]);
 
-  // --- Формируем данные для графика ---
   const datasets =
     source === "nbrk"
       ? [
@@ -125,31 +153,60 @@ export default function FxLineChart({
 
   return (
     <View>
-      {/* Переключатели периода */}
+      {/* --- Переключатели периода / Выбранный диапазон --- */}
       <View style={styles.segmentRow}>
-        <Segment
-          label="День"
-          active={period === "day"}
-          onPress={() => handleChangePeriod("day")}
-        />
-        <Segment
-          label="Неделя"
-          active={period === "week"}
-          onPress={() => handleChangePeriod("week")}
-        />
-        <Segment
-          label="Месяц"
-          active={period === "month"}
-          onPress={() => handleChangePeriod("month")}
-        />
-        <View style={{ flex: 1 }} />
-        <Pressable style={styles.calendarBtn}>
-          <Ionicons name="calendar-outline" size={22} color={COLORS.text} />
-        </Pressable>
+        {selectedRange && source === "yes" ? (
+          <>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rangeTextInline}>
+                {selectedRange.fromDisplay} — {selectedRange.toDisplay}
+              </Text>
+            </View>
+            <Pressable onPress={handleResetRange}>
+              <Text style={styles.resetText}>Сбросить</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.calendarBtn, { marginLeft: 8 }]}
+              onPress={() => setCalendarVisible(true)}
+            >
+              <Ionicons name="calendar-outline" size={22} color={COLORS.text} />
+            </Pressable>
+          </>
+        ) : (
+          <>
+            <Segment
+              label="День"
+              active={period === "day"}
+              onPress={() => handleChangePeriod("day")}
+            />
+            <Segment
+              label="Неделя"
+              active={period === "week"}
+              onPress={() => handleChangePeriod("week")}
+            />
+            <Segment
+              label="Месяц"
+              active={period === "month"}
+              onPress={() => handleChangePeriod("month")}
+            />
+            <View style={{ flex: 1 }} />
+            {source === "yes" && (
+              <Pressable
+                style={styles.calendarBtn}
+                onPress={() => setCalendarVisible(true)}
+              >
+                <Ionicons
+                  name="calendar-outline"
+                  size={22}
+                  color={COLORS.text}
+                />
+              </Pressable>
+            )}
+          </>
+        )}
       </View>
 
-      {/* График */}
-      {/* График */}
+      {/* --- График --- */}
       <Animated.View style={{ opacity: fadeAnim }}>
         {filtered.length > 0 ? (
           <LineChart
@@ -167,11 +224,7 @@ export default function FxLineChart({
               decimalPlaces: 2,
               color: (opacity = 1) => `rgba(17, 24, 39, ${opacity})`,
               labelColor: (opacity = 1) => `rgba(107, 114, 128, ${opacity})`,
-              propsForDots: {
-                r: "4",
-                strokeWidth: "1",
-                stroke: "#fff",
-              },
+              propsForDots: { r: "4", strokeWidth: "1", stroke: "#fff" },
             }}
             bezier
             style={styles.chart}
@@ -193,7 +246,7 @@ export default function FxLineChart({
         )}
       </Animated.View>
 
-      {/* Тултип */}
+      {/* --- Тултип --- */}
       {selectedPoint && (
         <Animated.View
           style={[
@@ -205,6 +258,16 @@ export default function FxLineChart({
             {`${selectedPoint.label}\n${selectedPoint.value.toFixed(2)}`}
           </Text>
         </Animated.View>
+      )}
+
+      {/* --- Модалка выбора диапазона (только для YES) --- */}
+      {source === "yes" && (
+        <DateRangePickerModal
+          isVisible={isCalendarVisible}
+          onClose={() => setCalendarVisible(false)}
+          onConfirm={handleConfirmRange}
+          allowPastDates
+        />
       )}
     </View>
   );
@@ -251,12 +314,13 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.pillBg,
     borderRadius: 16,
     marginHorizontal: 12,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
   },
   segment: {
     paddingHorizontal: 18,
     height: 44,
     borderRadius: 12,
-    backgroundColor: COLORS.pillBg,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -268,6 +332,17 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.pillBg,
     alignItems: "center",
     justifyContent: "center",
+  },
+  rangeTextInline: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: COLORS.text,
+    marginLeft: 8,
+  },
+  resetText: {
+    color: COLORS.orange,
+    fontSize: 14,
+    fontWeight: "700",
   },
   chart: {
     marginHorizontal: 16,
