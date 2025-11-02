@@ -81,6 +81,12 @@ export default function Layout() {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="successform/index"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }

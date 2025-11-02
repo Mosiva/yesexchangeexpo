@@ -119,12 +119,10 @@ export default function JoinToTeamScreen() {
         coverLetter: values.coverLetter.trim(),
       }).unwrap();
 
-      Alert.alert(
-        "Отправлено",
-        res?.message || "Мы свяжемся с вами в ближайшее время."
-      );
-
-      router.push({ pathname: "/(tabs)/(main)" });
+      router.push({
+        pathname: "/(stacks)/settings/successform",
+        params: { isJointTeam: "true" },
+      });
     } catch (err: any) {
       console.error("❌ Ошибка при отправке заявки:", err);
       const message =

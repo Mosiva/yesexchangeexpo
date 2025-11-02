@@ -94,14 +94,11 @@ export default function FeedbacksScreen() {
         phone: e164,
         message: values.message.trim(),
       }).unwrap();
-
       console.log("✅ Ответ сервера:", res);
-      Alert.alert(
-        "Спасибо!",
-        res?.message || "Ваше сообщение успешно отправлено."
-      );
-
-      router.push({ pathname: "/(tabs)/(main)" });
+      router.push({
+        pathname: "/(stacks)/settings/successform",
+        params: { isJointTeam: "false" },
+      });
     } catch (err: any) {
       console.error("❌ Ошибка при отправке:", err);
       const msg =
