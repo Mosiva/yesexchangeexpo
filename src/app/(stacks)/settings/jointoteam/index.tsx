@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as DocumentPicker from "expo-document-picker";
-import React, { useState } from "react";
+import { router } from "expo-router";
+import React, { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Alert,
@@ -28,10 +29,7 @@ const schema = z.object({
     .trim()
     .email("Введите корректный Email")
     .min(1, "Укажите Email"),
-  phone: z
-    .string()
-    .regex(/^\d{10}$/, "Введите номер из 10 цифр (без +7)")
-    .min(10),
+  digits: z.string().regex(/^\d{10}$/, "Введите номер из 10 цифр"),
   coverLetter: z.string().trim().min(1, "Введите сопроводительное письмо"),
 });
 
@@ -43,7 +41,38 @@ export default function JoinToTeamScreen() {
   const insets = useSafeAreaInsets();
   const ATTACH_DISABLED = true;
 
-  // Файл пока не отправляем, но оставляем в UI
+  // refs
+  const emailRef = useRef<TextInput>(null);
+  const phoneRef = useRef<TextInput>(null);
+
+  // phone states
+  const [maskedPhone, setMaskedPhone] = useState("+7");
+  const [digits, setDigits] = useState("");
+
+  // допустимые коды операторов РК
+  const validPrefixes = [
+    "700",
+    "701",
+    "702",
+    "703",
+    "704",
+    "705",
+    "706",
+    "707",
+    "708",
+    "709",
+    "747",
+    "771",
+    "775",
+    "776",
+    "777",
+    "778",
+  ];
+  const prefix = digits.slice(0, 3);
+  const isPrefixValid =
+    digits.length >= 3 ? validPrefixes.includes(prefix) : true;
+
+  // файл (UI only)
   const [resume, setResume] =
     useState<DocumentPicker.DocumentPickerAsset | null>(null);
 
@@ -51,14 +80,13 @@ export default function JoinToTeamScreen() {
     control,
     handleSubmit,
     formState: { errors, isValid, isSubmitting },
-    setValue,
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     mode: "onChange",
     defaultValues: {
       fullName: "",
       email: "",
-      phone: "",
+      digits: "",
       coverLetter: "",
     },
   });
@@ -75,42 +103,33 @@ export default function JoinToTeamScreen() {
       ],
     });
     if (res.assets?.[0]) setResume(res.assets[0]);
-    else {
-      Alert.alert("Ошибка", "Не удалось выбрать файл.");
-    }
+    else Alert.alert("Ошибка", "Не удалось выбрать файл.");
   };
 
   // --- Submit ---
   const onSubmit = async (values: FormValues) => {
-    if (isSubmitting || isLoading) return; // защита от двойного клика
+    if (isSubmitting || isLoading) return;
 
+    const e164 = `+7${values.digits}`;
     try {
-      console.log("📤 Отправка данных:", {
+      await submitJobApplication({
         fullName: values.fullName.trim(),
         email: values.email.trim(),
-        phone: `+7${values.phone}`,
-        coverLetter: values.coverLetter.trim(),
-      });
-
-      const res = await submitJobApplication({
-        fullName: values.fullName.trim(),
-        email: values.email.trim(),
-        phone: `+7${values.phone}`,
+        phone: e164,
         coverLetter: values.coverLetter.trim(),
       }).unwrap();
 
-      console.log("✅ Ответ сервера:", res);
-      Alert.alert("Отправлено", "Мы свяжемся с вами в ближайшее время.");
+      Alert.alert(
+        "Отправлено",
+        "Спасибо! Мы свяжемся с вами в ближайшее время."
+      );
+      router.push({ pathname: "/(tabs)/(main)" });
     } catch (err: any) {
-      console.error("❌ Ошибка при отправке заявки:", err);
-
-      // Безопасная обработка любых типов ошибок
       const message =
         err?.data?.message ||
         err?.error ||
         err?.message ||
         "Не удалось отправить заявку. Попробуйте позже.";
-
       Alert.alert("Ошибка", String(message));
     }
   };
@@ -138,6 +157,8 @@ export default function JoinToTeamScreen() {
                 placeholder="Ваше ФИО*"
                 value={value}
                 onChangeText={onChange}
+                returnKeyType="next"
+                onSubmitEditing={() => emailRef.current?.focus()}
               />
               {errors.fullName && (
                 <Text style={styles.error}>{errors.fullName.message}</Text>
@@ -153,6 +174,7 @@ export default function JoinToTeamScreen() {
           render={({ field: { onChange, value } }) => (
             <>
               <TextInput
+                ref={emailRef}
                 style={styles.input}
                 placeholder="Email*"
                 keyboardType="email-address"
@@ -160,6 +182,8 @@ export default function JoinToTeamScreen() {
                 autoCorrect={false}
                 value={value}
                 onChangeText={onChange}
+                returnKeyType="next"
+                onSubmitEditing={() => phoneRef.current?.focus()}
               />
               {errors.email && (
                 <Text style={styles.error}>{errors.email.message}</Text>
@@ -171,21 +195,17 @@ export default function JoinToTeamScreen() {
         {/* Phone */}
         <Controller
           control={control}
-          name="phone"
-          render={({ field: { onChange, value } }) => (
+          name="digits"
+          render={({ field: { onChange } }) => (
             <>
               <MaskInput
+                ref={phoneRef}
                 style={styles.input}
                 placeholder="+7 (___) ___-__-__*"
                 keyboardType="number-pad"
                 inputMode="numeric"
-                value={value ? `+7${value}` : ""}
-                onChangeText={(_, unmasked) => {
-                  const digits = (unmasked || "")
-                    .replace(/\D/g, "")
-                    .slice(0, 10);
-                  onChange(digits);
-                }}
+                autoCorrect={false}
+                autoCapitalize="none"
                 mask={[
                   "+",
                   "7",
@@ -206,16 +226,30 @@ export default function JoinToTeamScreen() {
                   /\d/,
                   /\d/,
                 ]}
+                value={maskedPhone}
+                onChangeText={(masked, unmasked) => {
+                  const digitsOnly = (unmasked || "")
+                    .replace(/\D/g, "")
+                    .slice(0, 10);
+                  onChange(digitsOnly);
+                  setDigits(digitsOnly);
+                  setMaskedPhone(masked);
+                }}
+                maxLength={19}
               />
-              {errors.phone && (
-                <Text style={styles.error}>{errors.phone.message}</Text>
+              {errors.digits && (
+                <Text style={styles.error}>{errors.digits.message}</Text>
+              )}
+              {digits.length >= 3 && !isPrefixValid && (
+                <Text style={styles.error}>
+                  Доступны только коды операторов Казахстана
+                </Text>
               )}
             </>
           )}
         />
 
         {/* Resume */}
-
         <TouchableOpacity
           style={[styles.attach, ATTACH_DISABLED && styles.disabled]}
           onPress={pickResume}
@@ -227,7 +261,7 @@ export default function JoinToTeamScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* About / coverLetter */}
+        {/* About */}
         <Controller
           control={control}
           name="coverLetter"
@@ -249,6 +283,7 @@ export default function JoinToTeamScreen() {
         />
       </ScrollView>
 
+      {/* Bottom button */}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={0}
