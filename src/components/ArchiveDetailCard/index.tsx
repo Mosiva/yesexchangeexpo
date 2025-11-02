@@ -161,7 +161,6 @@ export default function ArchiveDetailCard({
                   {latest?.change?.sell !== undefined &&
                     latest.change.sell < 0 && (
                       <Text style={[styles.delta, styles.deltaDown]}>
-              
                         {latest.change.sell.toFixed(1)} ▼
                       </Text>
                     )}
@@ -176,17 +175,28 @@ export default function ArchiveDetailCard({
             </View>
           </View>
         ) : (
-          <View
-            style={[
-              styles.sideBlock,
-              { width: "100%", alignItems: "flex-start" },
-            ]}
-          >
-            <View style={[styles.dot, { backgroundColor: COLORS.green }]} />
-            <Text style={styles.fxValue}>
-              {latestNbkRates ? latestNbkRates.rate.toFixed(2) : "-"}
-            </Text>
-            <Text style={styles.caption}>Курс НБРК</Text>
+          <View style={[styles.fxRow, { justifyContent: "flex-start" }]}>
+            <View
+              style={[
+                styles.sideBlock,
+                { flexDirection: "row", alignItems: "center", width: "100%" },
+              ]}
+            >
+              <View
+                style={[
+                  styles.dot,
+                  { backgroundColor: COLORS.green, marginRight: 6 },
+                ]}
+              />
+              <View>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Text style={styles.fxValue}>
+                    {latestNbkRates ? latestNbkRates.rate.toFixed(2) : "-"}
+                  </Text>
+                </View>
+                <Text style={styles.caption}>Курс НБРК</Text>
+              </View>
+            </View>
           </View>
         )}
       </Pressable>
