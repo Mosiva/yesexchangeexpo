@@ -294,7 +294,7 @@ export default function MainScreen() {
   };
 
   // === Handlers ===
-  const handlePress = () => router.push({ pathname: "/(stacks)/settings" });
+  const handlePressSettings = () => router.push({ pathname: "/(stacks)/settings" });
   const handlePressExchange = (payload: {
     type: "buy" | "sell";
     rate: any;
@@ -323,7 +323,7 @@ export default function MainScreen() {
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <Pressable hitSlop={12}>
+          <Pressable hitSlop={12} onPress={handlePressSettings}>
             <Ionicons name="settings" size={22} color="#fff" />
           </Pressable>
         </View>

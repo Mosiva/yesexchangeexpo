@@ -16,6 +16,7 @@ import type {
   CreateBookingDto,
   CreateFeedbackDto,
   CreateGuestBookingDto,
+  CreateJobApplicationDto,
   CurrencyCode,
   // dictionaries
   CurrencyDto,
@@ -281,7 +282,7 @@ export const yesExchangeApi = restApi.injectEndpoints({
     }),
 
     // --- Формы обратной связи ---
-    submitJobApplication: build.mutation<ContactFormResponseDto, FormData>({
+    submitJobApplication: build.mutation<ContactFormResponseDto, CreateJobApplicationDto>({
       // NB: ожидается multipart/form-data
       query: (data) => ({
         url: "/api/v1/contact-forms/job-application",

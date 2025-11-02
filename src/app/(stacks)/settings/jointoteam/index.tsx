@@ -1,6 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import { zodResolver } from "@hookform/resolvers/zod";
 import * as DocumentPicker from "expo-document-picker";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -15,36 +17,54 @@ import {
 } from "react-native";
 import MaskInput from "react-native-mask-input";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { z } from "zod";
+import { useSubmitJobApplicationMutation } from "../../../../services/yesExchange";
+
+// --- Validation schema ---
+const schema = z.object({
+  fullName: z.string().trim().min(1, "Введите ваше ФИО"),
+  email: z
+    .string()
+    .trim()
+    .email("Введите корректный Email")
+    .min(1, "Укажите Email"),
+  phone: z
+    .string()
+    .regex(/^\d{10}$/, "Введите номер из 10 цифр (без +7)")
+    .min(10),
+  coverLetter: z.string().trim().min(1, "Введите сопроводительное письмо"),
+});
+
+type FormValues = z.infer<typeof schema>;
 
 export default function JoinToTeamScreen() {
+  const [submitJobApplication, { isLoading }] =
+    useSubmitJobApplicationMutation();
   const insets = useSafeAreaInsets();
-
-  // --- hard disable flags ---
   const ATTACH_DISABLED = true;
-  const SUBMIT_DISABLED = true;
 
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [digits, setDigits] = useState("");
-  const [maskedPhone, setMaskedPhone] = useState("");
-  const [about, setAbout] = useState("");
+  // Файл пока не отправляем, но оставляем в UI
   const [resume, setResume] =
     useState<DocumentPicker.DocumentPickerAsset | null>(null);
-  const [sending, setSending] = useState(false);
 
-  const emailOk = useMemo(
-    () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()),
-    [email]
-  );
-  const phoneOk = digits.length === 10;
-  const nameOk = fullName.trim().length > 0;
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid, isSubmitting },
+    setValue,
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: {
+      fullName: "",
+      email: "",
+      phone: "",
+      coverLetter: "",
+    },
+  });
 
-  // Even if form is valid, SUBMIT_DISABLED keeps it disabled.
-  const canSubmit =
-    nameOk && emailOk && phoneOk && !sending && !SUBMIT_DISABLED;
-
+  // --- Pick resume ---
   const pickResume = async () => {
-    if (ATTACH_DISABLED) return; // guard
     const res = await DocumentPicker.getDocumentAsync({
       multiple: false,
       copyToCacheDirectory: true,
@@ -54,19 +74,44 @@ export default function JoinToTeamScreen() {
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       ],
     });
-    if (res.type === "success") setResume(res.assets?.[0] ?? null);
+    if (res.assets?.[0]) setResume(res.assets[0]);
+    else {
+      Alert.alert("Ошибка", "Не удалось выбрать файл.");
+    }
   };
 
-  const submit = async () => {
-    if (!canSubmit) return;
+  // --- Submit ---
+  const onSubmit = async (values: FormValues) => {
+    if (isSubmitting || isLoading) return; // защита от двойного клика
+
     try {
-      setSending(true);
-      await new Promise((r) => setTimeout(r, 800));
+      console.log("📤 Отправка данных:", {
+        fullName: values.fullName.trim(),
+        email: values.email.trim(),
+        phone: `+7${values.phone}`,
+        coverLetter: values.coverLetter.trim(),
+      });
+
+      const res = await submitJobApplication({
+        fullName: values.fullName.trim(),
+        email: values.email.trim(),
+        phone: `+7${values.phone}`,
+        coverLetter: values.coverLetter.trim(),
+      }).unwrap();
+
+      console.log("✅ Ответ сервера:", res);
       Alert.alert("Отправлено", "Мы свяжемся с вами в ближайшее время.");
-    } catch (e: any) {
-      Alert.alert("Ошибка", e?.message ?? "Не удалось отправить");
-    } finally {
-      setSending(false);
+    } catch (err: any) {
+      console.error("❌ Ошибка при отправке заявки:", err);
+
+      // Безопасная обработка любых типов ошибок
+      const message =
+        err?.data?.message ||
+        err?.error ||
+        err?.message ||
+        "Не удалось отправить заявку. Попробуйте позже.";
+
+      Alert.alert("Ошибка", String(message));
     }
   };
 
@@ -82,52 +127,94 @@ export default function JoinToTeamScreen() {
           Заполните форму, чтобы оставить свой отклик
         </Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Ваше ФИО*"
-          value={fullName}
-          onChangeText={setFullName}
+        {/* ФИО */}
+        <Controller
+          control={control}
+          name="fullName"
+          render={({ field: { onChange, value } }) => (
+            <>
+              <TextInput
+                style={styles.input}
+                placeholder="Ваше ФИО*"
+                value={value}
+                onChangeText={onChange}
+              />
+              {errors.fullName && (
+                <Text style={styles.error}>{errors.fullName.message}</Text>
+              )}
+            </>
+          )}
         />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email*"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-          value={email}
-          onChangeText={setEmail}
+        {/* Email */}
+        <Controller
+          control={control}
+          name="email"
+          render={({ field: { onChange, value } }) => (
+            <>
+              <TextInput
+                style={styles.input}
+                placeholder="Email*"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={value}
+                onChangeText={onChange}
+              />
+              {errors.email && (
+                <Text style={styles.error}>{errors.email.message}</Text>
+              )}
+            </>
+          )}
         />
 
-        <MaskInput
-          style={styles.input}
-          placeholder="+7 (___)-__-__*"
-          keyboardType="number-pad"
-          inputMode="numeric"
-          value={maskedPhone}
-          onChangeText={(masked, unmasked) => {
-            const next = (unmasked || "").replace(/\D/g, "").slice(0, 10);
-            setDigits(next);
-            setMaskedPhone(masked);
-          }}
-          mask={[
-            "+",
-            "7",
-            " ",
-            "(",
-            /\d/,
-            /\d/,
-            /\d/,
-            ")",
-            "-",
-            /\d/,
-            /\d/,
-            "-",
-            /\d/,
-            /\d/,
-          ]}
-          maxLength={18}
+        {/* Phone */}
+        <Controller
+          control={control}
+          name="phone"
+          render={({ field: { onChange, value } }) => (
+            <>
+              <MaskInput
+                style={styles.input}
+                placeholder="+7 (___) ___-__-__*"
+                keyboardType="number-pad"
+                inputMode="numeric"
+                value={value ? `+7${value}` : ""}
+                onChangeText={(_, unmasked) => {
+                  const digits = (unmasked || "")
+                    .replace(/\D/g, "")
+                    .slice(0, 10);
+                  onChange(digits);
+                }}
+                mask={[
+                  "+",
+                  "7",
+                  " ",
+                  "(",
+                  /\d/,
+                  /\d/,
+                  /\d/,
+                  ")",
+                  " ",
+                  /\d/,
+                  /\d/,
+                  /\d/,
+                  "-",
+                  /\d/,
+                  /\d/,
+                  "-",
+                  /\d/,
+                  /\d/,
+                ]}
+              />
+              {errors.phone && (
+                <Text style={styles.error}>{errors.phone.message}</Text>
+              )}
+            </>
+          )}
         />
+
+        {/* Resume */}
 
         <TouchableOpacity
           style={[styles.attach, ATTACH_DISABLED && styles.disabled]}
@@ -140,14 +227,25 @@ export default function JoinToTeamScreen() {
           </Text>
         </TouchableOpacity>
 
-        <TextInput
-          style={[styles.input, styles.textarea]}
-          placeholder="Расскажите немного о себе"
-          value={about}
-          onChangeText={setAbout}
-          multiline
-          textAlignVertical="top"
-          numberOfLines={5}
+        {/* About / coverLetter */}
+        <Controller
+          control={control}
+          name="coverLetter"
+          render={({ field: { onChange, value } }) => (
+            <>
+              <TextInput
+                style={[styles.input, styles.textarea]}
+                placeholder="Расскажите немного о себе*"
+                value={value}
+                onChangeText={onChange}
+                multiline
+                textAlignVertical="top"
+              />
+              {errors.coverLetter && (
+                <Text style={styles.error}>{errors.coverLetter.message}</Text>
+              )}
+            </>
+          )}
         />
       </ScrollView>
 
@@ -159,13 +257,13 @@ export default function JoinToTeamScreen() {
           <TouchableOpacity
             style={[
               styles.submit,
-              (!canSubmit || SUBMIT_DISABLED) && styles.submitDisabled,
+              (!isValid || isSubmitting || isLoading) && styles.submitDisabled,
             ]}
-            onPress={submit}
-            disabled={!canSubmit || SUBMIT_DISABLED}
+            onPress={handleSubmit(onSubmit)}
+            disabled={!isValid || isSubmitting || isLoading}
           >
             <Text style={styles.submitText}>
-              {sending ? "Отправляем..." : "Отправить"}
+              {isSubmitting || isLoading ? "Отправляем..." : "Отправить"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -181,6 +279,7 @@ const COLORS = {
   inputBg: "#F7F7F9",
   border: "#ECECEC",
   bg: "#FFFFFF",
+  error: "#DC2626",
 };
 
 const styles = StyleSheet.create({
@@ -188,13 +287,6 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   container: { paddingHorizontal: 16, paddingTop: 8 },
 
-  title: {
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: "800",
-    color: COLORS.text,
-    marginTop: 8,
-  },
   subtitle: {
     fontSize: 14,
     color: COLORS.subtext,
@@ -249,6 +341,10 @@ const styles = StyleSheet.create({
   },
   submitDisabled: { opacity: 0.5 },
   submitText: { color: "#fff", fontSize: 16, fontWeight: "700" },
-
+  error: {
+    color: COLORS.error,
+    marginTop: 4,
+    fontSize: 13,
+  },
   disabled: { opacity: 0.5 },
 });
