@@ -112,7 +112,7 @@ export default function JoinToTeamScreen() {
 
     const e164 = `+7${values.digits}`;
     try {
-      await submitJobApplication({
+      const res = await submitJobApplication({
         fullName: values.fullName.trim(),
         email: values.email.trim(),
         phone: e164,
@@ -121,10 +121,12 @@ export default function JoinToTeamScreen() {
 
       Alert.alert(
         "Отправлено",
-        "Спасибо! Мы свяжемся с вами в ближайшее время."
+        res?.message || "Мы свяжемся с вами в ближайшее время."
       );
+
       router.push({ pathname: "/(tabs)/(main)" });
     } catch (err: any) {
+      console.error("❌ Ошибка при отправке заявки:", err);
       const message =
         err?.data?.message ||
         err?.error ||
