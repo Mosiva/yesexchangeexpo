@@ -7,7 +7,12 @@ import CurrencyFlag from "../CurrencyFlag";
 import FxLineChart from "../FxLineChart";
 type NbkRow = { ts: string; rate: number };
 
-type Row = { ts: string; buy: number; sell: number };
+type Row = {
+  ts: string;
+  buy: number;
+  sell: number;
+  change?: { buy: number; sell: number };
+};
 
 type Props = {
   rows?: Row[];
@@ -81,44 +86,109 @@ export default function ArchiveDetailCard({
           <Ionicons name="chevron-down" size={22} color="#111827" />
         </View>
         {/* значения */}
-        <View style={styles.fxRow}>
-          {source === "yes" ? (
-            <>
-              <View style={styles.sideBlock}>
-                <View
-                  style={[styles.dot, { backgroundColor: COLORS.orangeDot }]}
-                />
-                <Text style={styles.fxValue}>
-                  {latest ? latest.buy.toFixed(1) : "-"}
-                </Text>
-                <Text style={[styles.caption]}>Покупка</Text>
-              </View>
-
-              <View style={styles.sideBlock}>
-                <View
-                  style={[styles.dot, { backgroundColor: COLORS.blueDot }]}
-                />
-                <Text style={styles.fxValue}>
-                  {latest ? latest.sell.toFixed(1) : "-"}
-                </Text>
-                <Text style={[styles.caption]}>Продажа</Text>
-              </View>
-            </>
-          ) : (
+        {source === "yes" ? (
+          <View style={styles.fxRow}>
+            {/* --- Покупка --- */}
             <View
               style={[
                 styles.sideBlock,
-                { width: "100%", alignItems: "flex-start" },
+                { flexDirection: "row", alignItems: "center" },
               ]}
             >
-              <View style={[styles.dot, { backgroundColor: COLORS.green }]} />
-              <Text style={styles.fxValue}>
-                {latestNbkRates ? latestNbkRates.rate.toFixed(2) : "-"}
-              </Text>
-              <Text style={[styles.caption]}>Курс НБРК</Text>
+              <View
+                style={[
+                  styles.dot,
+                  { backgroundColor: COLORS.orangeDot, marginRight: 6 },
+                ]}
+              />
+              <View>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Text style={styles.fxValue}>
+                    {latest ? latest.buy.toFixed(1) : "-"}
+                  </Text>
+
+                  {latest?.change?.buy !== undefined &&
+                    latest.change.buy > 0 && (
+                      <Text style={[styles.delta, styles.deltaUp]}>
+                        {" "}
+                        +{latest.change.buy.toFixed(1)} ▲
+                      </Text>
+                    )}
+                  {latest?.change?.buy !== undefined &&
+                    latest.change.buy < 0 && (
+                      <Text style={[styles.delta, styles.deltaDown]}>
+                        {" "}
+                        {latest.change.buy.toFixed(1)} ▼
+                      </Text>
+                    )}
+                  {latest?.change?.buy === 0 && (
+                    <Text style={[styles.delta, { color: COLORS.sub }]}>
+                      {" "}
+                      0 ＝
+                    </Text>
+                  )}
+                </View>
+                <Text style={styles.caption}>Покупка</Text>
+              </View>
             </View>
-          )}
-        </View>
+
+            {/* --- Продажа --- */}
+            <View
+              style={[
+                styles.sideBlock,
+                { flexDirection: "row", alignItems: "center" },
+              ]}
+            >
+              <View
+                style={[
+                  styles.dot,
+                  { backgroundColor: COLORS.blueDot, marginRight: 6 },
+                ]}
+              />
+              <View>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Text style={styles.fxValue}>
+                    {latest ? latest.sell.toFixed(1) : "-"}
+                  </Text>
+
+                  {latest?.change?.sell !== undefined &&
+                    latest.change.sell > 0 && (
+                      <Text style={[styles.delta, styles.deltaUp]}>
+                        {" "}
+                        +{latest.change.sell.toFixed(1)} ▲
+                      </Text>
+                    )}
+                  {latest?.change?.sell !== undefined &&
+                    latest.change.sell < 0 && (
+                      <Text style={[styles.delta, styles.deltaDown]}>
+              
+                        {latest.change.sell.toFixed(1)} ▼
+                      </Text>
+                    )}
+                  {latest?.change?.sell === 0 && (
+                    <Text style={[styles.delta, { color: COLORS.sub }]}>
+                      0 ＝
+                    </Text>
+                  )}
+                </View>
+                <Text style={styles.caption}>Продажа</Text>
+              </View>
+            </View>
+          </View>
+        ) : (
+          <View
+            style={[
+              styles.sideBlock,
+              { width: "100%", alignItems: "flex-start" },
+            ]}
+          >
+            <View style={[styles.dot, { backgroundColor: COLORS.green }]} />
+            <Text style={styles.fxValue}>
+              {latestNbkRates ? latestNbkRates.rate.toFixed(2) : "-"}
+            </Text>
+            <Text style={styles.caption}>Курс НБРК</Text>
+          </View>
+        )}
       </Pressable>
 
       {/* Периоды всегда показываем */}
@@ -248,19 +318,7 @@ const styles = StyleSheet.create({
   },
   fxSubtitle: { fontSize: 14, color: COLORS.sub, marginTop: 2 },
 
-  fxRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 14,
-    paddingHorizontal: 4,
-  },
-  sideBlock: { width: "48%" },
   dot: { width: 10, height: 10, borderRadius: 5, marginBottom: 6 },
-  fxValue: { fontSize: 22, fontWeight: "800", color: COLORS.text },
-  delta: { marginLeft: 2, marginTop: 2, fontSize: 14, fontWeight: "700" },
-  deltaUp: { color: COLORS.green },
-  deltaDown: { color: COLORS.red },
-  caption: { marginTop: 4, color: COLORS.sub, fontSize: 14 },
 
   tableTitle: {
     marginTop: 18,
@@ -286,4 +344,37 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.border,
   },
   td: { color: COLORS.text, fontSize: 16 },
+  fxRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 14,
+    paddingHorizontal: 4,
+  },
+
+  sideBlock: {
+    width: "48%",
+    flexDirection: "column",
+    alignItems: "flex-start",
+  },
+
+  fxValue: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: COLORS.text,
+  },
+
+  delta: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginLeft: 4,
+  },
+
+  deltaUp: { color: COLORS.green },
+  deltaDown: { color: COLORS.red },
+
+  caption: {
+    marginTop: 4,
+    color: COLORS.sub,
+    fontSize: 14,
+  },
 });

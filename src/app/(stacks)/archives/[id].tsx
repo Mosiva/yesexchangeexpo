@@ -89,6 +89,7 @@ export default function ArchiveDetailScreen() {
     }),
     buy: Number(r.buy),
     sell: Number(r.sell),
+    change: { buy: Number(r.change?.buy), sell: Number(r.change?.sell) },
   }));
 
   const latest = exchangeRows.length
