@@ -124,7 +124,7 @@ export default function ArchiveDetailCard({
                   {latest?.change?.buy === 0 && (
                     <Text style={[styles.delta, { color: COLORS.sub }]}>
                       {" "}
-                      0 ＝
+                      {latest.change.buy.toFixed(1)} ＝
                     </Text>
                   )}
                 </View>
@@ -166,7 +166,7 @@ export default function ArchiveDetailCard({
                     )}
                   {latest?.change?.sell === 0 && (
                     <Text style={[styles.delta, { color: COLORS.sub }]}>
-                      0 ＝
+                      {latest.change.sell.toFixed(1)} ＝
                     </Text>
                   )}
                 </View>
