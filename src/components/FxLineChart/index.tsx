@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   Alert,
   Animated,
@@ -67,14 +67,6 @@ export default function FxLineChart({
   const screenWidth = Dimensions.get("window").width;
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
-  useEffect(() => {
-    fadeAnim.setValue(0);
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 400,
-      useNativeDriver: true,
-    }).start();
-  }, [rows, nbkRows, source]);
 
   const handleChangePeriod = (p: "day" | "week" | "month", force?: boolean) => {
     if (p === period && !force) return;
