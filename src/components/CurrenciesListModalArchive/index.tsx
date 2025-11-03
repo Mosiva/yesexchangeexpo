@@ -193,7 +193,8 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 14,
+    paddingVertical: 16,
+    marginVertical: 1,
     gap: 12,
   },
   radioOuter: {
