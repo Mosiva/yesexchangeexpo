@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
+  Animated,
   Modal,
   StyleSheet,
   Text,
@@ -35,7 +36,30 @@ export const DateRangePickerModal = ({
   const [fromDate, setFromDate] = useState<Date | null>(null);
   const [toDate, setToDate] = useState<Date | null>(null);
 
-  // 📅 выбор даты
+  // 🌀 анимации появления
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+
+  useEffect(() => {
+    if (isVisible) {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          friction: 6,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      fadeAnim.setValue(0);
+      slideAnim.setValue(50);
+    }
+  }, [isVisible]);
+
   const handleDateChange = (date: Date | null, type: string) => {
     if (!date) return;
 
@@ -51,10 +75,8 @@ export const DateRangePickerModal = ({
 
     if (type === "END_DATE") {
       if (!fromDate) return;
-
       const diffDays =
         Math.abs(date.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24);
-
       if (diffDays > 31) {
         Alert.alert(
           "Ограничение",
@@ -62,7 +84,6 @@ export const DateRangePickerModal = ({
         );
         return;
       }
-
       setToDate(date);
     } else {
       setFromDate(date);
@@ -95,13 +116,18 @@ export const DateRangePickerModal = ({
   return (
     <Modal
       visible={isVisible}
-      animationType="slide"
       transparent
+      animationType="none"
       onRequestClose={onClose}
     >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          {/* Заголовок + кнопка сброса */}
+      <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
+        <Animated.View
+          style={[
+            styles.modalContent,
+            { transform: [{ translateY: slideAnim }] },
+          ]}
+        >
+          {/* Заголовок + сброс */}
           <View style={styles.headerRow}>
             <Text style={styles.modalTitle}>Выберите период</Text>
             {(fromDate || toDate) && (
@@ -129,7 +155,7 @@ export const DateRangePickerModal = ({
             textStyle={{ color: "#111827", fontWeight: "600" }}
             {...(allowPastDates
               ? {
-                  // ✅ разрешаем только прошлые даты, но не сегодня
+                  // ❌ исключаем сегодня, разрешаем до вчера
                   maxDate: (() => {
                     const yesterday = new Date();
                     yesterday.setDate(yesterday.getDate() - 1);
@@ -144,7 +170,7 @@ export const DateRangePickerModal = ({
                   })(),
                 }
               : {
-                  // будущее — только начиная с завтрашнего дня
+                  // будущее — начиная с завтрашнего дня
                   minDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
                   maxDate: fromDate
                     ? new Date(fromDate.getTime() + 31 * 24 * 60 * 60 * 1000)
@@ -171,8 +197,8 @@ export const DateRangePickerModal = ({
               <Text style={styles.buttonText}>Применить</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </View>
+        </Animated.View>
+      </Animated.View>
     </Modal>
   );
 };
@@ -180,7 +206,7 @@ export const DateRangePickerModal = ({
 const ORANGE = "#F58220";
 
 const styles = StyleSheet.create({
-  modalContainer: {
+  overlay: {
     flex: 1,
     justifyContent: "flex-end",
     backgroundColor: "rgba(0,0,0,0.4)",

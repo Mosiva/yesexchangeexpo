@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Dimensions,
   Pressable,
@@ -164,8 +165,18 @@ export default function FxLineChart({
               <Text style={styles.resetText}>Сбросить</Text>
             </Pressable>
             <Pressable
-              style={[styles.calendarBtn, { marginLeft: 8 }]}
-              onPress={() => setCalendarVisible(true)}
+              style={styles.calendarBtn}
+              onPress={() => {
+                if (selectedRange) {
+                  Alert.alert(
+                    "Диапазон уже выбран",
+                    "Чтобы выбрать новые даты, сначала сбросьте текущий период.",
+                    [{ text: "Вернуться", style: "cancel" }]
+                  );
+                  return;
+                }
+                setCalendarVisible(true);
+              }}
             >
               <Ionicons name="calendar-outline" size={22} color={COLORS.text} />
             </Pressable>
