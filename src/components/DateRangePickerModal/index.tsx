@@ -28,13 +28,25 @@ export const DateRangePickerModal = ({
 
   const [fromDate, setFromDate] = useState<Date | null>(null);
   const [toDate, setToDate] = useState<Date | null>(null);
-
   const handleDateChange = (date: Date | null, type: string) => {
+    if (!date) return;
+
     if (type === "END_DATE") {
+      if (fromDate) {
+        const diffDays =
+          Math.abs(date.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24);
+
+        if (diffDays > 31) {
+          // 🔒 Ограничиваем максимум 31 день
+          alert("Вы можете выбрать период не более 1 месяца");
+          return;
+        }
+      }
       setToDate(date);
     } else {
+      // Новый старт диапазона — сбрасываем конец
       setFromDate(date);
-      setToDate(null); // сбрасываем старый конец диапазона
+      setToDate(null);
     }
   };
 
