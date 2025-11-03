@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
-import { DateRangePickerModal } from "../DateRangePickerModal"; // ✅ подключён календарь
+import { DateRangePickerModal } from "../DateRangePickerModal";
 
 type Row = { ts: string; buy: number; sell: number };
 type NbkRow = { ts: string; rate: number };
@@ -50,7 +50,6 @@ export default function FxLineChart({
     label: string;
   } | null>(null);
 
-  // 📅 состояния календаря
   const [isCalendarVisible, setCalendarVisible] = useState(false);
   const [selectedRange, setSelectedRange] = useState<{
     fromDisplay: string;
@@ -72,7 +71,6 @@ export default function FxLineChart({
   }, [rows, nbkRows, source]);
 
   const handleChangePeriod = (p: "day" | "week" | "month", force?: boolean) => {
-    // 🧠 Не блокируем повторный вызов, если явно нужно "форсировать"
     if (p === period && !force) return;
     setPeriod(p);
     setSelectedPoint(null);
@@ -88,15 +86,14 @@ export default function FxLineChart({
   }) => {
     setSelectedRange(range);
     setPeriod("day");
-    onChangePeriod?.("day", { fromIso: range.fromIso, toIso: range.toIso });
+    onChangePeriod?.("day", range);
   };
 
   const handleResetRange = () => {
     setSelectedRange(null);
-    // ⬇️ форсируем "day", чтобы обновился запрос
     handleChangePeriod("day", true);
   };
-  // --- Данные ---
+
   const sortedRows = useMemo(() => {
     if (source === "nbrk" && nbkRows?.length) {
       return [...nbkRows].sort(
@@ -150,13 +147,13 @@ export default function FxLineChart({
           },
         ];
 
-  const legend = source === "nbrk" ? ["Курс НБКР"] : ["Покупка", "Продажа"];
+  const legend = source === "nbrk" ? ["Курс НБРК"] : ["Покупка", "Продажа"];
 
   return (
     <View>
-      {/* --- Переключатели периода / Выбранный диапазон --- */}
+      {/* --- Периоды / диапазон --- */}
       <View style={styles.segmentRow}>
-        {selectedRange && source === "yes" ? (
+        {selectedRange ? (
           <>
             <View style={{ flex: 1 }}>
               <Text style={styles.rangeTextInline}>
@@ -193,18 +190,13 @@ export default function FxLineChart({
               />
             </View>
 
-            {source === "yes" && (
-              <Pressable
-                style={styles.calendarBtn}
-                onPress={() => setCalendarVisible(true)}
-              >
-                <Ionicons
-                  name="calendar-outline"
-                  size={22}
-                  color={COLORS.text}
-                />
-              </Pressable>
-            )}
+            {/* 📅 календарь теперь для всех источников */}
+            <Pressable
+              style={styles.calendarBtn}
+              onPress={() => setCalendarVisible(true)}
+            >
+              <Ionicons name="calendar-outline" size={22} color={COLORS.text} />
+            </Pressable>
           </>
         )}
       </View>
@@ -263,20 +255,18 @@ export default function FxLineChart({
         </Animated.View>
       )}
 
-      {/* --- Модалка выбора диапазона (только для YES) --- */}
-      {source === "yes" && (
-        <DateRangePickerModal
-          isVisible={isCalendarVisible}
-          onClose={() => setCalendarVisible(false)}
-          onConfirm={handleConfirmRange}
-          allowPastDates
-        />
-      )}
+      {/* --- 📅 Календарь (теперь общий) --- */}
+      <DateRangePickerModal
+        isVisible={isCalendarVisible}
+        onClose={() => setCalendarVisible(false)}
+        onConfirm={handleConfirmRange}
+        allowPastDates={true}
+      />
     </View>
   );
 }
 
-/* --- Кнопки сегментов --- */
+/* --- Компонент сегмента --- */
 function Segment({
   label,
   active,
@@ -356,9 +346,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   segment: {
-    flex: 1, // 👈 делает каждую кнопку равной по ширине
+    flex: 1,
     height: 44,
-    marginHorizontal: 3, // небольшой отступ между кнопками
+    marginHorizontal: 3,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",

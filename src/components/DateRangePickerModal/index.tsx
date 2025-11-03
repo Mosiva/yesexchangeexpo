@@ -1,7 +1,13 @@
 import React, { useState } from "react";
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
 import { useTranslation } from "react-i18next";
+import {
+  Alert,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import CalendarPicker from "react-native-calendar-picker";
 
 interface DateRangePickerModalProps {
@@ -28,23 +34,37 @@ export const DateRangePickerModal = ({
 
   const [fromDate, setFromDate] = useState<Date | null>(null);
   const [toDate, setToDate] = useState<Date | null>(null);
+
+  // 📅 выбор даты
   const handleDateChange = (date: Date | null, type: string) => {
     if (!date) return;
 
-    if (type === "END_DATE") {
-      if (fromDate) {
-        const diffDays =
-          Math.abs(date.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24);
+    // 🔁 если нажали ту же дату — сбрасываем всё
+    if (
+      (fromDate && date.toDateString() === fromDate.toDateString()) ||
+      (toDate && date.toDateString() === toDate.toDateString())
+    ) {
+      setFromDate(null);
+      setToDate(null);
+      return;
+    }
 
-        if (diffDays > 31) {
-          // 🔒 Ограничиваем максимум 31 день
-          alert("Вы можете выбрать период не более 1 месяца");
-          return;
-        }
+    if (type === "END_DATE") {
+      if (!fromDate) return;
+
+      const diffDays =
+        Math.abs(date.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24);
+
+      if (diffDays > 31) {
+        Alert.alert(
+          "Ограничение",
+          "Вы можете выбрать период не более 1 месяца"
+        );
+        return;
       }
+
       setToDate(date);
     } else {
-      // Новый старт диапазона — сбрасываем конец
       setFromDate(date);
       setToDate(null);
     }
@@ -58,16 +78,18 @@ export const DateRangePickerModal = ({
         .toString()
         .padStart(2, "0")}.${d.getFullYear()}`;
 
-    const fromIso = fromDate.toISOString();
-    const toIso = toDate.toISOString();
-
     onConfirm({
-      fromIso,
-      toIso,
+      fromIso: fromDate.toISOString(),
+      toIso: toDate.toISOString(),
       fromDisplay: format(fromDate),
       toDisplay: format(toDate),
     });
     onClose();
+  };
+
+  const handleReset = () => {
+    setFromDate(null);
+    setToDate(null);
   };
 
   return (
@@ -79,10 +101,18 @@ export const DateRangePickerModal = ({
     >
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Выберите период</Text>
+          {/* Заголовок + кнопка сброса */}
+          <View style={styles.headerRow}>
+            <Text style={styles.modalTitle}>Выберите период</Text>
+            {(fromDate || toDate) && (
+              <TouchableOpacity onPress={handleReset}>
+                <Text style={styles.resetText}>Сбросить</Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
           <CalendarPicker
-            allowRangeSelection={true}
+            allowRangeSelection
             onDateChange={handleDateChange}
             selectedStartDate={fromDate || undefined}
             selectedEndDate={toDate || undefined}
@@ -90,18 +120,39 @@ export const DateRangePickerModal = ({
             months={months}
             previousTitle={t("datepicker.previous")}
             nextTitle={t("datepicker.next")}
-            todayBackgroundColor="#F3F4F6" // фон сегодняшнего дня
-            selectedDayColor="#F58220" // 🔥 основной цвет выделенного дня
-            selectedDayTextColor="#FFFFFF" // цвет текста внутри выделенного дня
-            selectedRangeStartStyle={{ backgroundColor: "#F58220" }} // начало диапазона
-            selectedRangeEndStyle={{ backgroundColor: "#F58220" }} // конец диапазона
-            selectedRangeStyle={{ backgroundColor: "#FBD38D" }} // фон внутри диапазона (между start и end)
-            textStyle={{ color: "#111827", fontWeight: "600" }} // цвет текста всех дат
+            todayBackgroundColor="#F3F4F6"
+            selectedDayColor="#F58220"
+            selectedDayTextColor="#FFFFFF"
+            selectedRangeStartStyle={{ backgroundColor: "#F58220" }}
+            selectedRangeEndStyle={{ backgroundColor: "#F58220" }}
+            selectedRangeStyle={{ backgroundColor: "#FBD38D" }}
+            textStyle={{ color: "#111827", fontWeight: "600" }}
             {...(allowPastDates
-              ? { maxDate: new Date() }
-              : { minDate: new Date(Date.now() + 24 * 60 * 60 * 1000) })}
+              ? {
+                  // ✅ разрешаем только прошлые даты, но не сегодня
+                  maxDate: (() => {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    return fromDate
+                      ? new Date(
+                          Math.min(
+                            yesterday.getTime(),
+                            fromDate.getTime() + 31 * 24 * 60 * 60 * 1000
+                          )
+                        )
+                      : yesterday;
+                  })(),
+                }
+              : {
+                  // будущее — только начиная с завтрашнего дня
+                  minDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                  maxDate: fromDate
+                    ? new Date(fromDate.getTime() + 31 * 24 * 60 * 60 * 1000)
+                    : undefined,
+                })}
           />
 
+          {/* Кнопки */}
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.button, styles.cancelButton]}
@@ -140,11 +191,21 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
   modalTitle: {
     fontSize: 18,
     fontWeight: "700",
     color: "#111827",
-    marginBottom: 16,
+  },
+  resetText: {
+    color: ORANGE,
+    fontSize: 15,
+    fontWeight: "700",
   },
   button: {
     backgroundColor: ORANGE,
