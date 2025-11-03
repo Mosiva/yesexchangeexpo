@@ -67,7 +67,6 @@ export default function FxLineChart({
   const screenWidth = Dimensions.get("window").width;
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
-
   const handleChangePeriod = (p: "day" | "week" | "month", force?: boolean) => {
     if (p === period && !force) return;
     setPeriod(p);
@@ -114,15 +113,24 @@ export default function FxLineChart({
   const labels = useMemo(() => {
     return filtered.map((r) => {
       if (source === "nbrk") {
+        // НБРК всегда в ISO, просто день.месяц
         const [year, month, day] = r.ts.split("T")[0].split("-");
         return `${day}.${month}`;
       }
+
       const [datePart, timePart] = r.ts.split(" ");
-      if (period === "day") return timePart;
       const [d, m] = datePart.split(".");
+
+      // Если выбран диапазон — всегда дата
+      if (selectedRange) return `${d}.${m}`;
+
+      // Если период день — часы (для ≤ 24 точек)
+      if (period === "day" && sortedRows.length <= 24) return timePart;
+
+      // Неделя или месяц — день.месяц
       return `${d}.${m}`;
     });
-  }, [filtered, period, source]);
+  }, [filtered, period, source, selectedRange, sortedRows.length]);
 
   const datasets =
     source === "nbrk"
