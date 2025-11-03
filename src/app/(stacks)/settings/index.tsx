@@ -16,7 +16,7 @@ const ORANGE = "#F58220";
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const version = "1.0.1";
+  const version = "1.0.0";
 
   const onShare = async () => {
     try {
