@@ -10,7 +10,10 @@ import {
   View,
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
-import { DateRangePickerModal } from "../DateRangePickerModal";
+import {
+  DateRangePickerModal,
+  DateRangePickerModalRef,
+} from "../DateRangePickerModal";
 
 type Row = { ts: string; buy: number; sell: number };
 type NbkRow = { ts: string; rate: number };
@@ -59,6 +62,8 @@ export default function FxLineChart({
     toIso: string;
   } | null>(null);
 
+  const modalRef = useRef<DateRangePickerModalRef>(null);
+
   const screenWidth = Dimensions.get("window").width;
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
@@ -93,6 +98,7 @@ export default function FxLineChart({
   const handleResetRange = () => {
     setSelectedRange(null);
     handleChangePeriod("day", true);
+    modalRef.current?.reset(); // 👈 сбрасываем календарь
   };
 
   const sortedRows = useMemo(() => {
@@ -167,15 +173,11 @@ export default function FxLineChart({
             <Pressable
               style={styles.calendarBtn}
               onPress={() => {
-                if (selectedRange) {
-                  Alert.alert(
-                    "Диапазон уже выбран",
-                    "Чтобы выбрать новые даты, сначала сбросьте текущий период.",
-                    [{ text: "Вернуться", style: "cancel" }]
-                  );
-                  return;
-                }
-                setCalendarVisible(true);
+                Alert.alert(
+                  "Диапазон уже выбран",
+                  "Чтобы выбрать новые даты, сначала сбросьте текущий период.",
+                  [{ text: "Вернуться", style: "cancel" }]
+                );
               }}
             >
               <Ionicons name="calendar-outline" size={22} color={COLORS.text} />
@@ -201,7 +203,6 @@ export default function FxLineChart({
               />
             </View>
 
-            {/* 📅 календарь теперь для всех источников */}
             <Pressable
               style={styles.calendarBtn}
               onPress={() => setCalendarVisible(true)}
@@ -252,7 +253,7 @@ export default function FxLineChart({
         )}
       </Animated.View>
 
-      {/* --- Тултип --- */}
+      {/* --- Tooltip --- */}
       {selectedPoint && (
         <Animated.View
           style={[
@@ -266,8 +267,9 @@ export default function FxLineChart({
         </Animated.View>
       )}
 
-      {/* --- 📅 Календарь (теперь общий) --- */}
+      {/* --- Модалка календаря --- */}
       <DateRangePickerModal
+        ref={modalRef}
         isVisible={isCalendarVisible}
         onClose={() => setCalendarVisible(false)}
         onConfirm={handleConfirmRange}
@@ -277,7 +279,6 @@ export default function FxLineChart({
   );
 }
 
-/* --- Компонент сегмента --- */
 function Segment({
   label,
   active,
@@ -307,24 +308,10 @@ function Segment({
   );
 }
 
-/* --- Стили --- */
 const styles = StyleSheet.create({
-  rangeTextInline: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: COLORS.text,
-    marginLeft: 8,
-  },
-  resetText: {
-    color: COLORS.orange,
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  chart: {
-    marginHorizontal: 16,
-    marginTop: 8,
-    borderRadius: 12,
-  },
+  rangeTextInline: { fontSize: 15, fontWeight: "700", color: COLORS.text },
+  resetText: { color: COLORS.orange, fontSize: 14, fontWeight: "700" },
+  chart: { marginHorizontal: 16, marginTop: 8, borderRadius: 12 },
   tooltip: {
     position: "absolute",
     backgroundColor: "#111827",
@@ -365,11 +352,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: COLORS.pillBg,
   },
-  segmentText: {
-    color: COLORS.text,
-    fontSize: 16,
-    fontWeight: "700",
-  },
+  segmentText: { color: COLORS.text, fontSize: 16, fontWeight: "700" },
   calendarBtn: {
     width: 44,
     height: 44,

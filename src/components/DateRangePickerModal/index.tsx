@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
@@ -11,7 +17,11 @@ import {
 } from "react-native";
 import CalendarPicker from "react-native-calendar-picker";
 
-interface DateRangePickerModalProps {
+export interface DateRangePickerModalRef {
+  reset: () => void;
+}
+
+interface Props {
   isVisible: boolean;
   onClose: () => void;
   onConfirm: (range: {
@@ -23,185 +33,195 @@ interface DateRangePickerModalProps {
   allowPastDates?: boolean;
 }
 
-export const DateRangePickerModal = ({
-  isVisible,
-  onClose,
-  onConfirm,
-  allowPastDates = false,
-}: DateRangePickerModalProps) => {
-  const { t } = useTranslation();
-  const months = t("datepicker.months", { returnObjects: true }) as string[];
-  const days = t("datepicker.days", { returnObjects: true }) as string[];
+export const DateRangePickerModal = forwardRef<DateRangePickerModalRef, Props>(
+  ({ isVisible, onClose, onConfirm, allowPastDates = false }, ref) => {
+    const { t } = useTranslation();
+    const months = t("datepicker.months", { returnObjects: true }) as string[];
+    const days = t("datepicker.days", { returnObjects: true }) as string[];
 
-  const [fromDate, setFromDate] = useState<Date | null>(null);
-  const [toDate, setToDate] = useState<Date | null>(null);
+    const [fromDate, setFromDate] = useState<Date | null>(null);
+    const [toDate, setToDate] = useState<Date | null>(null);
 
-  // 🌀 анимации появления
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
+    // 👉 публичный reset(), вызывается из FxLineChart
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        setFromDate(null);
+        setToDate(null);
+      },
+    }));
 
-  useEffect(() => {
-    if (isVisible) {
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.spring(slideAnim, {
-          toValue: 0,
-          friction: 6,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      fadeAnim.setValue(0);
-      slideAnim.setValue(50);
-    }
-  }, [isVisible]);
+    // 🌀 Анимации появления
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+    const slideAnim = useRef(new Animated.Value(50)).current;
 
-  const handleDateChange = (date: Date | null, type: string) => {
-    if (!date) return;
+    useEffect(() => {
+      if (isVisible) {
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.spring(slideAnim, {
+            toValue: 0,
+            friction: 6,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      } else {
+        fadeAnim.setValue(0);
+        slideAnim.setValue(50);
+      }
+    }, [isVisible]);
 
-    // 🔁 если нажали ту же дату — сбрасываем всё
-    if (
-      (fromDate && date.toDateString() === fromDate.toDateString()) ||
-      (toDate && date.toDateString() === toDate.toDateString())
-    ) {
-      setFromDate(null);
-      setToDate(null);
-      return;
-    }
+    // 🗓️ обработка выбора даты
+    const handleDateChange = (date: Date | null, type: string) => {
+      if (!date) return;
 
-    if (type === "END_DATE") {
-      if (!fromDate) return;
-      const diffDays =
-        Math.abs(date.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24);
-      if (diffDays > 31) {
-        Alert.alert(
-          "Ограничение",
-          "Вы можете выбрать период не более 1 месяца"
-        );
+      // если пользователь нажал ту же дату — сбрасываем
+      if (
+        (fromDate && date.toDateString() === fromDate.toDateString()) ||
+        (toDate && date.toDateString() === toDate.toDateString())
+      ) {
+        setFromDate(null);
+        setToDate(null);
         return;
       }
-      setToDate(date);
-    } else {
-      setFromDate(date);
+
+      if (type === "END_DATE") {
+        if (!fromDate) return;
+
+        const diffDays =
+          Math.abs(date.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24);
+        if (diffDays > 31) {
+          Alert.alert(
+            "Ограничение",
+            "Вы можете выбрать период не более 1 месяца"
+          );
+          return;
+        }
+        setToDate(date);
+      } else {
+        setFromDate(date);
+        setToDate(null);
+      }
+    };
+
+    // ✅ Применить выбранный диапазон
+    const handleConfirm = () => {
+      if (!fromDate || !toDate) return;
+
+      const format = (d: Date) =>
+        `${d.getDate().toString().padStart(2, "0")}.${(d.getMonth() + 1)
+          .toString()
+          .padStart(2, "0")}.${d.getFullYear()}`;
+
+      onConfirm({
+        fromIso: fromDate.toISOString(),
+        toIso: toDate.toISOString(),
+        fromDisplay: format(fromDate),
+        toDisplay: format(toDate),
+      });
+      onClose();
+    };
+
+    // 🔄 Локальный сброс (только внутри календаря)
+    const handleReset = () => {
+      setFromDate(null);
       setToDate(null);
-    }
-  };
+    };
 
-  const handleConfirm = () => {
-    if (!fromDate || !toDate) return;
+    return (
+      <Modal
+        visible={isVisible}
+        transparent
+        animationType="none"
+        onRequestClose={onClose}
+      >
+        <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
+          <Animated.View
+            style={[
+              styles.modalContent,
+              { transform: [{ translateY: slideAnim }] },
+            ]}
+          >
+            {/* --- Заголовок --- */}
+            <View style={styles.headerRow}>
+              <Text style={styles.modalTitle}>Выберите период</Text>
+              {(fromDate || toDate) && (
+                <TouchableOpacity onPress={handleReset}>
+                  <Text style={styles.resetText}>Сбросить</Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
-    const format = (d: Date) =>
-      `${d.getDate().toString().padStart(2, "0")}.${(d.getMonth() + 1)
-        .toString()
-        .padStart(2, "0")}.${d.getFullYear()}`;
-
-    onConfirm({
-      fromIso: fromDate.toISOString(),
-      toIso: toDate.toISOString(),
-      fromDisplay: format(fromDate),
-      toDisplay: format(toDate),
-    });
-    onClose();
-  };
-
-  const handleReset = () => {
-    setFromDate(null);
-    setToDate(null);
-  };
-
-  return (
-    <Modal
-      visible={isVisible}
-      transparent
-      animationType="none"
-      onRequestClose={onClose}
-    >
-      <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
-        <Animated.View
-          style={[
-            styles.modalContent,
-            { transform: [{ translateY: slideAnim }] },
-          ]}
-        >
-          {/* Заголовок + сброс */}
-          <View style={styles.headerRow}>
-            <Text style={styles.modalTitle}>Выберите период</Text>
-            {(fromDate || toDate) && (
-              <TouchableOpacity onPress={handleReset}>
-                <Text style={styles.resetText}>Сбросить</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <CalendarPicker
-            allowRangeSelection
-            onDateChange={handleDateChange}
-            selectedStartDate={fromDate || undefined}
-            selectedEndDate={toDate || undefined}
-            weekdays={days}
-            months={months}
-            previousTitle={t("datepicker.previous")}
-            nextTitle={t("datepicker.next")}
-            todayBackgroundColor="#F3F4F6"
-            selectedDayColor="#F58220"
-            selectedDayTextColor="#FFFFFF"
-            selectedRangeStartStyle={{ backgroundColor: "#F58220" }}
-            selectedRangeEndStyle={{ backgroundColor: "#F58220" }}
-            selectedRangeStyle={{ backgroundColor: "#FBD38D" }}
-            textStyle={{ color: "#111827", fontWeight: "600" }}
-            {...(allowPastDates
-              ? {
-                  // ❌ исключаем сегодня, разрешаем до вчера
-                  maxDate: (() => {
-                    const yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    return fromDate
-                      ? new Date(
-                          Math.min(
-                            yesterday.getTime(),
-                            fromDate.getTime() + 31 * 24 * 60 * 60 * 1000
+            {/* --- Календарь --- */}
+            <CalendarPicker
+              allowRangeSelection
+              onDateChange={handleDateChange}
+              selectedStartDate={fromDate || undefined}
+              selectedEndDate={toDate || undefined}
+              weekdays={days}
+              months={months}
+              previousTitle={t("datepicker.previous")}
+              nextTitle={t("datepicker.next")}
+              todayBackgroundColor="#F3F4F6"
+              selectedDayColor="#F58220"
+              selectedDayTextColor="#FFFFFF"
+              selectedRangeStartStyle={{ backgroundColor: "#F58220" }}
+              selectedRangeEndStyle={{ backgroundColor: "#F58220" }}
+              selectedRangeStyle={{ backgroundColor: "#FBD38D" }}
+              textStyle={{ color: "#111827", fontWeight: "600" }}
+              {...(allowPastDates
+                ? {
+                    // ❌ исключаем сегодня, можно выбирать до вчерашнего
+                    maxDate: (() => {
+                      const yesterday = new Date();
+                      yesterday.setDate(yesterday.getDate() - 1);
+                      return fromDate
+                        ? new Date(
+                            Math.min(
+                              yesterday.getTime(),
+                              fromDate.getTime() + 31 * 24 * 60 * 60 * 1000
+                            )
                           )
-                        )
-                      : yesterday;
-                  })(),
-                }
-              : {
-                  // будущее — начиная с завтрашнего дня
-                  minDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
-                  maxDate: fromDate
-                    ? new Date(fromDate.getTime() + 31 * 24 * 60 * 60 * 1000)
-                    : undefined,
-                })}
-          />
+                        : yesterday;
+                    })(),
+                  }
+                : {
+                    // ✅ выбор только будущих дат
+                    minDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                    maxDate: fromDate
+                      ? new Date(fromDate.getTime() + 31 * 24 * 60 * 60 * 1000)
+                      : undefined,
+                  })}
+            />
 
-          {/* Кнопки */}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, styles.cancelButton]}
-              onPress={onClose}
-            >
-              <Text style={[styles.buttonText, styles.cancelButtonText]}>
-                Отмена
-              </Text>
-            </TouchableOpacity>
+            {/* --- Кнопки --- */}
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[styles.button, styles.cancelButton]}
+                onPress={onClose}
+              >
+                <Text style={[styles.buttonText, styles.cancelButtonText]}>
+                  Отмена
+                </Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.button, { flex: 1 }]}
-              onPress={handleConfirm}
-              disabled={!fromDate || !toDate}
-            >
-              <Text style={styles.buttonText}>Применить</Text>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity
+                style={[styles.button, { flex: 1 }]}
+                onPress={handleConfirm}
+                disabled={!fromDate || !toDate}
+              >
+                <Text style={styles.buttonText}>Применить</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
         </Animated.View>
-      </Animated.View>
-    </Modal>
-  );
-};
+      </Modal>
+    );
+  }
+);
 
 const ORANGE = "#F58220";
 
@@ -258,3 +278,4 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
 });
+DateRangePickerModal.displayName = "DateRangePickerModal";

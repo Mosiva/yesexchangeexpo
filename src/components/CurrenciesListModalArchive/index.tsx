@@ -53,7 +53,10 @@ export default function CurrenciesListModalArchive({
   }, [items, query]);
 
   const choose = (code: string) => setSelected(new Set([code]));
-  const handleConfirm = () => onConfirm(Array.from(selected));
+  const handleConfirm = () => {
+    onConfirm(Array.from(selected));
+    setQuery(""); // ✅ очищаем поисковую строку после подтверждения
+  };
 
   const renderItem = ({ item }: { item: Currency }) => {
     const on = selected.has(item.code);
@@ -89,6 +92,7 @@ export default function CurrenciesListModalArchive({
       animationOut="slideOutDown"
       animationInTiming={250}
       animationOutTiming={250}
+      avoidKeyboard
     >
       <View style={styles.overlay}>
         <View style={styles.sheet}>
