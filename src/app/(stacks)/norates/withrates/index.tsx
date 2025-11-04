@@ -85,6 +85,7 @@ export default function ReserveWithRateScreen() {
 
   /** ====== Mode & Currency ====== */
   const [mode, setMode] = useState<"sell" | "buy">(modeParam ?? "sell");
+
   const [toCode, setToCode] = useState<string>("USD");
   const [rateParam, setRateParam] = useState<number>(Number(rate) || 0);
   const initializedRef = useRef(false);
@@ -362,6 +363,22 @@ export default function ReserveWithRateScreen() {
   };
   const { text: displayValue } = formatCurrencyDisplay(fmt(footerSum), to.code);
 
+  const discountValue = useMemo(() => {
+    if (isGuest) return 0;
+
+    const kztAmount = computed.from; // сумма в тенге
+
+    if (mode === "buy") {
+      // Скидка 5% — уменьшаем сумму
+      return kztAmount * 0.05;
+    } else if (mode === "sell") {
+      // Наоборот — добавляем 5%
+      return -kztAmount * 0.05;
+    }
+
+    return 0;
+  }, [isGuest, computed.from, mode]);
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -460,6 +477,26 @@ export default function ReserveWithRateScreen() {
             </Text>
           )}
         </View>
+
+        {/* 💰 Скидка для авторизованных */}
+        {!isGuest && (
+          <View style={styles.discountRow}>
+            <Text style={styles.discountLabel}>
+              {mode === "buy" ? "С 5% скидкой:" : "С наценкой 5%:"}
+            </Text>
+            <Text
+              style={[
+                styles.discountValue,
+                { color: mode === "buy" ? "#16A34A" : "#16A34A" }, // зелёная или красная
+              ]}
+            >
+              {(computed.from - discountValue).toLocaleString("ru-RU", {
+                maximumFractionDigits: 2,
+              })}{" "}
+              ₸
+            </Text>
+          </View>
+        )}
 
         {/* Guest phone */}
         {isGuest && (
@@ -761,4 +798,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   error: { color: "#DC2626", marginTop: 6, fontSize: 13 },
+  discountRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 8,
+    backgroundColor: "#F9FAFB",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+  },
+  discountLabel: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
+  discountValue: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#16A34A", // зелёный для акцента
+  },
 });
