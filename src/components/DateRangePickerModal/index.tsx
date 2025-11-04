@@ -167,31 +167,52 @@ export const DateRangePickerModal = forwardRef<DateRangePickerModalRef, Props>(
               months={months}
               previousTitle={t("datepicker.previous")}
               nextTitle={t("datepicker.next")}
-              todayBackgroundColor="#F3F4F6"
+              todayBackgroundColor="#F3F4F5"
               selectedDayColor="#F58220"
               selectedDayTextColor="#FFFFFF"
               selectedRangeStartStyle={{ backgroundColor: "#F58220" }}
               selectedRangeEndStyle={{ backgroundColor: "#F58220" }}
               selectedRangeStyle={{ backgroundColor: "#FBD38D" }}
-              textStyle={{ color: "#111827", fontWeight: "600" }}
               {...(allowPastDates
                 ? {
-                    // ❌ исключаем сегодня, можно выбирать до вчерашнего
+                    // ✅ можно выбирать прошлое и сегодня, но "сегодня" нельзя как начало диапазона
+                    minDate: undefined,
                     maxDate: (() => {
-                      const yesterday = new Date();
-                      yesterday.setDate(yesterday.getDate() - 1);
+                      const today = new Date();
+                      today.setHours(23, 59, 59, 999);
                       return fromDate
                         ? new Date(
                             Math.min(
-                              yesterday.getTime(),
+                              today.getTime(),
                               fromDate.getTime() + 31 * 24 * 60 * 60 * 1000
                             )
                           )
-                        : yesterday;
+                        : today;
+                    })(),
+
+                    // ❌ запрещаем выбрать "сегодня" как fromDate, но разрешаем как toDate
+                    disabledDates: (date: Date) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      // запрещаем только, если начало диапазона не выбрано
+                      return !fromDate && date >= today;
+                    },
+
+                    // 🎨 стиль для заблокированных дат (например, сегодня)
+                    customDatesStyles: (() => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return [
+                        {
+                          date: today,
+                          style: { backgroundColor: "#E5E7EB" }, // светло-серый круг
+                          textStyle: { color: "#111827" }, // чёрный текст
+                        },
+                      ];
                     })(),
                   }
                 : {
-                    // ✅ выбор только будущих дат
+                    // стандарт — будущее
                     minDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
                     maxDate: fromDate
                       ? new Date(fromDate.getTime() + 31 * 24 * 60 * 60 * 1000)
