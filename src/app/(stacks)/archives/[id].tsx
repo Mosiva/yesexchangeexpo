@@ -57,6 +57,7 @@ export default function ArchiveDetailScreen() {
     from: range.from,
     to: range.to,
     currencyCodes: [currentCode],
+    limit: 31,
   });
 
   // ✅ Автоматический refetch при изменении периода, диапазона или валюты
@@ -105,6 +106,7 @@ export default function ArchiveDetailScreen() {
     from: range.from,
     to: range.to,
     currencyCode: currentCode,
+
   });
 
   const nbkRatesItem = Array.isArray(rawNbkRatesItem) ? rawNbkRatesItem : [];
