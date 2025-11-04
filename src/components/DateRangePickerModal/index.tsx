@@ -98,6 +98,8 @@ export const DateRangePickerModal = forwardRef<DateRangePickerModalRef, Props>(
             "Ограничение",
             "Вы можете выбрать период не более 1 месяца"
           );
+          setFromDate(null);
+          setToDate(null);
           return;
         }
         setToDate(date);
