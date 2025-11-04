@@ -56,10 +56,7 @@ export default function ReserveHistoryScreen() {
     return rawBookings.data.map((b: any) => {
       const operationType = b.operationType ?? "—";
 
-      const currency =
-        operationType === "buy"
-          ? b.toExchangeRate?.currency?.code ?? "KZT"
-          : b.fromExchangeRate?.currency?.code ?? "KZT";
+      const currency = b.fromExchangeRate?.currency?.code;
 
       return {
         id: Number(b.id),
