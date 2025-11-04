@@ -205,8 +205,7 @@ export const DateRangePickerModal = forwardRef<DateRangePickerModalRef, Props>(
                       return [
                         {
                           date: today,
-                          style: { backgroundColor: "#E5E7EB" }, // светло-серый круг
-                          textStyle: { color: "#111827" }, // чёрный текст
+                          style: { backgroundColor: "#111827" }, // светло-серый круг
                         },
                       ];
                     })(),
@@ -232,11 +231,22 @@ export const DateRangePickerModal = forwardRef<DateRangePickerModalRef, Props>(
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.button, { flex: 1 }]}
+                style={[
+                  styles.button,
+                  { flex: 1 },
+                  (!fromDate || !toDate) && styles.buttonDisabled, // 👈 добавлено условие
+                ]}
                 onPress={handleConfirm}
                 disabled={!fromDate || !toDate}
               >
-                <Text style={styles.buttonText}>Применить</Text>
+                <Text
+                  style={[
+                    styles.buttonText,
+                    (!fromDate || !toDate) && styles.buttonTextDisabled, // 👈 добавлено условие
+                  ]}
+                >
+                  Применить
+                </Text>
               </TouchableOpacity>
             </View>
           </Animated.View>
@@ -299,6 +309,13 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     color: "#111827",
+  },
+
+  buttonDisabled: {
+    backgroundColor: "#E5E7EB", // светло-серый
+  },
+  buttonTextDisabled: {
+    color: "#9CA3AF", // серый текст
   },
 });
 DateRangePickerModal.displayName = "DateRangePickerModal";
