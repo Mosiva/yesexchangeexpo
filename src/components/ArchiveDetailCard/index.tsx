@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import CurrencyFlag from "../CurrencyFlag";
 
 import FxLineChart from "../FxLineChart";
-type NbkRow = { ts: string; rate: number };
+type NbkRow = { ts: string; rate: number; changePercent: number };
 
 type Row = {
   ts: string;
@@ -191,8 +191,26 @@ export default function ArchiveDetailCard({
               <View>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <Text style={styles.fxValue}>
-                    {latestNbkRates ? latestNbkRates.rate.toFixed(2) : "-"}
+                    {latestNbkRates ? latestNbkRates.rate : "-"}
                   </Text>
+                  {latestNbkRates?.changePercent !== undefined &&
+                    latestNbkRates.changePercent > 0 && (
+                      <Text style={[styles.delta, styles.deltaUp]}>
+                        {" "}
+                        +{latestNbkRates.changePercent} ▲
+                      </Text>
+                    )}
+                  {latestNbkRates?.changePercent !== undefined &&
+                    latestNbkRates.changePercent < 0 && (
+                      <Text style={[styles.delta, styles.deltaDown]}>
+                        {latestNbkRates.changePercent} ▼
+                      </Text>
+                    )}
+                  {latestNbkRates?.changePercent === 0 && (
+                    <Text style={[styles.delta, { color: COLORS.sub }]}>
+                      {latestNbkRates.changePercent} ＝
+                    </Text>
+                  )}
                 </View>
                 <Text style={styles.caption}>Курс НБРК</Text>
               </View>

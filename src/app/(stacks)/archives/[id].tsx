@@ -113,7 +113,7 @@ export default function ArchiveDetailScreen() {
     ? nbkRatesItem.map((r: any) => {
         const [day, month, year] = r.date.split(".");
         const isoDate = `${year}-${month}-${day}T00:00:00`;
-        return { ts: isoDate, rate: Number(r.rate) };
+        return { ts: isoDate, rate: Number(r.rate), changePercent: Number(r.changePercent) };
       })
     : [];
 
