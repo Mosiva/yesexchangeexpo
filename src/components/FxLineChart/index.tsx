@@ -102,13 +102,27 @@ export default function FxLineChart({
   }, [rows, nbkRows, source]);
 
   const filtered = useMemo(() => {
-    const maxLabels = 5;
-    const step =
-      sortedRows.length > maxLabels
-        ? Math.ceil(sortedRows.length / maxLabels)
-        : 1;
+    if (!sortedRows.length) return [];
+
+    let step = 1;
+    const len = sortedRows.length;
+
+    if (period === "week") {
+      // ровно 7 точек
+      step = Math.max(1, Math.floor(len / 7));
+    } else if (period === "month") {
+      // максимум 12 точек
+      step = Math.max(1, Math.floor(len / 12));
+    } else if (period === "day") {
+      // для дня ничего не режем
+      step = 1;
+    } else if (selectedRange) {
+      // если диапазон больше месяца — тоже разрежаем
+      step = Math.max(1, Math.floor(len / 12));
+    }
+
     return sortedRows.filter((_, i) => i % step === 0);
-  }, [sortedRows]);
+  }, [sortedRows, period, selectedRange]);
 
   const labels = useMemo(() => {
     return filtered.map((r) => {
