@@ -320,7 +320,7 @@ export default function MainScreen() {
       <View style={styles.headerContainer}>
         <View style={styles.header}>
           <Image
-            source={require("../../../../assets/images/white-icon.png")}
+            source={require("../../../../assets/images/Logo1.png")}
             style={styles.headerLogo}
             resizeMode="contain"
           />
