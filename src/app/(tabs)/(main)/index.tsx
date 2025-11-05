@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   FlatList,
@@ -37,7 +37,6 @@ import {
   pickLatestPerCode,
   ymdLocal,
 } from "../../../utils/nbkDateUtils";
-import { registerForPushNotificationsAsync } from "../../../utils/pushNotifications";
 
 const { useCreateExpoPushTakenSendMutation } = clientApi;
 // === Вспомогательные функции ===
@@ -105,21 +104,21 @@ export default function MainScreen() {
 
   const { isGuest } = useAuth();
 
-  useEffect(() => {
-    if (!isGuest) {
-      registerForPushNotificationsAsync()
-        .then((token) => {
-          if (token) {
-            console.log("✅ Push notifications разрешены, токен:", token);
-            // тут можешь вызвать отправку токена на backend, если нужно
-            // await createExpoPushTakenSend({ expo_token: token });
-          }
-        })
-        .catch((err) => {
-          console.warn("⚠️ Разрешение на уведомления не предоставлено:", err);
-        });
-    }
-  }, [isGuest]);
+  // useEffect(() => {
+  //   if (!isGuest) {
+  //     registerForPushNotificationsAsync()
+  //       .then((token) => {
+  //         if (token) {
+  //           console.log("✅ Push notifications разрешены, токен:", token);
+  //           // тут можешь вызвать отправку токена на backend, если нужно
+  //           // await createExpoPushTakenSend({ expo_token: token });
+  //         }
+  //       })
+  //       .catch((err) => {
+  //         console.warn("⚠️ Разрешение на уведомления не предоставлено:", err);
+  //       });
+  //   }
+  // }, [isGuest]);
 
   // === API ===
   const {
@@ -182,7 +181,6 @@ export default function MainScreen() {
   } = useExchangeRatesCurrentQuery(
     {
       branchId: selectedBranch?.id?.toString() || "",
-      changePeriod: "day",
       limit: 100,
     },
     {

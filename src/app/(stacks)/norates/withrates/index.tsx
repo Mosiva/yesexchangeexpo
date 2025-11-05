@@ -98,7 +98,6 @@ export default function ReserveWithRateScreen() {
   } = useExchangeRatesCurrentQuery(
     {
       branchId: Number(branchIdParam),
-      changePeriod: "day",
       limit: 100,
     },
     { skip: !branchIdParam }
