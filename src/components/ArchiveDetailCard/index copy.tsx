@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import CurrencyFlag from "../CurrencyFlag";
@@ -56,25 +56,6 @@ export default function ArchiveDetailCard({
 }: Props) {
   const data = rows ?? [];
   const [source, setSource] = useState<"yes" | "nbrk">("nbrk");
-
-  const normalizedRows = useMemo(() => {
-    if (!rows?.length) return [];
-
-    // группировка по дате
-    const map = new Map<string, Row>();
-
-    rows.forEach((r) => {
-      const dateKey = r.ts.split(",")[0].trim(); // пример: "03.11.25"
-      // последние значения за день перекрывают предыдущие
-      map.set(dateKey, r);
-    });
-
-    // возвращаем по дате без времени
-    return Array.from(map.entries()).map(([date, value]) => ({
-      ...value,
-      ts: date, // оставляем только дату
-    }));
-  }, [rows]);
 
   return (
     <ScrollView style={styles.container} bounces>
@@ -241,7 +222,7 @@ export default function ArchiveDetailCard({
       {/* Периоды всегда показываем */}
       <View style={{ marginTop: 10 }}>
         <FxLineChart
-          rows={normalizedRows}
+          rows={data}
           nbkRows={nbkRows}
           source={source}
           onChangePeriod={onChangePeriod}
@@ -259,7 +240,7 @@ export default function ArchiveDetailCard({
             <Text style={[styles.th, { flex: 1 }]}>Продажа</Text>
           </View>
 
-          {normalizedRows.map((r, i) => {
+          {data.map((r, i) => {
             return (
               <View key={`${r.ts}-${i}`} style={styles.tr}>
                 <Text style={[styles.td, { flex: 1.4 }]}>{r.ts}</Text>
