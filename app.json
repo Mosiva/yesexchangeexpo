@@ -36,7 +36,6 @@
       },
       "softwareKeyboardLayoutMode": "pan",
       "versionCode": 10,
-      "googleServicesFile": "./google-services.json",
       "edgeToEdgeEnabled": true,
       "package": "com.mosiva.yesexchangeexpo"
     },

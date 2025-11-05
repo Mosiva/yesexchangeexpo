@@ -55,27 +55,33 @@ export default function ArchiveDetailCard({
   onChangePeriod,
 }: Props) {
   const data = rows ?? [];
+
+  console.log("data", data);
   const [source, setSource] = useState<"yes" | "nbrk">("nbrk");
+  const [currentPeriod, setCurrentPeriod] = useState<"day" | "week" | "month">(
+    "day"
+  );
 
   const normalizedRows = useMemo(() => {
     if (!rows?.length) return [];
 
-    // группировка по дате
-    const map = new Map<string, Row>();
+    // если период = день — возвращаем все точки
+    if (onChangePeriod == null || currentPeriod === "day") {
+      return rows;
+    }
 
+    // группировка по дате (для недели/месяца)
+    const map = new Map<string, Row>();
     rows.forEach((r) => {
-      const dateKey = r.ts.split(",")[0].trim(); // пример: "03.11.25"
-      // последние значения за день перекрывают предыдущие
+      const dateKey = r.ts.split(",")[0].trim();
       map.set(dateKey, r);
     });
 
-    // возвращаем по дате без времени
     return Array.from(map.entries()).map(([date, value]) => ({
       ...value,
-      ts: date, // оставляем только дату
+      ts: date,
     }));
-  }, [rows]);
-
+  }, [rows, currentPeriod]);
   return (
     <ScrollView style={styles.container} bounces>
       <View style={styles.tabsRow}>
@@ -244,7 +250,10 @@ export default function ArchiveDetailCard({
           rows={normalizedRows}
           nbkRows={nbkRows}
           source={source}
-          onChangePeriod={onChangePeriod}
+          onChangePeriod={(p, range) => {
+            setCurrentPeriod(p);
+            onChangePeriod?.(p, range);
+          }}
         />
       </View>
 
