@@ -56,32 +56,43 @@ export default function ArchiveDetailCard({
 }: Props) {
   const data = rows ?? [];
 
-  console.log("data", data);
   const [source, setSource] = useState<"yes" | "nbrk">("nbrk");
   const [currentPeriod, setCurrentPeriod] = useState<"day" | "week" | "month">(
     "day"
   );
+  const [selectedRange, setSelectedRange] = useState<{
+    fromIso: string;
+    toIso: string;
+  } | null>(null);
 
   const normalizedRows = useMemo(() => {
     if (!rows?.length) return [];
 
-    // если период = день — возвращаем все точки
-    if (onChangePeriod == null || currentPeriod === "day") {
-      return rows;
+    // ✅ Если период — день И диапазона нет → возврат как есть
+    const isDay = currentPeriod === "day" && !selectedRange;
+    if (isDay) return rows;
+
+    // ✅ Если диапазон выбран и он в пределах одного дня → возвращаем все точки
+    if (selectedRange) {
+      const sameDay =
+        selectedRange.fromIso.split("T")[0] ===
+        selectedRange.toIso.split("T")[0];
+
+      if (sameDay) return rows; // день → все точки
     }
 
-    // группировка по дате (для недели/месяца)
+    // ✅ иначе — агрегируем по дате
     const map = new Map<string, Row>();
     rows.forEach((r) => {
       const dateKey = r.ts.split(",")[0].trim();
-      map.set(dateKey, r);
+      map.set(dateKey, r); // последнее значение за день
     });
 
     return Array.from(map.entries()).map(([date, value]) => ({
       ...value,
       ts: date,
     }));
-  }, [rows, currentPeriod]);
+  }, [rows, currentPeriod, selectedRange]);
   return (
     <ScrollView style={styles.container} bounces>
       <View style={styles.tabsRow}>
@@ -252,6 +263,7 @@ export default function ArchiveDetailCard({
           source={source}
           onChangePeriod={(p, range) => {
             setCurrentPeriod(p);
+            setSelectedRange(range ?? null);
             onChangePeriod?.(p, range);
           }}
         />
