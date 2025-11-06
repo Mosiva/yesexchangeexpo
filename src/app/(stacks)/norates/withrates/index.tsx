@@ -477,16 +477,17 @@ export default function ReserveWithRateScreen() {
           )}
         </View>
 
-        {/* 💰 Скидка для авторизованных */}
-        {!isGuest && (
+        {/* 💰 Скидка для авторизованных — только если сумма ≥ 500000 */}
+        {!isGuest && computed.from >= 500000 && (
           <View style={styles.discountRow}>
             <Text style={styles.discountLabel}>
               {mode === "buy" ? "С 5% скидкой:" : "С наценкой 5%:"}
             </Text>
+
             <Text
               style={[
                 styles.discountValue,
-                { color: mode === "buy" ? "#16A34A" : "#16A34A" }, // зелёная или красная
+                { color: "#16A34A" }, // зелёный (или можно сделать разный)
               ]}
             >
               {(computed.from - discountValue).toLocaleString("ru-RU", {

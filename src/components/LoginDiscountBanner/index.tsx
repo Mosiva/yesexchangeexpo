@@ -1,11 +1,11 @@
 // components/LoginDiscountBanner.tsx
 import React from "react";
 import {
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    ViewStyle,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
 } from "react-native";
 
 const ORANGE = "#F58220";
@@ -22,6 +22,7 @@ export default function LoginDiscountBanner({
     <View style={[styles.wrap, style]}>
       <Text style={styles.title}>
         Авторизуйтесь и получите <Text style={styles.accent}>скидку 5%</Text>
+         {"\n"}на первое бронирование с привязкой к курсу
       </Text>
 
       <TouchableOpacity
