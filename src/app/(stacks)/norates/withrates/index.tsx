@@ -26,6 +26,7 @@ import CurrenciesListModalArchive from "../../../../components/CurrenciesListMod
 import CurrencyFlag from "../../../../components/CurrencyFlag";
 import { useAuth } from "../../../../providers/Auth";
 import {
+  useBookingsQuery,
   useCreateBookingMutation,
   useCreateGuestBookingMutation,
   useExchangeRatesCurrentQuery,
@@ -79,6 +80,17 @@ export default function ReserveWithRateScreen() {
 
   const { isGuest } = useAuth();
 
+  /** === API === */
+  const {
+    data: rawBookings,
+    refetch: refetchBookings,
+    isFetching,
+    isError,
+  } = useBookingsQuery({
+    page: 1,
+    limit: 100,
+  });
+
   // ---- Guest login (phone) state ----
   const [digits, setDigits] = useState("");
   const [maskedPhone, setMaskedPhone] = useState("+7");
@@ -102,6 +114,9 @@ export default function ReserveWithRateScreen() {
     },
     { skip: !branchIdParam }
   );
+
+  const hasPreviousBookings = rawBookings?.data && rawBookings.data.length > 0;
+  const userHasBookings = !!rawBookings?.data?.length;
 
   const [doCreateBooking, { isLoading: isCreating }] =
     useCreateBookingMutation();
@@ -378,6 +393,19 @@ export default function ReserveWithRateScreen() {
     return 0;
   }, [isGuest, computed.from, mode]);
 
+  const canShowDiscount = () => {
+    if (isGuest) return false; // гостям не даём скидку
+
+    // ✅ Если нет ни одной брони — показываем скидку
+    if (!hasPreviousBookings) return true;
+
+    // ✅ Если сумма ≥ 500 000 — тоже показываем
+    if (computed.from >= 500000) return true;
+
+    // ❌ иначе — нет скидки
+    return false;
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -476,20 +504,28 @@ export default function ReserveWithRateScreen() {
             </Text>
           )}
         </View>
+        {canShowDiscount() && (
+          <Text style={styles.discountInfo}>
+            {userHasBookings
+              ? // ✅ Уже есть бронь → условие только про сумму
+                mode === "buy"
+                ? "Скидка доступна только при сумме больше 500 000 тенге"
+                : "Наценка доступна только при сумме больше 500 000 тенге"
+              : // ✅ Первая бронь → полное условие
+              mode === "buy"
+              ? "Скидка доступна только на первую бронь или сумму больше 500 000 тенге"
+              : "Наценка доступна только на первую бронь или сумму больше 500 000 тенге"}
+          </Text>
+        )}
 
-        {/* 💰 Скидка для авторизованных — только если сумма ≥ 500000 */}
-        {!isGuest && computed.from >= 500000 && (
+        {/* 💰 Скидка для авторизованных */}
+        {canShowDiscount() && (
           <View style={styles.discountRow}>
             <Text style={styles.discountLabel}>
               {mode === "buy" ? "С 5% скидкой:" : "С наценкой 5%:"}
             </Text>
 
-            <Text
-              style={[
-                styles.discountValue,
-                { color: "#16A34A" }, // зелёный (или можно сделать разный)
-              ]}
-            >
+            <Text style={[styles.discountValue, { color: "#16A34A" }]}>
               {(computed.from - discountValue).toLocaleString("ru-RU", {
                 maximumFractionDigits: 2,
               })}{" "}
@@ -817,5 +853,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     color: "#16A34A", // зелёный для акцента
+  },
+  discountInfo: {
+    marginTop: 8,
+    fontSize: 13,
+    color: "#6B7280", // SUB
+    fontStyle: "italic",
+    marginLeft: 2,
   },
 });
