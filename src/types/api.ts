@@ -60,9 +60,8 @@ export type CurrencyCode =
 
 export type MessageResponseDto = { message: string };
 
-// В спеках используется ChangePeriodEnum
+// В openapi используется ChangePeriodEnum
 export type ChangePeriod = "day" | "week" | "month";
-// Сохранён алиас для обратной совместимости
 export type DeltaPeriod = ChangePeriod;
 
 export type Trend = "up" | "down" | "same";
@@ -90,6 +89,27 @@ export type Paginated<T, F = unknown> = {
   };
 };
 
+// --- Health DTOs ---
+
+export type ComponentStatusDto = {
+  status: "up" | "down";
+  message?: string;
+};
+
+export type HealthCheckDetailsDto = {
+  database: ComponentStatusDto;
+  redis: ComponentStatusDto;
+  memory_heap: ComponentStatusDto;
+  storage: ComponentStatusDto;
+};
+
+export type HealthCheckResponseDto = {
+  status: "ok" | "error";
+  info: HealthCheckDetailsDto;
+  error: HealthCheckDetailsDto;
+  details: HealthCheckDetailsDto;
+};
+
 // --- Auth DTOs (по openapi) ---
 
 export type RegisterDto = {
@@ -98,6 +118,7 @@ export type RegisterDto = {
   lastName?: string | null;
   residentRK: boolean;
 };
+
 export type LoginDto = { phone: string };
 export type VerifyOtpDto = { phone: string; code: string };
 export type ResendOtpDto = { phone: string };
@@ -106,14 +127,21 @@ export type OtpRequestResultDto = {
   ttl: number;
   resendAt: number;
 };
+
 export type VerifyOtpResponseDto = {
   accessToken: string;
   refreshToken: string;
 };
+
 export type RefreshTokenResponseDto = {
   accessToken: string;
   refreshToken: string;
 };
+
+export type LogoutDto = {
+  fcmToken?: string;
+};
+
 export type LogoutResponseDto = { ok: boolean };
 
 // --- User DTOs ---
@@ -129,7 +157,7 @@ export type UserDto = {
   phoneVerified: boolean;
   blocked: boolean;
   role: UserRole;
-  defaultCurrency?: CurrencyDto; // из спеки поле присутствует
+  defaultCurrency?: CurrencyDto;
   createdAt?: string; // ISO
   updatedAt?: string; // ISO
 };
@@ -141,7 +169,7 @@ export type UpdateUserDto = Partial<
 // --- Currency DTOs ---
 
 export type CurrencyDto = {
-  code: string; // по спекам строка
+  code: string; // в openapi — string
   name: string;
   iconUrl: string;
 };
@@ -162,7 +190,6 @@ export type BranchDto = {
   schedule: string[];
 };
 
-// Упрощённый филиал для BookingDto
 export type BranchDtoWithIdCityAndAddress = {
   id: number;
   city: string;
@@ -240,7 +267,7 @@ export type CreateBookingDto = {
 };
 
 export type CreateGuestBookingDto = CreateBookingDto & {
-  otpCode?: string; // опционально
+  otpCode?: string;
 };
 
 export type ToAmountQueryDto = {
@@ -272,6 +299,19 @@ export type BookingDto = {
 };
 
 export type CancelBookingResponseDto = { message: string };
+
+// --- Guest OTP DTOs ---
+
+export type VerifyGuestOtpDto = {
+  phone: string;
+  otpCode: string;
+};
+
+export type GuestBookingTokenResponseDto = {
+  accessToken: string;
+  expiresIn: number;
+  phone: string;
+};
 
 // --- Contact Forms DTOs ---
 
@@ -312,18 +352,38 @@ export type NewsDto = {
   updatedAt: string; // ISO
 };
 
-// --- Bitrix DTOs (на будущее, если понадобятся) ---
+// --- Bitrix DTOs ---
 
 export type BitrixWebhookDto = {
   event: string;
   data: Record<string, unknown>;
   auth: Record<string, unknown>;
 };
+
 export type BitrixEventDto = BitrixWebhookDto & {
   event_handler_id: string;
   ts: string;
 };
+
 export type BitrixResponseDto = {
   success: boolean;
   jobId: string;
+};
+
+// --- Push Notifications DTOs ---
+
+export type RegisterDeviceTokenDto = {
+  pushToken: string;
+  tokenType?: "fcm" | "expo";
+};
+
+export type DeviceTokenResponseDto = {
+  success: boolean;
+  message: string;
+  tokenId: number;
+};
+
+export type TestNotificationDto = {
+  title?: string;
+  body: string;
 };

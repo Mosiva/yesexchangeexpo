@@ -1,9 +1,8 @@
-// src/services/yesExchange.ts
 import { restApi } from "../api";
 import type {
   BitrixEventDto,
   BitrixResponseDto,
-  // bitrix (опционально)
+  // bitrix
   BitrixWebhookDto,
   // bookings
   BookingDto,
@@ -11,18 +10,23 @@ import type {
   // branches
   BranchDto,
   CancelBookingResponseDto,
-  ChangePeriod,
   ContactFormResponseDto,
   CreateBookingDto,
   CreateFeedbackDto,
   CreateGuestBookingDto,
+  // forms
   CreateJobApplicationDto,
   CurrencyCode,
   // dictionaries
   CurrencyDto,
+  DeviceTokenResponseDto,
   ExchangeRateDto,
   ExchangeRateHistoryRecordDto,
+  GuestBookingTokenResponseDto,
+  // health
+  HealthCheckResponseDto,
   LoginDto,
+  LogoutDto,
   LogoutResponseDto,
   // nbk
   NbkRateDto,
@@ -31,23 +35,34 @@ import type {
   OtpRequestResultDto,
   // rates
   Paginated,
+  RefreshTokenResponseDto,
+  // push
+  RegisterDeviceTokenDto,
   // auth
   RegisterDto,
   ResendOtpDto,
+  TestNotificationDto,
   ToAmountQueryDto,
   ToAmountResponseDto,
   UpdateUserDto,
   // user
   UserDto,
+  VerifyGuestOtpDto,
   VerifyOtpDto,
-  VerifyOtpResponseDto
+  VerifyOtpResponseDto,
 } from "../types/api";
 
 export const yesExchangeApi = restApi.injectEndpoints({
   endpoints: (build) => ({
     // --- Health ---
-    health: build.query<{ status: string; time: string }, void>({
+    health: build.query<HealthCheckResponseDto, void>({
       query: () => ({ url: "/api/v1/health", method: "GET" }),
+    }),
+    healthLiveness: build.query<HealthCheckResponseDto, void>({
+      query: () => ({ url: "/api/v1/health/liveness", method: "GET" }),
+    }),
+    healthReadiness: build.query<HealthCheckResponseDto, void>({
+      query: () => ({ url: "/api/v1/health/readiness", method: "GET" }),
     }),
 
     // --- Авторизация ---
@@ -71,8 +86,11 @@ export const yesExchangeApi = restApi.injectEndpoints({
         data,
       }),
     }),
-    logout: build.mutation<LogoutResponseDto, void>({
-      query: () => ({ url: "/api/v1/auth/logout", method: "POST" }),
+    refreshToken: build.mutation<RefreshTokenResponseDto, void>({
+      query: () => ({ url: "/api/v1/auth/token/refresh", method: "POST" }),
+    }),
+    logout: build.mutation<LogoutResponseDto, LogoutDto>({
+      query: (data) => ({ url: "/api/v1/auth/logout", method: "POST", data }),
     }),
 
     // --- Текущий пользователь ---
@@ -128,8 +146,7 @@ export const yesExchangeApi = restApi.injectEndpoints({
         limit?: number;
         sortBy?: ("updatedAt:ASC" | "updatedAt:DESC")[];
         search?: string;
-        currencyCodes?: string[]; // ISO-4217
-        changePeriod?: ChangePeriod; // "day" | "week" | "month"
+        currencyCodes?: string[]; // ISO-4217 (по openapi)
         searchBy?: "currencyCode"[];
       }
     >({
@@ -148,7 +165,6 @@ export const yesExchangeApi = restApi.injectEndpoints({
         from?: string; // yyyy-MM-dd
         to?: string; // yyyy-MM-dd
         currencyCodes?: string[];
-        changePeriod?: ChangePeriod;
         page?: number;
         limit?: number;
         sortBy?: ("changedAt:ASC" | "changedAt:DESC")[];
@@ -223,6 +239,13 @@ export const yesExchangeApi = restApi.injectEndpoints({
         method: "POST",
       }),
     }),
+    toAmount: build.mutation<ToAmountResponseDto, ToAmountQueryDto>({
+      query: (data) => ({
+        url: "/api/v1/bookings/to-amount",
+        method: "POST",
+        data,
+      }),
+    }),
 
     // --- Бронирования (гость) ---
     requestGuestOtp: build.mutation<OtpRequestResultDto, { phone: string }>({
@@ -230,6 +253,16 @@ export const yesExchangeApi = restApi.injectEndpoints({
         url: "/api/v1/bookings/guest/otp/request",
         method: "POST",
         params: { phone },
+      }),
+    }),
+    verifyGuestOtp: build.mutation<
+      GuestBookingTokenResponseDto,
+      VerifyGuestOtpDto
+    >({
+      query: (data) => ({
+        url: "/api/v1/bookings/guest/otp/verify",
+        method: "POST",
+        data,
       }),
     }),
     createGuestBooking: build.mutation<
@@ -248,13 +281,6 @@ export const yesExchangeApi = restApi.injectEndpoints({
         url: `/api/v1/bookings/guest/${id}`,
         method: "GET",
         params: { phone },
-      }),
-    }),
-    toAmount: build.mutation<ToAmountResponseDto, ToAmountQueryDto>({
-      query: (data) => ({
-        url: "/api/v1/bookings/to-amount",
-        method: "POST",
-        data,
       }),
     }),
 
@@ -282,8 +308,11 @@ export const yesExchangeApi = restApi.injectEndpoints({
     }),
 
     // --- Формы обратной связи ---
-    submitJobApplication: build.mutation<ContactFormResponseDto, CreateJobApplicationDto>({
-      // NB: ожидается multipart/form-data
+    submitJobApplication: build.mutation<
+      ContactFormResponseDto,
+      CreateJobApplicationDto
+    >({
+      // NB: ожидается multipart/form-data (передавай FormData из клиента)
       query: (data) => ({
         url: "/api/v1/contact-forms/job-application",
         method: "POST",
@@ -298,7 +327,7 @@ export const yesExchangeApi = restApi.injectEndpoints({
       }),
     }),
 
-    // --- Bitrix (если нужно проксировать из клиента) ---
+    // --- Bitrix ---
     bitrixWebhook: build.mutation<BitrixResponseDto, BitrixWebhookDto>({
       query: (data) => ({
         url: "/api/v1/bitrix/webhook",
@@ -313,6 +342,25 @@ export const yesExchangeApi = restApi.injectEndpoints({
         data,
       }),
     }),
+
+    // --- Push Notifications ---
+    registerDeviceToken: build.mutation<
+      DeviceTokenResponseDto,
+      RegisterDeviceTokenDto
+    >({
+      query: (data) => ({
+        url: "/api/v1/notifications/push/device-token",
+        method: "POST",
+        data,
+      }),
+    }),
+    sendTestPush: build.mutation<void, TestNotificationDto>({
+      query: (data) => ({
+        url: "/api/v1/notifications/push",
+        method: "POST",
+        data,
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -320,12 +368,15 @@ export const yesExchangeApi = restApi.injectEndpoints({
 export const {
   // health
   useHealthQuery,
+  useHealthLivenessQuery,
+  useHealthReadinessQuery,
 
   // auth
   useRegisterMutation,
   useLoginMutation,
   useVerifyOtpMutation,
   useResendOtpMutation,
+  useRefreshTokenMutation,
   useLogoutMutation,
 
   // user
@@ -349,17 +400,18 @@ export const {
   // nbk
   useNbkRatesQuery,
 
-  // bookings
+  // bookings (auth)
   useBookingsQuery,
   useCreateBookingMutation,
   useBookingByIdQuery,
   useCancelBookingMutation,
+  useToAmountMutation,
 
-  // guest bookings
+  // bookings (guest)
   useRequestGuestOtpMutation,
+  useVerifyGuestOtpMutation,
   useCreateGuestBookingMutation,
   useGuestBookingByIdQuery,
-  useToAmountMutation,
 
   // news
   useNewsQuery,
@@ -372,4 +424,8 @@ export const {
   // bitrix
   useBitrixWebhookMutation,
   useBitrixEventMutation,
+
+  // push
+  useRegisterDeviceTokenMutation,
+  useSendTestPushMutation,
 } = yesExchangeApi;
