@@ -388,7 +388,6 @@ export default function ReserveWithRateScreen() {
     baseAmount: computed.from,
     exchangeRateId: to?.id,
     branchId: Number(branchIdParam),
-    dependencyKey: computed.from, // обновлять при изменении суммы
   });
 
   return (
@@ -489,7 +488,7 @@ export default function ReserveWithRateScreen() {
             </Text>
           )}
         </View>
-        {discountMessage && (
+        {discountMessage && !isGuest && (
           <Text style={styles.discountInfo}>{discountMessage}</Text>
         )}
 

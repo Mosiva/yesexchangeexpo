@@ -2,64 +2,83 @@ import { useEffect, useMemo, useState } from "react";
 import { useToAmountMutation } from "../services/yesExchange";
 import type { BookingOperationType } from "../types/api";
 
-type UseDiscountCalculatorArgs = {
+/** debounce */
+function useDebounce<T>(value: T, delay = 400): T {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+
+  return debounced;
+}
+
+/** округление */
+function roundAmount(value: number, precision = 2): number {
+  if (!isFinite(value)) return 0;
+  return Number(value.toFixed(precision));
+}
+
+type Args = {
   isGuest: boolean;
   clientDiscountAvailable: boolean;
   mode: BookingOperationType;
   baseAmount: number;
+  fromAmount: number;
   exchangeRateId?: number;
   branchId?: number;
-  dependencyKey?: unknown;
-  fromAmount: number;
 };
 
 export function useDiscountCalculator({
   isGuest,
-  clientDiscountAvailable, // true/false
-  mode, // "buy" | "sell"
-  baseAmount, // computed.from (в тенге)
-  fromAmount, // computed.to (в валюте)
+  clientDiscountAvailable,
+  mode,
+  baseAmount,
+  fromAmount,
   exchangeRateId,
   branchId,
-  dependencyKey, // любое значение, при изменении которого надо пересчитать
-}: UseDiscountCalculatorArgs) {
-  const [calculate, { isLoading }] = useToAmountMutation();
+}: Args) {
+  const [request, { isLoading }] = useToAmountMutation();
   const [serverCalc, setServerCalc] = useState<{
     toAmount?: number;
     discountPercent?: number;
   } | null>(null);
 
-  // ✅ Правила "разрешена ли скидка"
+  const debouncedAmount = useDebounce(fromAmount, 450);
+
   const canShowDiscount = useMemo(() => {
     if (isGuest) return false;
-
     if (clientDiscountAvailable === true) return true;
-
     if (baseAmount >= 500000) return true;
-
     return false;
-  }, [clientDiscountAvailable, baseAmount, isGuest]);
+  }, [isGuest, clientDiscountAvailable, baseAmount]);
 
-  // ✅ Серверный запрос только при сумме ≥ 500k
+  // ✅ запрос на бэк
   useEffect(() => {
-    if (!canShowDiscount || baseAmount < 500000) {
+    if (!canShowDiscount) {
+      setServerCalc(null);
+      return;
+    }
+
+    if (!debouncedAmount || debouncedAmount <= 0) {
       setServerCalc(null);
       return;
     }
 
     if (!exchangeRateId || !branchId) return;
 
-    calculate({
+    request({
       branchId,
       exchangeRateId,
-      amount: fromAmount.toString(),
+      amount: debouncedAmount.toString(),
       operationType: mode,
       isRateLocked: true,
     })
       .unwrap()
       .then((res) => {
         setServerCalc({
-          toAmount: Number(res.toAmount),
+          toAmount: roundAmount(Number(res.toAmount)), // ✅ округление
           discountPercent: res.discountPercent,
         });
       })
@@ -67,35 +86,36 @@ export function useDiscountCalculator({
         setServerCalc(null);
       });
   }, [
-    canShowDiscount,
-    baseAmount,
+    debouncedAmount,
     exchangeRateId,
     branchId,
     mode,
-    dependencyKey,
-    calculate,
+    canShowDiscount,
+    request,
   ]);
-
-  // ✅ Итоговый процент скидки
+  function roundAmount(value: number, precision = 2): number {
+    if (!isFinite(value)) return 0;
+    return Number(value.toFixed(precision));
+  }
+  // ✅ процент
   const finalPercent = useMemo(() => {
     if (!canShowDiscount) return 0;
-
-    if (serverCalc?.discountPercent) return serverCalc.discountPercent;
-
-    return 5;
+    return serverCalc?.discountPercent ?? 5;
   }, [serverCalc, canShowDiscount]);
 
-  // ✅ Итоговая сумма со скидкой/наценкой
+  // ✅ итоговая сумма
   const finalAmount = useMemo(() => {
     if (!canShowDiscount) return null;
 
-    if (serverCalc?.toAmount) return serverCalc.toAmount;
+    // сервер приоритет
+    if (serverCalc?.toAmount !== undefined)
+      return roundAmount(serverCalc.toAmount);
 
+    // локальный fallback
     const local = baseAmount - baseAmount * (finalPercent / 100);
-    return local;
+    return roundAmount(local);
   }, [serverCalc, baseAmount, finalPercent, canShowDiscount]);
 
-  // ✅ Сообщение "Скидка доступна только..."
   const discountMessage = useMemo(() => {
     const isBuy = mode === "buy";
 
