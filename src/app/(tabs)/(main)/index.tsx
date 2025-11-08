@@ -16,13 +16,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { clientApi } from "services";
 import CurrenciesMainCardList from "../../../components/CurrenciesMainCardList.tsx";
 import CurrencyExchangeModal from "../../../components/CurrencyExchangeModal";
 import LineUpDownChartCard from "../../../components/LineUpDownChartCard";
 import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
 import ReservePromoCard from "../../../components/ReservePromoCard";
 import { Skeleton } from "../../../components/skeleton";
+import { usePushNotifications } from "../../../hooks/usePushNotifications";
 import { useUserLocation } from "../../../hooks/useUserLocation";
 import { useAuth } from "../../../providers/Auth";
 import {
@@ -38,7 +38,6 @@ import {
   ymdLocal,
 } from "../../../utils/nbkDateUtils";
 
-const { useCreateExpoPushTakenSendMutation } = clientApi;
 // === Вспомогательные функции ===
 
 // вчерашняя дата в формате YYYY-MM-DD
@@ -97,28 +96,10 @@ const LocalTime = () => {
 
 export default function MainScreen() {
   const { location, loading, permissionDenied } = useUserLocation();
-
-  const [createExpoPushTakenSend] = useCreateExpoPushTakenSendMutation();
-
   const [refreshing, setRefreshing] = useState(false);
 
   const { isGuest } = useAuth();
-
-  // useEffect(() => {
-  //   if (!isGuest) {
-  //     registerForPushNotificationsAsync()
-  //       .then((token) => {
-  //         if (token) {
-  //           console.log("✅ Push notifications разрешены, токен:", token);
-  //           // тут можешь вызвать отправку токена на backend, если нужно
-  //           // await createExpoPushTakenSend({ expo_token: token });
-  //         }
-  //       })
-  //       .catch((err) => {
-  //         console.warn("⚠️ Разрешение на уведомления не предоставлено:", err);
-  //       });
-  //   }
-  // }, [isGuest]);
+  usePushNotifications(isGuest);
 
   // === API ===
   const {
