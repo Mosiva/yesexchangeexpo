@@ -4,7 +4,10 @@ export interface User {
   username?: string;
   first_name?: string;
   last_name?: string;
-  // Add other user properties as needed
+  discount?: {
+    available: boolean;
+    percent: number;
+  };
 }
 
 export interface AuthCredentials {

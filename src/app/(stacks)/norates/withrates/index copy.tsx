@@ -22,15 +22,14 @@ import {
 } from "react-native";
 import MaskInput from "react-native-mask-input";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { clientApi } from "services";
 import CurrenciesListModalArchive from "../../../../components/CurrenciesListModalArchive";
 import CurrencyFlag from "../../../../components/CurrencyFlag";
-import { useDiscountCalculator } from "../../../../hooks/useDiscountCalculator";
 import { useAuth } from "../../../../providers/Auth";
 import {
+  useBookingsQuery,
   useCreateBookingMutation,
   useCreateGuestBookingMutation,
-  useExchangeRatesCurrentQuery
+  useExchangeRatesCurrentQuery,
 } from "../../../../services/yesExchange";
 import { BookingDto, CurrencyCode } from "../../../../types/api";
 import { getCurrencySymbol } from "../../../../utils/currency";
@@ -55,7 +54,6 @@ const parse = (s: string) =>
       .replace(/[^\d.,]/g, "")
       .replace(",", ".")
   );
-const { useGetClientQuery } = clientApi;
 
 export default function ReserveWithRateScreen() {
   const insets = useSafeAreaInsets();
@@ -82,14 +80,16 @@ export default function ReserveWithRateScreen() {
 
   const { isGuest } = useAuth();
 
+  /** === API === */
   const {
-    data: rawClient,
-    refetch: refetchClient,
-    isLoading: isClientLoading,
-    isError: isClientError,
-  } = useGetClientQuery({});
-
-  const client: any = (rawClient as any)?.data ?? rawClient ?? null;
+    data: rawBookings,
+    refetch: refetchBookings,
+    isFetching,
+    isError,
+  } = useBookingsQuery({
+    page: 1,
+    limit: 100,
+  });
 
   // ---- Guest login (phone) state ----
   const [digits, setDigits] = useState("");
@@ -115,14 +115,17 @@ export default function ReserveWithRateScreen() {
     { skip: !branchIdParam }
   );
 
+  const hasPreviousBookings = rawBookings?.data && rawBookings.data.length > 0;
+  const userHasBookings = !!rawBookings?.data?.length;
+
   const [doCreateBooking, { isLoading: isCreating }] =
     useCreateBookingMutation();
   const [doCreateGuestBooking, { isLoading: isCreatingGuest }] =
     useCreateGuestBookingMutation();
 
   const refetchAllData = useCallback(async () => {
-    await Promise.all([refetchExchangeRates(), refetchClient()]);
-  }, [refetchExchangeRates, refetchClient]);
+    await Promise.all([refetchExchangeRates()]);
+  }, [refetchExchangeRates]);
 
   useFocusEffect(
     useCallback(() => {
@@ -374,21 +377,63 @@ export default function ReserveWithRateScreen() {
   };
   const { text: displayValue } = formatCurrencyDisplay(fmt(footerSum), to.code);
 
-  const {
-    canShowDiscount,
-    finalPercent,
-    finalAmount,
-    discountMessage,
-    isLoading: isDiscountLoading,
-  } = useDiscountCalculator({
-    isGuest,
-    clientDiscountAvailable: client?.discount?.available ?? false,
-    mode,
-    baseAmount: computed.to,
-    exchangeRateId: to?.id,
-    branchId: Number(branchIdParam),
-    dependencyKey: computed.from, // обновлять при изменении суммы
-  });
+  const discountValue = useMemo(() => {
+    if (isGuest) return 0;
+
+    const kztAmount = computed.from; // сумма в тенге
+
+    if (mode === "buy") {
+      // Скидка 5% — уменьшаем сумму
+      return kztAmount * 0.05;
+    } else if (mode === "sell") {
+      // Наоборот — добавляем 5%
+      return -kztAmount * 0.05;
+    }
+
+    return 0;
+  }, [isGuest, computed.from, mode]);
+  const canShowDiscount = () => {
+    if (isGuest) return false; // гостям не даём скидку
+
+    // ✅ Если нет ни одной брони — показываем скидку
+    if (!hasPreviousBookings) return true;
+
+    // ✅ Если сумма ≥ 500 000 — тоже показываем
+    if (computed.from >= 500000) return true;
+
+    // ❌ иначе — нет скидки
+    return false;
+  };
+
+  function getDiscountMessage() {
+    const isBuy = mode === "buy";
+
+    // ✅ Если есть бронь и скидка/наценка недоступна — показываем короткий текст
+    if (userHasBookings && !canShowDiscount()) {
+      return isBuy
+        ? "Скидка доступна только при сумме больше 500 000 тенге"
+        : "Наценка доступна только при сумме больше 500 000 тенге";
+    }
+
+    // ✅ Если скидку можно показать (первая бронь или сумма >= 500к)
+    if (canShowDiscount()) {
+      if (userHasBookings) {
+        // Есть предыдущие брони → условие только по сумме
+        return isBuy
+          ? "Скидка доступна только при сумме больше 500 000 тенге"
+          : "Наценка доступна только при сумме больше 500 000 тенге";
+      } else {
+        // Первая бронь → полное условие
+        return isBuy
+          ? "Скидка доступна только на первую бронь или сумму больше 500 000 тенге"
+          : "Наценка доступна только на первую бронь или сумму больше 500 000 тенге";
+      }
+    }
+
+    // ✅ По умолчанию — ничего не показывать
+    return null;
+  }
+  const discountMsg = getDiscountMessage();
 
   return (
     <KeyboardAvoidingView
@@ -488,20 +533,16 @@ export default function ReserveWithRateScreen() {
             </Text>
           )}
         </View>
-        {discountMessage && (
-          <Text style={styles.discountInfo}>{discountMessage}</Text>
-        )}
-
-        {canShowDiscount && finalAmount != null && (
+        {discountMsg && <Text style={styles.discountInfo}>{discountMsg}</Text>}
+        {/* 💰 Скидка для авторизованных */}
+        {canShowDiscount() && (
           <View style={styles.discountRow}>
             <Text style={styles.discountLabel}>
-              {mode === "buy"
-                ? `С ${finalPercent}% скидкой:`
-                : `С наценкой ${finalPercent}%:`}
+              {mode === "buy" ? "С 5% скидкой:" : "С наценкой 5%:"}
             </Text>
 
-            <Text style={styles.discountValue}>
-              {finalAmount.toLocaleString("ru-RU", {
+            <Text style={[styles.discountValue, { color: "#16A34A" }]}>
+              {(computed.from - discountValue).toLocaleString("ru-RU", {
                 maximumFractionDigits: 2,
               })}{" "}
               ₸

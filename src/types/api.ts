@@ -275,11 +275,13 @@ export type ToAmountQueryDto = {
   exchangeRateId: number;
   amount: string; // decimal-string
   operationType: BookingOperationType;
+  isRateLocked: boolean;
 };
 
 export type ToAmountResponseDto = {
   toAmount: string; // decimal-string
   rate: string; // decimal-string
+  discountPercent: number;
 };
 
 export type BookingDto = {

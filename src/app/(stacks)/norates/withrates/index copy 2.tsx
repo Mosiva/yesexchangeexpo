@@ -25,12 +25,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { clientApi } from "services";
 import CurrenciesListModalArchive from "../../../../components/CurrenciesListModalArchive";
 import CurrencyFlag from "../../../../components/CurrencyFlag";
-import { useDiscountCalculator } from "../../../../hooks/useDiscountCalculator";
 import { useAuth } from "../../../../providers/Auth";
 import {
   useCreateBookingMutation,
   useCreateGuestBookingMutation,
-  useExchangeRatesCurrentQuery
+  useExchangeRatesCurrentQuery,
+  useToAmountMutation,
 } from "../../../../services/yesExchange";
 import { BookingDto, CurrencyCode } from "../../../../types/api";
 import { getCurrencySymbol } from "../../../../utils/currency";
@@ -115,10 +115,18 @@ export default function ReserveWithRateScreen() {
     { skip: !branchIdParam }
   );
 
+  const [serverCalc, setServerCalc] = useState<{
+    toAmount?: number;
+    discountPercent?: number;
+  } | null>(null);
+
   const [doCreateBooking, { isLoading: isCreating }] =
     useCreateBookingMutation();
   const [doCreateGuestBooking, { isLoading: isCreatingGuest }] =
     useCreateGuestBookingMutation();
+
+  const [doCreateToAmount, { isLoading: isCreatingToAmount }] =
+    useToAmountMutation();
 
   const refetchAllData = useCallback(async () => {
     await Promise.all([refetchExchangeRates(), refetchClient()]);
@@ -286,6 +294,45 @@ export default function ReserveWithRateScreen() {
   const fromSymbol = getCurrencySymbol(from.code);
   const toSymbol = getCurrencySymbol(to.code as CurrencyCode);
 
+  useEffect(() => {
+    // Если сумма меньше 500 000 → серверный расчёт не нужен
+    if (computed.from < 500000) {
+      setServerCalc(null);
+      return;
+    }
+
+    // Если можно показывать скидку и сумма >= 500 000 → вызываем API
+    doCreateToAmount({
+      branchId: Number(branchIdParam),
+      exchangeRateId: to.id,
+      amount: computed.to.toString(),
+      operationType: mode,
+      isRateLocked: true,
+    })
+      .unwrap()
+      .then((res) => {
+        setServerCalc({
+          toAmount: Number(res.toAmount),
+          discountPercent: res.discountPercent,
+        });
+      })
+      .catch(() => {
+        setServerCalc(null);
+      });
+  }, [computed.from, to.id, mode]);
+
+  const finalDiscountPercent = useMemo(() => {
+    if (serverCalc?.discountPercent) return serverCalc.discountPercent;
+
+    return 5; // fallback
+  }, [serverCalc]);
+
+  const finalDiscountedAmount = useMemo(() => {
+    if (serverCalc?.toAmount) return serverCalc.toAmount;
+
+    // локальная логика (как у тебя сейчас)
+    return computed.from - computed.from * (finalDiscountPercent / 100);
+  }, [serverCalc, computed.from, finalDiscountPercent]);
   // Валидные префиксы телефонов Казахстана
   const validPrefixes = [
     "700",
@@ -374,21 +421,61 @@ export default function ReserveWithRateScreen() {
   };
   const { text: displayValue } = formatCurrencyDisplay(fmt(footerSum), to.code);
 
-  const {
-    canShowDiscount,
-    finalPercent,
-    finalAmount,
-    discountMessage,
-    isLoading: isDiscountLoading,
-  } = useDiscountCalculator({
-    isGuest,
-    clientDiscountAvailable: client?.discount?.available ?? false,
-    mode,
-    baseAmount: computed.to,
-    exchangeRateId: to?.id,
-    branchId: Number(branchIdParam),
-    dependencyKey: computed.from, // обновлять при изменении суммы
-  });
+  const discountValue = useMemo(() => {
+    if (isGuest) return 0;
+
+    const kztAmount = computed.from; // сумма в тенге
+
+    if (mode === "buy") {
+      // Скидка 5% — уменьшаем сумму
+      return kztAmount * 0.05;
+    } else if (mode === "sell") {
+      // Наоборот — добавляем 5%
+      return -kztAmount * 0.05;
+    }
+
+    return 0;
+  }, [isGuest, computed.from, mode]);
+  const canShowDiscount = () => {
+    if (isGuest) return false; // гостям не даём скидку
+
+    // ✅ Если нет ни одной брони — показываем скидку
+    if (client?.discount?.available === true) return true;
+
+    // ✅ Если сумма ≥ 500 000 — тоже показываем
+    if (computed.from >= 500000) return true;
+
+    // ❌ иначе — нет скидки
+    return false;
+  };
+
+  function getDiscountMessage() {
+    const isBuy = mode === "buy";
+
+    // ✅ Если есть бронь и скидка/наценка недоступна — показываем короткий текст
+    if (client?.discount?.available === false && !canShowDiscount()) {
+      return isBuy
+        ? "Скидка доступна только при сумме больше 500 000 тенге"
+        : "Наценка доступна только при сумме больше 500 000 тенге";
+    }
+
+    // ✅ Если скидку можно показать (первая бронь или сумма >= 500к)
+    if (canShowDiscount()) {
+      if (client?.discount?.available === true) {
+        return isBuy
+          ? "Скидка доступна только на первую бронь или сумму больше 500 000 тенге"
+          : "Наценка доступна только на первую бронь или сумму больше 500 000 тенге";
+      } else {
+        return isBuy
+          ? "Скидка доступна только при сумме больше 500 000 тенге"
+          : "Наценка доступна только при сумме больше 500 000 тенге";
+      }
+    }
+
+    // ✅ По умолчанию — ничего не показывать
+    return null;
+  }
+  const discountMsg = getDiscountMessage();
 
   return (
     <KeyboardAvoidingView
@@ -488,20 +575,18 @@ export default function ReserveWithRateScreen() {
             </Text>
           )}
         </View>
-        {discountMessage && (
-          <Text style={styles.discountInfo}>{discountMessage}</Text>
-        )}
-
-        {canShowDiscount && finalAmount != null && (
+        {discountMsg && <Text style={styles.discountInfo}>{discountMsg}</Text>}
+        {/* 💰 Скидка для авторизованных */}
+        {canShowDiscount() && (
           <View style={styles.discountRow}>
             <Text style={styles.discountLabel}>
               {mode === "buy"
-                ? `С ${finalPercent}% скидкой:`
-                : `С наценкой ${finalPercent}%:`}
+                ? `С ${finalDiscountPercent}% скидкой:`
+                : `С наценкой ${finalDiscountPercent}%:`}
             </Text>
 
-            <Text style={styles.discountValue}>
-              {finalAmount.toLocaleString("ru-RU", {
+            <Text style={[styles.discountValue, { color: "#16A34A" }]}>
+              {finalDiscountedAmount.toLocaleString("ru-RU", {
                 maximumFractionDigits: 2,
               })}{" "}
               ₸
