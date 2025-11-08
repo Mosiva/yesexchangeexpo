@@ -347,11 +347,7 @@ export default function MainScreen() {
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <Pressable
-            hitSlop={12}
-
-            // onPress={handlePressSettings}
-          >
+          <Pressable hitSlop={12} onPress={handlePressSettings}>
             <Ionicons name="settings" size={22} color="#fff" />
           </Pressable>
         </View>
