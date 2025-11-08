@@ -1,14 +1,23 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import CurrenciesModal from "../../../../components/CurrenciesModal"; // поправь путь
 import LanguageChooseModal from "../../../../components/LanguageModal";
 import NotificationsModal from "../../../../components/NotificationsModal"; // поправь путь
+import { useAuth } from "../../../../providers/Auth";
 
 const ORANGE = "#F58220";
 
 export default function AppSetScreen() {
   const [lightTheme, setLightTheme] = useState(false);
+  const { isGuest } = useAuth();
 
   const [langModalVisible, setLangModalVisible] = useState(false);
   const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
@@ -68,17 +77,18 @@ export default function AppSetScreen() {
           onPress={() => setLangModalVisible(true)}
         />
 
-        {/* Notifications */}
-        <SettingsCard
-          icon="notifications-outline"
-          title="Уведомления"
-          subtitle={
-            notifPrefs.rates || notifPrefs.finance || notifPrefs.yesNews
-              ? "Включены"
-              : "Отключены"
-          }
-          onPress={() => setNotifModalVisible(true)}
-        />
+        {!isGuest && (
+          <SettingsCard
+            icon="notifications-outline"
+            title="Уведомления"
+            subtitle={
+              notifPrefs.rates || notifPrefs.finance || notifPrefs.yesNews
+                ? "Включены"
+                : "Отключены"
+            }
+            onPress={() => setNotifModalVisible(true)}
+          />
+        )}
       </ScrollView>
 
       {/* Modals */}
