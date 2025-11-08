@@ -30,7 +30,7 @@ import { useAuth } from "../../../../providers/Auth";
 import {
   useCreateBookingMutation,
   useCreateGuestBookingMutation,
-  useExchangeRatesCurrentQuery
+  useExchangeRatesCurrentQuery,
 } from "../../../../services/yesExchange";
 import { BookingDto, CurrencyCode } from "../../../../types/api";
 import { getCurrencySymbol } from "../../../../utils/currency";
@@ -384,7 +384,8 @@ export default function ReserveWithRateScreen() {
     isGuest,
     clientDiscountAvailable: client?.discount?.available ?? false,
     mode,
-    baseAmount: computed.to,
+    fromAmount: computed.to,
+    baseAmount: computed.from,
     exchangeRateId: to?.id,
     branchId: Number(branchIdParam),
     dependencyKey: computed.from, // обновлять при изменении суммы

@@ -10,6 +10,7 @@ type UseDiscountCalculatorArgs = {
   exchangeRateId?: number;
   branchId?: number;
   dependencyKey?: unknown;
+  fromAmount: number;
 };
 
 export function useDiscountCalculator({
@@ -17,6 +18,7 @@ export function useDiscountCalculator({
   clientDiscountAvailable, // true/false
   mode, // "buy" | "sell"
   baseAmount, // computed.from (в тенге)
+  fromAmount, // computed.to (в валюте)
   exchangeRateId,
   branchId,
   dependencyKey, // любое значение, при изменении которого надо пересчитать
@@ -50,7 +52,7 @@ export function useDiscountCalculator({
     calculate({
       branchId,
       exchangeRateId,
-      amount: baseAmount.toString(),
+      amount: fromAmount.toString(),
       operationType: mode,
       isRateLocked: true,
     })
