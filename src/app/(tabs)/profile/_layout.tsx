@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 function CustomHeader({
@@ -29,13 +30,14 @@ function CustomHeader({
 }
 
 export default function Layout() {
+  const { t } = useTranslation();
   return (
     <Stack>
       <Stack.Screen
         name="index"
         options={{
           // Hide back by default + disable iOS swipe-back
-          header: () => <CustomHeader title="Профиль" showBackButton={false} />,
+          header: () => <CustomHeader title={t("profile.title", "Профиль")} showBackButton={false} />,
           gestureEnabled: false,
         }}
       />
@@ -45,7 +47,7 @@ export default function Layout() {
           // Hide back by default + disable iOS swipe-back
           header: () => (
             <CustomHeader
-              title="Редактирование личных данных"
+              title={t("profile.editProfile", "Редактирование личных данных")}
               showBackButton={true}
             />
           ),
@@ -57,7 +59,7 @@ export default function Layout() {
         options={{
           // Hide back by default + disable iOS swipe-back
           header: () => (
-            <CustomHeader title="История брони" showBackButton={true} />
+            <CustomHeader title={t("profile.reserveHistory", "История брони")} showBackButton={true} />
           ),
           gestureEnabled: false,
         }}

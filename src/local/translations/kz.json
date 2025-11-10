@@ -742,6 +742,14 @@
     "register": "Тіркелу",
     "editProfile": "Профильді өңдеу",
     "reserveHistory": "Брондау тарихы",
-    "logout": "Профильден шығу"
+    "logout": "Профильден шығу",
+    "yourname": "Атыңыз",
+    "yoursecondname": "Тегіңіз",
+    "phone": "Телефон нөмірі",
+    "saving": "Сақталуда...",
+    "saveChanges": "Өзгерістерді сақтау",
+    "success": "Сәтті",
+    "successMessage": "Деректер сақталды",
+    "errorMessage": "Сақтау мүмкін болмады"
   }
 }

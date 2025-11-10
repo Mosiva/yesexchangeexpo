@@ -227,7 +227,7 @@
     "orderhistory": "История заказов",
     "accessprogramm": "Доступные программы"
   },
- 
+
   "notifications": {
     "title": "Уведомления",
     "indevelopment": "Пока в разработке скоро добавим )",
@@ -302,7 +302,7 @@
     "formreset": "Сбросить форму",
     "noconsultantselected": "Вам помогут в выборе консультанта"
   },
- 
+
   "datepicker": {
     "months": [
       "Январь",
@@ -323,7 +323,7 @@
     "next": "Следующий"
   },
 
-"notification": {
+  "notification": {
     "errorload": "Ошибка при загрузке уведомлений",
     "nodata": "Нет доступных уведомлений"
   },
@@ -470,6 +470,14 @@
     "register": "Зарегистрироваться",
     "editProfile": "Редактировать профиль",
     "reserveHistory": "История бронирования",
-    "logout": "Выйти из профиля"
+    "logout": "Выйти из профиля",
+    "yourname": "Ваше имя",
+    "yoursecondname": "Ваша фамилия",
+    "phone": "Номер телефона",
+    "saving": "Сохраняем...",
+    "saveChanges": "Сохранить изменения",
+    "success": "Успешно",
+    "successMessage": "Данные сохранены",
+    "errorMessage": "Не удалось сохранить"
   }
 }

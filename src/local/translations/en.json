@@ -738,15 +738,23 @@
     "error": "Error",
     "errorMessage": "Failed to cancel reservation."
   },
-  "profile": {
-    "title": "Profile",
-    "subtitle": "Log in to your account or create a new one",
-    "error": "Only Kazakhstan operator codes are supported",
-    "sendingCode": "Sending code...",
-    "login": "Log in",
-    "register": "Register",
-    "editProfile": "Edit profile",
-    "reserveHistory": "Reservation history",
-    "logout": "Log out"
-  }
+"profile": {
+  "title": "Profile",
+  "subtitle": "Log in to your account or create a new one",
+  "error": "Only Kazakhstan mobile operator codes are supported",
+  "sendingCode": "Sending code...",
+  "login": "Log in",
+  "register": "Register",
+  "editProfile": "Edit profile",
+  "reserveHistory": "Reservation history",
+  "logout": "Log out",
+  "yourname": "Your name",
+  "yoursecondname": "Your surname",
+  "phone": "Phone number",
+  "saving": "Saving...",
+  "saveChanges": "Save changes",
+  "success": "Success",
+  "successMessage": "Data saved",
+  "errorMessage": "Failed to save"
+}
 }

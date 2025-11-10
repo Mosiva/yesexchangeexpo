@@ -76,10 +76,10 @@ export default function EditProfileScreen() {
         role: client?.role ?? undefined,
       }).unwrap();
 
-      Alert.alert("Готово", "Данные сохранены");
+      Alert.alert(t("profile.success", "Готово"), t("profile.successMessage", "Данные сохранены"));
       router.back();
     } catch (err: any) {
-      Alert.alert("Ошибка", err?.data?.message || "Не удалось сохранить");
+      Alert.alert(t("common.error", "Ошибка"), err?.data?.message || t("common.errorMessage", "Не удалось сохранить"));
     }
   };
 
@@ -94,7 +94,7 @@ export default function EditProfileScreen() {
         control={control}
         name="firstName"
         render={({ field: { value, onChange, onBlur } }) => (
-          <Field label="Ваше имя">
+          <Field label={t("profile.yourname", "Ваше имя")}>
             <TextInput
               style={styles.fieldInput}
               placeholder="Азамат"
@@ -114,7 +114,7 @@ export default function EditProfileScreen() {
         control={control}
         name="lastName"
         render={({ field: { value, onChange, onBlur } }) => (
-          <Field label="Ваша фамилия" topGap={14}>
+          <Field label={t("profile.yoursecondname", "Ваша фамилия")} topGap={14}>
             <TextInput
               style={styles.fieldInput}
               placeholder="Жунумбеков"
@@ -131,7 +131,7 @@ export default function EditProfileScreen() {
         control={control}
         name="digits"
         render={({ field: { value, onChange } }) => (
-          <Field label="Номер телефона" topGap={14}>
+          <Field label={t("profile.phone", "Номер телефона")} topGap={14}>
             <MaskInput
               style={styles.fieldInput}
               placeholder="+7 707 777-77-77"
@@ -178,7 +178,7 @@ export default function EditProfileScreen() {
         disabled={isSubmitting || isUpdating}
       >
         <Text style={styles.saveBtnText}>
-          {isSubmitting || isUpdating ? "Сохраняем..." : "Сохранить изменения"}
+          {isSubmitting || isUpdating ? t("profile.saving", "Сохраняем...") : t("profile.saveChanges", "Сохранить изменения")}
         </Text>
       </TouchableOpacity>
     </ScrollView>
