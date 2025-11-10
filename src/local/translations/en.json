@@ -545,13 +545,7 @@
     "please": "Please",
     "closeapp": "Close the app and open it again."
   },
-  "profile": {
-    "infoaboutuser": "Account Information",
-    "personalinfo": "Personal Information",
-    "addressdelivery": "Delivery Address",
-    "call": "Call",
-    "write": "Write"
-  },
+
   "delivery": {
     "recycling": "Recycle Packaging",
     "recyclingText": "You can give plastic containers for recycling to our courier. The containers must be washed and free of food residues.",
@@ -743,5 +737,16 @@
     "ok": "OK",
     "error": "Error",
     "errorMessage": "Failed to cancel reservation."
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Log in to your account or create a new one",
+    "error": "Only Kazakhstan operator codes are supported",
+    "sendingCode": "Sending code...",
+    "login": "Log in",
+    "register": "Register",
+    "editProfile": "Edit profile",
+    "reserveHistory": "Reservation history",
+    "logout": "Log out"
   }
 }

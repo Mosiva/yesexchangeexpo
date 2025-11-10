@@ -108,7 +108,7 @@ export default function ProfileScreen() {
         err?.data?.msg ||
         err?.error ||
         t("common.errorInLgoin");
-      Alert.alert("Ошибка", String(msg));
+      Alert.alert(t("common.error", "Ошибка"), String(msg));
     } finally {
       setIsLoading(false);
     }
@@ -126,7 +126,7 @@ export default function ProfileScreen() {
         // -------------------- GUEST MODE --------------------
         <>
           <Text style={styles.subtitle}>
-            Войдите в аккаунт или создайте новый
+            {t("profile.subtitle", "Войдите в аккаунт или создайте новый")}
           </Text>
 
           <MaskInput
@@ -168,7 +168,7 @@ export default function ProfileScreen() {
           {/* Ошибка при неверном коде */}
           {digits.length >= 3 && !validPrefixes.includes(prefix) && (
             <Text style={styles.error}>
-              Доступны только коды операторов Казахстана
+              {t("profile.error", "Доступны только коды операторов Казахстана")}
             </Text>
           )}
 
@@ -181,7 +181,7 @@ export default function ProfileScreen() {
             disabled={!isValid || isLoading}
           >
             <Text style={styles.primaryBtnText}>
-              {isLoading ? "Отправляем код..." : "Войти"}
+              {isLoading ? t("profile.sendingCode", "Отправляем код...") : t("profile.login", "Войти")}
             </Text>
           </TouchableOpacity>
 
@@ -189,7 +189,7 @@ export default function ProfileScreen() {
             onPress={() => router.push("/(auth)/register")}
             style={{ marginTop: 24 }}
           >
-            <Text style={styles.linkText}>Зарегистрироваться</Text>
+            <Text style={styles.linkText}>{t("profile.register", "Зарегистрироваться")}</Text>
           </Pressable>
 
           {(isLoading || isClientLoading) && <Loader />}
@@ -203,7 +203,7 @@ export default function ProfileScreen() {
             </Text>
             <Pressable
               hitSlop={10}
-              accessibilityLabel="Редактировать профиль"
+              accessibilityLabel={t("profile.editProfile", "Редактировать профиль")}
               onPress={() => router.push("/(tabs)/profile/editprofile")}
             >
               <MaterialCommunityIcons name="pencil" size={24} color="#727376" />
@@ -216,7 +216,7 @@ export default function ProfileScreen() {
 
           <Pressable
             style={styles.cardRow}
-            accessibilityLabel="История бронирования"
+            accessibilityLabel={t("profile.reserveHistory", "История бронирования")}
             onPress={() =>
               router.push({
                 pathname: "/(tabs)/profile/reservehistory",
@@ -233,17 +233,17 @@ export default function ProfileScreen() {
                 color="#F58220"
               />
             </View>
-            <Text style={styles.cardText}>История бронирования</Text>
+            <Text style={styles.cardText}>{t("profile.reserveHistory", "История бронирования")}</Text>
             <Ionicons name="chevron-forward" size={22} color="#9CA3AF" />
           </Pressable>
 
           <Pressable
             onPress={logout}
             style={styles.logoutRow}
-            accessibilityLabel="Выйти из профиля"
+            accessibilityLabel={t("profile.logout", "Выйти из профиля")}
           >
             <Ionicons name="log-out-outline" size={20} color="#DC2626" />
-            <Text style={styles.logoutText}>Выйти из профиля</Text>
+            <Text style={styles.logoutText}>{t("profile.logout", "Выйти из профиля")}</Text>
           </Pressable>
         </>
       )}
