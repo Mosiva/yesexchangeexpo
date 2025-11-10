@@ -4,6 +4,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -20,7 +21,6 @@ import MaskInput from "react-native-mask-input";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { z } from "zod";
 import { useSubmitJobApplicationMutation } from "../../../../services/yesExchange";
-
 // --- Validation schema ---
 const schema = z.object({
   fullName: z.string().trim().min(1, "Введите ваше ФИО"),
@@ -36,6 +36,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function JoinToTeamScreen() {
+  const { t } = useTranslation();
   const [submitJobApplication, { isLoading }] =
     useSubmitJobApplicationMutation();
   const insets = useSafeAreaInsets();
@@ -103,7 +104,11 @@ export default function JoinToTeamScreen() {
       ],
     });
     if (res.assets?.[0]) setResume(res.assets[0]);
-    else Alert.alert("Ошибка", "Не удалось выбрать файл.");
+    else
+      Alert.alert(
+        t("jointoteam.error", "Ошибка"),
+        t("jointoteam.errorMessage", "Не удалось выбрать файл.")
+      );
   };
 
   // --- Submit ---
@@ -129,8 +134,11 @@ export default function JoinToTeamScreen() {
         err?.data?.message ||
         err?.error ||
         err?.message ||
-        "Не удалось отправить заявку. Попробуйте позже.";
-      Alert.alert("Ошибка", String(message));
+        t(
+          "jointoteam.errorMessage",
+          "Не удалось отправить заявку. Попробуйте позже."
+        );
+      Alert.alert(t("jointoteam.error", "Ошибка"), String(message));
     }
   };
 
@@ -143,7 +151,10 @@ export default function JoinToTeamScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.subtitle}>
-          Заполните форму, чтобы оставить свой отклик
+          {t(
+            "jointoteam.subtitle",
+            "Заполните форму, чтобы оставить свой отклик"
+          )}
         </Text>
 
         {/* ФИО */}
@@ -154,7 +165,7 @@ export default function JoinToTeamScreen() {
             <>
               <TextInput
                 style={styles.input}
-                placeholder="Ваше ФИО*"
+                placeholder={t("jointoteam.fullName", "Ваше ФИО*")}
                 value={value}
                 onChangeText={onChange}
                 returnKeyType="next"
@@ -257,7 +268,9 @@ export default function JoinToTeamScreen() {
         >
           <Ionicons name="attach-outline" size={22} color="#111827" />
           <Text style={styles.attachText}>
-            {resume?.name ? `Файл: ${resume.name}` : "Прикрепить резюме"}
+            {resume?.name
+              ? `Файл: ${resume.name}`
+              : t("jointoteam.attachResume", "Прикрепить резюме")}
           </Text>
         </TouchableOpacity>
 
@@ -269,7 +282,10 @@ export default function JoinToTeamScreen() {
             <>
               <TextInput
                 style={[styles.input, styles.textarea]}
-                placeholder="Расскажите немного о себе*"
+                placeholder={t(
+                  "jointoteam.coverLetter",
+                  "Расскажите немного о себе*"
+                )}
                 value={value}
                 onChangeText={onChange}
                 multiline
@@ -298,7 +314,9 @@ export default function JoinToTeamScreen() {
             disabled={!isValid || isSubmitting || isLoading}
           >
             <Text style={styles.submitText}>
-              {isSubmitting || isLoading ? "Отправляем..." : "Отправить"}
+              {isSubmitting || isLoading
+                ? t("jointoteam.sending", "Отправляем...")
+                : t("jointoteam.send", "Отправить")}
             </Text>
           </TouchableOpacity>
         </View>

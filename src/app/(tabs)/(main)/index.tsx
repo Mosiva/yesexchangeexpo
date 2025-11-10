@@ -22,7 +22,6 @@ import LineUpDownChartCard from "../../../components/LineUpDownChartCard";
 import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
 import ReservePromoCard from "../../../components/ReservePromoCard";
 import { Skeleton } from "../../../components/skeleton";
-import { usePushNotifications } from "../../../hooks/usePushNotifications";
 import { useUserLocation } from "../../../hooks/useUserLocation";
 import { useAuth } from "../../../providers/Auth";
 import {
@@ -99,7 +98,7 @@ export default function MainScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const { isGuest } = useAuth();
-  usePushNotifications(isGuest);
+  // usePushNotifications(isGuest);
 
   // === API ===
   const {

@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 function CustomHeader({
@@ -9,6 +10,7 @@ function CustomHeader({
   title: string;
   showBackButton?: boolean;
 }) {
+
   const router = useRouter();
   const canGoBack =
     typeof router.canGoBack === "function" ? router.canGoBack() : false;
@@ -29,14 +31,16 @@ function CustomHeader({
 }
 
 export default function Layout() {
+  const { t } = useTranslation();
   return (
+    
     <Stack>
       <Stack.Screen
         name="index"
         options={{
           // Hide back by default + disable iOS swipe-back
           header: () => (
-            <CustomHeader title="Настройки" showBackButton={true} />
+            <CustomHeader title={t("settings.title", "Настройки")} showBackButton={true} />
           ),
           gestureEnabled: false,
         }}
@@ -46,7 +50,7 @@ export default function Layout() {
         options={{
           // Hide back by default + disable iOS swipe-back
           header: () => (
-            <CustomHeader title="О компании" showBackButton={true} />
+            <CustomHeader title={t("aboutus.title", "О компании")} showBackButton={true} />
           ),
           gestureEnabled: false,
         }}
@@ -56,7 +60,7 @@ export default function Layout() {
         options={{
           // Hide back by default + disable iOS swipe-back
           header: () => (
-            <CustomHeader title="Хочу в команду!" showBackButton={true} />
+            <CustomHeader title={t("jointoteam.title", "Хочу в команду!")} showBackButton={true} />
           ),
           gestureEnabled: false,
         }}
@@ -66,7 +70,7 @@ export default function Layout() {
         options={{
           // Hide back by default + disable iOS swipe-back
           header: () => (
-            <CustomHeader title="Отзывы и предложения" showBackButton={true} />
+            <CustomHeader title={t("feedbacks.title", "Отзывы и предложения")} showBackButton={true} />
           ),
           gestureEnabled: false,
         }}
@@ -76,7 +80,10 @@ export default function Layout() {
         options={{
           // Hide back by default + disable iOS swipe-back
           header: () => (
-            <CustomHeader title="Настройки" showBackButton={true} />
+            <CustomHeader
+              title={t("appset.title", "Настройки")}
+              showBackButton={true}
+            />
           ),
           gestureEnabled: false,
         }}

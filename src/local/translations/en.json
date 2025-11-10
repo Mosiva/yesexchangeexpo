@@ -649,5 +649,47 @@
     "authorize": "Authorize",
     "mailexapmle": "Example: user@mail.com",
     "backreturn": "Go back"
+  },
+  "appset": {
+    "title": "Settings",
+    "theme": "Theme",
+    "currency": "Currency on the main screen",
+    "language": "Language",
+    "notifications": "Notifications",
+    "notifications.enabled": "Enabled",
+    "notifications.disabled": "Disabled",
+    "theme.dark": "Dark",
+    "theme.light": "Light"
+  },
+  "settings": {
+    "title": "Settings",
+    "feedbacks": "Feedbacks",
+    "aboutus": "About us",
+    "cta": "I want to join your team!",
+    "share.label": "Share the app",
+    "version": "App version",
+    "share.message": "Yes Exchange — удобный обмен валют. Скачай приложение: https://yes.exchange/app",
+    "share.error": "Failed to share"
+  },
+  "feedbacks": {
+    "title": "Feedbacks",
+    "lead": "Dear customers, we always welcome your suggestions and feedback. Thank you in advance!",
+    "fullName": "Your full name*",
+    "onlyKazakhstanOperators": "Only Kazakhstan operator codes are available",
+    "message": "Your feedback or suggestions*",
+    "sending": "Sending...",
+    "send": "Send",
+    "error": "Error"
+  },
+  "jointoteam": {
+    "title": "I want to join your team!",
+    "subtitle": "Fill out the form to leave your feedback",
+    "fullName": "Your full name*",
+    "attachResume": "Attach a resume",
+    "coverLetter": "Tell us a little about yourself*",
+    "sending": "Sending...",
+    "send": "Send",
+    "error": "Error",
+    "errorMessage": "Failed to submit application. Please try again later."
   }
 }

@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   ScrollView,
@@ -15,6 +16,7 @@ import {
 const ORANGE = "#F58220";
 
 export default function SettingsScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const version = "1.0.0";
 
@@ -22,10 +24,10 @@ export default function SettingsScreen() {
     try {
       await Share.share({
         message:
-          "Yes Exchange — удобный обмен валют. Скачай приложение: https://yes.exchange/app",
+          t("settings.share.message", "Yes Exchange — удобный обмен валют. Скачай приложение: https://yes.exchange/app"),
       });
     } catch (e: any) {
-      Alert.alert("Не удалось поделиться", e?.message ?? "");
+      Alert.alert(t("settings.share.error", "Не удалось поделиться"), e?.message ?? "");
     }
   };
 
@@ -39,17 +41,17 @@ export default function SettingsScreen() {
         {/* Rows */}
         <ListItem
           icon="settings-outline"
-          label="Настройки"
+          label={t("settings.title", "Настройки")}
           onPress={() => router.push("/(stacks)/settings/appset")}
         />
         <ListItem
           icon="chatbox-ellipses-outline"
-          label="Отзывы и предложения"
+          label={t("settings.feedbacks", "Отзывы и предложения")}
           onPress={() => router.push("/(stacks)/settings/feedbacks")}
         />
         <ListItem
           icon="newspaper-outline"
-          label="О компании"
+          label={t("settings.aboutus", "О компании")}
           onPress={() => router.push("/(stacks)/settings/aboutus")}
         />
 
@@ -58,17 +60,17 @@ export default function SettingsScreen() {
           style={styles.cta}
           onPress={() => router.push("/(stacks)/settings/jointoteam")}
         >
-          <Text style={styles.ctaText}>Хочу к вам в команду!</Text>
+          <Text style={styles.ctaText}>{t("settings.cta", "Хочу к вам в команду!")}</Text>
         </TouchableOpacity>
 
         {/* Share */}
         <TouchableOpacity style={styles.shareRow} onPress={onShare}>
           <Ionicons name="share-social-outline" size={22} color="#9CA3AF" />
-          <Text style={styles.shareText}>Поделиться приложением</Text>
+          <Text style={styles.shareText}>{t("settings.share.label", "Поделиться приложением")}</Text>
         </TouchableOpacity>
 
         {/* Version */}
-        <Text style={styles.version}>Версия приложения {version}</Text>
+        <Text style={styles.version}>{t("settings.version", "Версия приложения")} {version}</Text>
       </ScrollView>
     </View>
   );

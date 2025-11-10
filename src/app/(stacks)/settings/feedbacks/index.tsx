@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -34,6 +35,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function FeedbacksScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [submitFeedback, { isLoading }] = useSubmitFeedbackMutation();
 
@@ -105,8 +107,8 @@ export default function FeedbacksScreen() {
         err?.data?.message ||
         err?.error ||
         err?.message ||
-        "Не удалось отправить сообщение. Попробуйте позже.";
-      Alert.alert("Ошибка", String(msg));
+        t("feedbacks.error", "Не удалось отправить сообщение. Попробуйте позже.");
+      Alert.alert(t("feedbacks.error", "Ошибка"), String(msg));
     }
   };
 
@@ -119,8 +121,7 @@ export default function FeedbacksScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.lead}>
-          Уважаемые клиенты, мы всегда рады выслушать ваши предложения и отзывы.
-          Заранее благодарим!
+          {t("feedbacks.lead", "Уважаемые клиенты, мы всегда рады выслушать ваши предложения и отзывы. Заранее благодарим!")}
         </Text>
 
         {/* ФИО */}
@@ -131,7 +132,7 @@ export default function FeedbacksScreen() {
             <>
               <TextInput
                 style={styles.input}
-                placeholder="Ваше ФИО*"
+                placeholder={t("feedbacks.fullName", "Ваше ФИО*")}
                 value={value}
                 onChangeText={onChange}
                 returnKeyType="next"
@@ -219,7 +220,7 @@ export default function FeedbacksScreen() {
               )}
               {digits.length >= 3 && !isPrefixValid && (
                 <Text style={styles.error}>
-                  Доступны только коды операторов Казахстана
+                  {t("feedbacks.onlyKazakhstanOperators", "Доступны только коды операторов Казахстана")}
                 </Text>
               )}
             </>
@@ -234,7 +235,7 @@ export default function FeedbacksScreen() {
             <>
               <TextInput
                 style={[styles.input, styles.textarea]}
-                placeholder="Ваш отзыв или пожелания*"
+                placeholder={t("feedbacks.message", "Ваш отзыв или пожелания*")}
                 value={value}
                 onChangeText={onChange}
                 multiline
@@ -264,7 +265,7 @@ export default function FeedbacksScreen() {
             onPress={handleSubmit(onSubmit)}
           >
             <Text style={styles.submitText}>
-              {isSubmitting || isLoading ? "Отправляем..." : "Отправить"}
+              {isSubmitting || isLoading ? t("feedbacks.sending", "Отправляем...") : t("feedbacks.send", "Отправить")}
             </Text>
           </TouchableOpacity>
         </View>

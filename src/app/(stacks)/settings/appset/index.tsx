@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Pressable,
   ScrollView,
@@ -16,6 +17,7 @@ import { useAuth } from "../../../../providers/Auth";
 const ORANGE = "#F58220";
 
 export default function AppSetScreen() {
+  const { t } = useTranslation();
   const [lightTheme, setLightTheme] = useState(false);
   const { isGuest } = useAuth();
 
@@ -36,8 +38,8 @@ export default function AppSetScreen() {
   });
 
   const nextTheme = lightTheme
-    ? { label: "Тёмная", icon: "moon-outline" as const }
-    : { label: "Светлая", icon: "sunny-outline" as const };
+    ? { label: t("appset.theme.dark", "Тёмная"), icon: "moon-outline" as const }
+    : { label: t("appset.theme.light", "Светлая"), icon: "sunny-outline" as const };
 
   return (
     <View style={styles.container}>
@@ -52,7 +54,7 @@ export default function AppSetScreen() {
             <Ionicons name={nextTheme.icon} size={22} color={ORANGE} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle}>Тема приложения</Text>
+            <Text style={styles.cardTitle}>{t("appset.theme", "Тема приложения")}</Text>
             <Text style={styles.cardSub}>{nextTheme.label}</Text>
           </View>
           <SwitchPill
@@ -64,7 +66,7 @@ export default function AppSetScreen() {
         {/* Currency */}
         <SettingsCard
           icon="cash-outline"
-          title="Валюта на главном табло"
+          title={t("appset.currency", "Валюта на главном табло")}
           subtitle={selectedCurrencies.join(", ")}
           onPress={() => setCurrencyModalVisible(true)}
         />
@@ -72,7 +74,7 @@ export default function AppSetScreen() {
         {/* Language */}
         <SettingsCard
           icon="globe-outline"
-          title="Язык приложения"
+          title={t("appset.language", "Язык приложения")}
           subtitle={currentLang.toUpperCase()}
           onPress={() => setLangModalVisible(true)}
         />
@@ -80,11 +82,11 @@ export default function AppSetScreen() {
         {!isGuest && (
           <SettingsCard
             icon="notifications-outline"
-            title="Уведомления"
+            title={t("appset.notifications", "Уведомления")}
             subtitle={
               notifPrefs.rates || notifPrefs.finance || notifPrefs.yesNews
-                ? "Включены"
-                : "Отключены"
+                ? t("appset.notifications.enabled", "Включены")
+                : t("appset.notifications.disabled", "Отключены")
             }
             onPress={() => setNotifModalVisible(true)}
           />
