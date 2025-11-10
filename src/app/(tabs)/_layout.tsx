@@ -97,7 +97,7 @@ export default function Layout() {
       <Tabs.Screen
         name="reserve"
         options={{
-          tabBarLabel: "Бронь",
+          tabBarLabel: t("reserve.title", "Бронь"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bookmarks" size={size} color={color} />
           ),

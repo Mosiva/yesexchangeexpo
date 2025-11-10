@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   Image,
   StatusBar,
@@ -12,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SuccessFormScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { isJointTeam } = useLocalSearchParams<{ isJointTeam?: string }>();
   const isJoint = isJointTeam === "true";
@@ -33,11 +35,11 @@ export default function SuccessFormScreen() {
         {/* Текст */}
         {isJoint ? (
           <Text style={styles.text}>
-            Спасибо, наши специалисты рассмотрят ваше резюме и свяжутся с вами
+            {t("successform.jointTeam", "Спасибо, наши специалисты рассмотрят ваше резюме и свяжутся с вами")}
           </Text>
         ) : (
           <Text style={styles.text}>
-            Ваш отзыв успешно отправлен! Благодарим за доверие!
+            {t("successform.feedbackSent", "Ваш отзыв успешно отправлен! Благодарим за доверие!")}
           </Text>
         )}
       </View>
@@ -48,7 +50,7 @@ export default function SuccessFormScreen() {
           style={styles.button}
           onPress={() => router.push("/(tabs)/(main)")}
         >
-          <Text style={styles.buttonText}>На главную</Text>
+          <Text style={styles.buttonText}>{t("successform.backToMain", "На главную")}</Text>
         </TouchableOpacity>
       </View>
     </View>

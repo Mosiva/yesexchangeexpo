@@ -1,5 +1,6 @@
 // components/LoginDiscountBanner.tsx
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   StyleSheet,
   Text,
@@ -18,11 +19,12 @@ export default function LoginDiscountBanner({
   onPress?: () => void;
   style?: ViewStyle;
 }) {
+  const { t } = useTranslation();
   return (
     <View style={[styles.wrap, style]}>
       <Text style={styles.title}>
-        Авторизуйтесь и получите <Text style={styles.accent}>скидку 5%</Text>
-         {"\n"}на первое бронирование с привязкой к курсу
+      {t("loginDiscountBanner.title", "Авторизуйтесь и получите")} <Text style={styles.accent}>{t("loginDiscountBanner.discount", "скидку 5%")}</Text>
+         {"\n"}{t("loginDiscountBanner.subtitle", "на первое бронирование с привязкой к курсу")}
       </Text>
 
       <TouchableOpacity
@@ -30,7 +32,7 @@ export default function LoginDiscountBanner({
         onPress={onPress}
         activeOpacity={0.9}
       >
-        <Text style={styles.btnText}>Войти</Text>
+        <Text style={styles.btnText}>{t("loginDiscountBanner.login", "Войти")}</Text>
       </TouchableOpacity>
     </View>
   );

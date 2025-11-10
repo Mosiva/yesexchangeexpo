@@ -691,5 +691,25 @@
     "send": "Send",
     "error": "Error",
     "errorMessage": "Failed to submit application. Please try again later."
+  },
+  "successform": {
+    "jointTeam": "Thank you, our specialists will review your resume and contact you",
+    "feedbackSent": "Your feedback has been successfully sent! Thank you for your trust!",
+    "backToMain": "Back to main"
+  },
+  "loginDiscountBanner": {
+    "title": "Authorize and get",
+    "discount": "discount 5%",
+    "subtitle": "on the first reservation with a rate to the course",
+    "login": "Login"
+  },
+  "reserve": {
+    "title": "Reservation",
+    "noRate": "Without rate\n to the course",
+    "withRate": "With rate\n to the course",
+    "withRateSub": "Reservation up to 30 minutes",
+    "goldReservation": "Gold reservation",
+    "goldReservationSub": "Gold coins of the National Bank of Kazakhstan",
+    "history": "Reservation history"
   }
 }

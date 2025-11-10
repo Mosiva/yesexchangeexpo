@@ -44,13 +44,13 @@ export default function ReserveScreen() {
       {/* Top tiles */}
       <View style={styles.tilesRow}>
         <Tile
-          title={"Без привязки\nк курсу"}
+          title={t("reserve.noRate", "Без привязки\nк курсу")}
           Icon={<FontAwesome6 name="money-bills" size={24} color={ORANGE} />}
           onPress={() => router.push("/(stacks)/norates/branchpicker")}
         />
         <Tile
-          title={"С привязкой\nк курсу"}
-          sub="Бронь до 30 минут"
+          title={t("reserve.withRate", "С привязкой\nк курсу")}
+          sub={t("reserve.withRateSub", "Бронь до 30 минут")}
           Icon={<MaterialIcons name="analytics" size={24} color={ORANGE} />}
           onPress={() =>
             router.push({
@@ -73,8 +73,8 @@ export default function ReserveScreen() {
             <MaterialCommunityIcons name="gold" size={24} color={ORANGE} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.wideTitle}>Бронирование золота</Text>
-            <Text style={styles.wideSub}>Золотые слитки НБ РК</Text>
+            <Text style={styles.wideTitle}>{t("reserve.goldReservation", "Бронирование золота")}</Text>
+            <Text style={styles.wideSub}>{t("reserve.goldReservationSub", "Золотые слитки НБ РК")}</Text>
           </View>
         </View>
       </Pressable>
@@ -93,7 +93,7 @@ export default function ReserveScreen() {
                 color="#F58220"
               />
             </View>
-            <Text style={styles.historyText}>История бронирования</Text>
+            <Text style={styles.historyText}>{t("reserve.history", "История бронирования")}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </Pressable>
