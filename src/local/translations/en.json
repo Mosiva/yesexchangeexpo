@@ -705,11 +705,43 @@
   },
   "reserve": {
     "title": "Reservation",
-    "noRate": "Without rate\n to the course",
-    "withRate": "With rate\n to the course",
+    "noRate": "Without rate link",
+    "withRate": "With rate link",
     "withRateSub": "Reservation up to 30 minutes",
     "goldReservation": "Gold reservation",
-    "goldReservationSub": "Gold coins of the National Bank of Kazakhstan",
-    "history": "Reservation history"
+    "goldReservationSub": "NB RK gold bars",
+    "history": "Reservation history",
+    "emptyMessage": "No reservations yet",
+    "success": "Success",
+    "successMessage": "Reservation successfully cancelled.",
+    "ok": "OK",
+    "error": "Error",
+    "errorMessage": "Failed to cancel reservation.",
+    "retry": "Retry"
+  },
+
+  "cancelReservationModal": {
+    "title": "Cancel Reservation",
+    "message": "Are you sure you want to cancel the reservation?",
+    "loading": "Cancelling...",
+    "confirm": "Yes",
+    "no": "No"
+  },
+
+  "reservationCard": {
+    "title": "Application №",
+    "amount": "Reservation amount:",
+    "address": "Address:",
+    "cancel": "Cancel reservation"
+  },
+
+  "reservationHistory": {
+    "title": "Reservation history",
+    "emptyMessage": "No reservations yet",
+    "success": "Success",
+    "successMessage": "Reservation successfully cancelled.",
+    "ok": "OK",
+    "error": "Error",
+    "errorMessage": "Failed to cancel reservation."
   }
 }

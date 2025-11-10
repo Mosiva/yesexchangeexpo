@@ -718,6 +718,38 @@
     "withRateSub": "Бронь до 30 минут",
     "goldReservation": "Бронирование золота",
     "goldReservationSub": "Золотые слитки НБ РК",
-    "history": "История бронирования"
+    "history": "История бронирования",
+    "emptyMessage": "Пока нет броней",
+    "success": "Успешно",
+    "successMessage": "Бронь успешно отменена.",
+    "ok": "ОК",
+    "error": "Ошибка",
+    "errorMessage": "Не удалось отменить бронь.",
+    "retry": "Повторить"
+  }
+  ,
+  "cancelReservationModal": {
+    "title": "Отмена брони",
+    "message": "Вы уверены, что хотите отменить бронь?",
+    "loading": "Отмена...",
+    "confirm": "Да",
+    "no": "Нет"
+  }
+  ,
+  "reservationCard": {
+    "title": "Заявка №",
+    "amount": "Сумма брони:",
+    "address": "Адрес:",
+    "cancel": "Отменить бронь"
+  }
+  ,
+  "reservationHistory": {
+    "title": "История бронирования",
+    "emptyMessage": "Пока нет броней",
+    "success": "Успешно",
+    "successMessage": "Бронь успешно отменена.",
+    "ok": "ОК",
+    "error": "Ошибка",
+    "errorMessage": "Не удалось отменить бронь."
   }
 }

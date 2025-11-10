@@ -1,5 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   RefreshControl,
@@ -21,6 +22,7 @@ import {
 } from "../../../../services/yesExchange";
 
 export default function ReserveHistoryRScreen() {
+  const { t } = useTranslation();
   const [refreshing, setRefreshing] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
@@ -105,14 +107,14 @@ export default function ReserveHistoryRScreen() {
 
       await doCancelBooking({ id: bookingId }).unwrap();
 
-      Alert.alert("Успешно", "Бронь успешно отменена.", [
-        { text: "ОК", onPress: () => refetchBookings() },
+      Alert.alert(t("reserve.success", "Успешно"), t("reserve.successMessage", "Бронь успешно отменена."), [
+        { text: t("reserve.ok", "ОК"), onPress: () => refetchBookings() },
       ]);
     } catch (err: any) {
       console.error("❌ Cancel booking error:", err);
       Alert.alert(
-        "Ошибка",
-        err?.data?.message || err?.error || "Не удалось отменить бронь."
+        t("reserve.error", "Ошибка"),
+        err?.data?.message || err?.error || t("reserve.errorMessage", "Не удалось отменить бронь.")
       );
     }
   };
@@ -134,12 +136,12 @@ export default function ReserveHistoryRScreen() {
 
   const renderError = () => (
     <View style={styles.errorWrap}>
-      <Text style={styles.errorText}>Не удалось загрузить данные 😞</Text>
+      <Text style={styles.errorText}>{t("reserve.errorMessage", "Не удалось загрузить данные 😞")}</Text>
       <TouchableOpacity
         style={styles.retryBtn}
         onPress={() => refetchBookings()}
       >
-        <Text style={styles.retryText}>Повторить</Text>
+        <Text style={styles.retryText}>{t("reserve.retry", "Повторить")}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -160,7 +162,7 @@ export default function ReserveHistoryRScreen() {
           }
         >
           {items.length === 0 ? (
-            <Text style={styles.emptyText}>Пока нет броней</Text>
+            <Text style={styles.emptyText}>{t("reserve.emptyMessage", "Пока нет броней")}</Text>
           ) : (
             items.map((it, idx) => (
               <ReservationCard

@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Modal from "react-native-modal";
 
@@ -16,6 +17,7 @@ export default function CancelReservationModal({
   onConfirm,
   isLoading = false,
 }: Props) {
+  const { t } = useTranslation();
   return (
     <Modal
       isVisible={visible}
@@ -35,14 +37,14 @@ export default function CancelReservationModal({
 
           {/* Заголовок + крестик */}
           <View style={styles.header}>
-            <Text style={styles.title}>Отмена брони</Text>
+            <Text style={styles.title}>{t("cancelReservationModal.title", "Отмена брони")}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={8}>
               <Ionicons name="close" size={22} color="#111827" />
             </TouchableOpacity>
           </View>
 
           <Text style={styles.message}>
-            Вы уверены, что хотите отменить бронь?
+            {t("cancelReservationModal.message", "Вы уверены, что хотите отменить бронь?")}
           </Text>
 
           {/* Кнопки */}
@@ -52,7 +54,7 @@ export default function CancelReservationModal({
               onPress={onClose}
               disabled={isLoading}
             >
-              <Text style={styles.cancelText}>Нет</Text>
+              <Text style={styles.cancelText}>{t("cancelReservationModal.no", "Нет")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -61,7 +63,7 @@ export default function CancelReservationModal({
               disabled={isLoading}
             >
               <Text style={styles.confirmText}>
-                {isLoading ? "Отмена..." : "Да"}
+                {isLoading ? t("cancelReservationModal.loading", "Отмена...") : t("cancelReservationModal.confirm", "Да")}
               </Text>
             </TouchableOpacity>
           </View>

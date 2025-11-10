@@ -705,6 +705,38 @@
     "withRateSub": "Брондау 30 минутқа дейін",
     "goldReservation": "Алтын резерві",
     "goldReservationSub": "Ұлттық Банк алтын құймалары",
-    "history": "Бронь тарихы"
+    "history": "Бронь тарихы",
+    "emptyMessage": "Әзірге броньдар жоқ",
+    "success": "Сәтті",
+    "successMessage": "Бронь сәтті түрде жойылды.",
+    "ok": "ОК",
+    "error": "Қате",
+    "errorMessage": "Броньды жою сәтсіз аяқталды.",
+    "retry": "Қайталау"
+  },
+
+  "cancelReservationModal": {
+    "title": "Броньдан бас тарту",
+    "message": "Броньдан бас тартқыңыз келетініне сенімдісіз бе?",
+    "loading": "Бас тарту...",
+    "confirm": "Иә",
+    "no": "Жоқ"
+  },
+
+  "reservationCard": {
+    "title": "Өтінім №",
+    "amount": "Бронь сомасы:",
+    "address": "Мекенжайы:",
+    "cancel": "Броньдан бас тарту"
+  },
+
+  "reservationHistory": {
+    "title": "Бронь тарихы",
+    "emptyMessage": "Әзірге броньдар жоқ",
+    "success": "Сәтті",
+    "successMessage": "Бронь сәтті түрде жойылды.",
+    "ok": "ОК",
+    "error": "Қате",
+    "errorMessage": "Броньды жою сәтсіз аяқталды."
   }
 }
