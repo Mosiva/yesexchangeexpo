@@ -756,6 +756,14 @@
     "success": "Success",
     "successMessage": "Data saved",
     "errorMessage": "Failed to save"
+  },
+  "nearby": {
+    "myAddress": "My address",
+    "loading": "Loading...",
+    "permissionDenied": "Permission denied",
+    "refresh": "Refresh",
+    "locationDisabled": "Location disabled",
+    "locationPermissionDescription": "To show nearby branches, allow access to location",
+    "tryAgain": "Try again"
   }
-
 }

@@ -479,5 +479,14 @@
     "success": "Успешно",
     "successMessage": "Данные сохранены",
     "errorMessage": "Не удалось сохранить"
+  },
+  "nearby": {
+    "myAddress": "Мой адрес",
+    "loading": "Определяем...",
+    "permissionDenied": "Доступ запрещён",
+    "refresh": "Обновить",
+    "locationDisabled": "Геолокация отключена",
+    "locationPermissionDescription": "Чтобы показать ближайшие филиалы, разрешите доступ к местоположению",
+    "tryAgain": "Попробовать снова"
   }
 }

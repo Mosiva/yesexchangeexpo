@@ -751,5 +751,14 @@
     "success": "Сәтті",
     "successMessage": "Деректер сақталды",
     "errorMessage": "Сақтау мүмкін болмады"
+  },
+  "nearby": {
+    "myAddress": "Менің мекенжайым",
+    "loading": "Жүктелуде...",
+    "permissionDenied": "Рұқсат берілмеді",
+    "refresh": "Жаңарту",
+    "locationDisabled": "Геолокация сөндірілген",
+    "locationPermissionDescription": "Близжайшіктерді көрсету үшін геолокацияға рұқсат беріңіз",
+    "tryAgain": "Қайталау"
   }
 }
