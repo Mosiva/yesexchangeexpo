@@ -336,8 +336,26 @@
     "rateHint": "By rate"
   },
   "norates": {
+    "title": "Without rate link",
+    "rateAlertTitle": "Rate as of",
+    "rateAlertMessage": "Please note that the rate may change before receiving the currency at the exchange point.",
+    "total": "Total",
+    "yourAmount": "Your amount",
+    "noRateExplanation": "This type of reservation does not fix the exchange rate",
+    "iSell": "I sell",
+    "iBuy": "I buy",
+    "leavePhone": "Leave the phone number for the reservation",
+    "onlyValidPhonePrefixes": "Only Kazakhstan operator codes are allowed",
+    "sending": "Sending...",
+    "book": "Reserve",
+    "selectCurrency": "Select currency",
+    "errorDeterminingCurrencyOrBranch": "Failed to determine currency or branch.",
+    "error": "Error",
+    "enterValidPhone": "Enter a valid Kazakhstan phone number (+7 7XX XXX-XX-XX).",
+    "kztRateNotFound": "KZT rate not found.",
+
     "withrates": {
-      "title": "Reservation with rate link",
+      "title": "With rate link",
       "bookingWithRateExplanation": "This type of reservation locks in the selected exchange rate",
       "iSell": "I sell",
       "iBuy": "I buy",

@@ -8,6 +8,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -56,6 +57,7 @@ const parse = (s: string) =>
   );
 
 export default function ReserveNoRateScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { id: branchIdParam, address } = useLocalSearchParams<{
@@ -228,15 +230,15 @@ export default function ReserveNoRateScreen() {
   /** ====== Сабмит брони ====== */
   const handleCreateBooking = async () => {
     if (!branchIdParam || !to?.id) {
-      Alert.alert("Ошибка", "Не удалось определить валюту или филиал.");
+      Alert.alert(t("norates.errorDeterminingCurrencyOrBranch", "Не удалось определить валюту или филиал."));
       return;
     }
     // Проверка телефона, если гость
     if (isGuest) {
       if (!isValid) {
         Alert.alert(
-          "Ошибка",
-          "Введите корректный номер телефона Казахстана (+7 7XX XXX-XX-XX)."
+          t("norates.error", "Ошибка"),
+          t("norates.enterValidPhone", "Введите корректный номер телефона Казахстана (+7 7XX XXX-XX-XX).")
         );
         return;
       }
@@ -244,7 +246,7 @@ export default function ReserveNoRateScreen() {
     // ✅ Найдём курс тенге (KZT)
     const kztRate = currencies.find((c) => c.code === "KZT");
     if (!kztRate) {
-      Alert.alert("Ошибка", "Не найден курс KZT.");
+      Alert.alert(t("norates.error", "Ошибка"), t("norates.kztRateNotFound", "Не найден курс KZT."));
       return;
     }
 
@@ -288,8 +290,8 @@ export default function ReserveNoRateScreen() {
       const msg =
         err?.data?.message ||
         err?.error ||
-        "Не удалось создать бронь. Попробуйте ещё раз.";
-      Alert.alert("Ошибка", msg);
+        t("norates.errorCreatingBooking", "Не удалось создать бронь. Попробуйте ещё раз.");
+      Alert.alert(t("norates.error", "Ошибка"), msg);
     }
   };
 
@@ -306,7 +308,7 @@ export default function ReserveNoRateScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.subtitle}>
-          Данный вид брони не подразумевает сохранения курса
+          {t("norates.noRateExplanation", "Данный вид брони не подразумевает сохранения курса")}
         </Text>
 
         {/* Segmented control */}
@@ -321,7 +323,7 @@ export default function ReserveNoRateScreen() {
                 mode === "sell" && styles.segmentTextActive,
               ]}
             >
-              Я продаю
+              {t("norates.iSell", "Я продаю")}
             </Text>
           </Pressable>
           <Pressable
@@ -334,7 +336,7 @@ export default function ReserveNoRateScreen() {
                 mode === "buy" && styles.segmentTextActive,
               ]}
             >
-              Я покупаю
+              {t("norates.iBuy", "Я покупаю")}
             </Text>
           </Pressable>
         </View>
@@ -405,7 +407,7 @@ export default function ReserveNoRateScreen() {
           >
             <View style={{ marginTop: 20 }}>
               <Text style={styles.subtitle}>
-                Оставьте номер телефона, на который хотите оформить бронь
+                {t("norates.leavePhone", "Оставьте номер телефона, на который хотите оформить бронь")}
               </Text>
               <MaskInput
                 style={styles.input}
@@ -449,16 +451,16 @@ export default function ReserveNoRateScreen() {
         {/* Ошибка при неверном коде */}
         {digits.length >= 3 && !validPrefixes.includes(prefix) && (
           <Text style={styles.error}>
-            Доступны только коды операторов Казахстана
+            {t("norates.onlyValidPhonePrefixes", "Доступны только коды операторов Казахстана")}
           </Text>
         )}
       </ScrollView>
 
       {/* Footer */}
       <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
-        <Text style={styles.footerTitle}>Итого</Text>
+        <Text style={styles.footerTitle}>{t("norates.total", "Итого")}</Text>
         <View style={styles.footerRow}>
-          <Text style={styles.footerLabel}>{"Ваша сумма"}</Text>
+          <Text style={styles.footerLabel}>{t("norates.yourAmount", "Ваша сумма")}</Text>
           <Text
             style={[
               styles.footerValue,
@@ -483,7 +485,7 @@ export default function ReserveNoRateScreen() {
           onPress={handleCreateBooking}
         >
           <Text style={styles.ctaText}>
-            {isCreating || isCreatingGuest ? "Отправка..." : "Забронировать"}
+            {isCreating || isCreatingGuest ? t("norates.sending", "Отправка...") : t("norates.book", "Забронировать")}
           </Text>
         </Pressable>
       </View>
@@ -497,7 +499,7 @@ export default function ReserveNoRateScreen() {
           setShowToModal(false);
         }}
         value={[toCode]}
-        buttonText="Выбрать валюту"
+        buttonText={t("norates.selectCurrency", "Выбрать валюту")}
         items={currencies.map((c) => ({
           code: c.code,
           name: c.name,

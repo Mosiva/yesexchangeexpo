@@ -45,7 +45,7 @@ export default function Layout() {
           // Hide back by default + disable iOS swipe-back
           header: () => (
             <CustomHeader
-              title="Бронь без привязки к курсу"
+              title={t("norates.title", "Бронь без привязки к курсу")}
               showBackButton={true}
             />
           ),

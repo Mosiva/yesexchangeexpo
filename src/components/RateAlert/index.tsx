@@ -1,6 +1,7 @@
 // components/RateAlert.tsx
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View, ViewStyle } from "react-native";
 
 type Props = {
@@ -11,13 +12,14 @@ type Props = {
   style?: ViewStyle;
 };
 
-export default function RateAlert({
-  asOf,
-  message = "Обратите внимание, курс может измениться к моменту получения валюты в обменном пункте.",
-  style,
-}: Props) {
+export default function RateAlert({ asOf, message, style }: Props) {
+  const { t } = useTranslation();
+  message = t(
+    "norates.rateAlertMessage",
+    "Обратите внимание, курс может измениться к моменту получения валюты в обменном пункте."
+  );
   const dt = asOf instanceof Date ? asOf : new Date(asOf ?? Date.now());
-  const title = `Курс по состоянию на ${dt.toLocaleString("ru-RU", {
+  const title = `${t("norates.rateAlertTitle", "Курс по состоянию на")} ${dt.toLocaleString("ru-RU", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
