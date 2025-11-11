@@ -253,6 +253,7 @@
     "errorMessage": "Не удалось сохранить"
   },
   "nearby": {
+    "title": "Карта",
     "myAddress": "Мой адрес",
     "loading": "Определяем...",
     "permissionDenied": "Доступ запрещён",

@@ -255,6 +255,7 @@
     "errorMessage": "Сақтау мүмкін болмады"
   },
   "nearby": {
+    "title": "Карта",
     "myAddress": "Менің мекенжайым",
     "loading": "Жүктелуде...",
     "permissionDenied": "Рұқсат берілмеді",

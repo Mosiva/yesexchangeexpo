@@ -255,6 +255,7 @@
     "errorMessage": "Failed to save"
   },
   "nearby": {
+    "title": "Map",
     "myAddress": "My address",
     "loading": "Loading...",
     "permissionDenied": "Permission denied",

@@ -88,7 +88,7 @@ export default function Layout() {
       <Tabs.Screen
         name="nearby"
         options={{
-          tabBarLabel: "Карта",
+          tabBarLabel: t("nearby.title", "Карта"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="map" size={size} color={color} />
           ),
