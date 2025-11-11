@@ -319,5 +319,15 @@
   "reservePromoCard": {
     "title": "Бронирование\nкурса/суммы",
     "ctaText": "Забронировать"
+  },
+  "currencyExchangeModal": {
+    "sell": "Продажа",
+    "buy": "Покупка",
+    "sellInput": "Продать",
+    "buyInput": "Купить",
+    "sellOutput": "Получить",
+    "buyOutput": "Отдать",
+    "ctaText": "Забронировать",
+    "rateHint": "По курсу"
   }
 }

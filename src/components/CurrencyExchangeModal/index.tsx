@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -46,6 +47,7 @@ export default function CurrencyExchangeModal({
   branchId,
   address,
 }: Props) {
+  const { t } = useTranslation();
   const router = useRouter();
 
   const [sellText, setSellText] = useState<string>("1");
@@ -58,10 +60,10 @@ export default function CurrencyExchangeModal({
   const receiveText = useMemo(() => formatNum(receive), [receive]);
   const canConfirm = isFinite(sell) && sell > 0;
 
-  const title = mode === "sell" ? "Продажа" : "Покупка";
-  const inputLabel = mode === "sell" ? "Продать" : "Купить";
-  const outputLabel = mode === "sell" ? "Получить" : "Отдать";
-  const ctaLabel = "Забронировать";
+  const title = mode === "sell" ? t("currencyExchangeModal.sell", "Продажа") : t("currencyExchangeModal.buy", "Покупка");
+  const inputLabel = mode === "sell" ? t("currencyExchangeModal.sellInput", "Продать") : t("currencyExchangeModal.buyInput", "Купить");
+  const outputLabel = mode === "sell" ? t("currencyExchangeModal.sellOutput", "Получить") : t("currencyExchangeModal.buyOutput", "Отдать");
+  const ctaLabel = t("currencyExchangeModal.ctaText", "Забронировать");
 
   const fromCurrSymbol = getCurrencySymbol(fromCode as CurrencyCode);
 
@@ -132,7 +134,7 @@ export default function CurrencyExchangeModal({
             </View>
             <View style={styles.right}>
               <Text style={styles.rateText}>{formatNum(rate)}</Text>
-              <Text style={styles.rateHint}>По курсу</Text>
+              <Text style={styles.rateHint}>{t("currencyExchangeModal.rateHint", "По курсу")}</Text>
             </View>
           </View>
 

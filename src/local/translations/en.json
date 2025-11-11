@@ -321,5 +321,15 @@
   "reservePromoCard": {
     "title": "Reservation\ncourse/amount",
     "ctaText": "Reserve"
+  },
+  "currencyExchangeModal": {
+    "sell": "Sell",
+    "buy": "Buy",
+    "sellInput": "Sell",
+    "buyInput": "Buy",
+    "sellOutput": "Get",
+    "buyOutput": "Give",
+    "ctaText": "Reserve",
+    "rateHint": "By rate"
   }
 }

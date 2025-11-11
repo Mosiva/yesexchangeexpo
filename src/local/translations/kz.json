@@ -321,5 +321,15 @@
   "reservePromoCard": {
     "title": "Брондау\nкурс/сома",
     "ctaText": "Брондау"
+  },
+  "currencyExchangeModal": {
+    "sell": "Сату",
+    "buy": "Сатып алу",
+    "sellInput": "Сату",
+    "buyInput": "Сатып алу",
+    "sellOutput": "Алу",
+    "buyOutput": "Беру",
+    "ctaText": "Брондау",
+    "rateHint": "Курс бойынша"
   }
 }
