@@ -1,6 +1,7 @@
 // components/NewsMainCardList.tsx
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Pressable,
   StyleProp,
@@ -34,13 +35,16 @@ export default function NewsMainCardList({
   onDark = true,
   style,
 }: Props) {
+  const { t } = useTranslation();
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const c = useMemo(() => palette(onDark), [onDark]);
 
   const visible = expanded ? items : items.slice(0, initial);
   const hasMore = items.length > initial;
-  const buttonLabel = expanded ? "Скрыть" : "Показать больше";
+  const buttonLabel = expanded
+    ? t("currenciesMainCardList.hide", "Скрыть")
+    : t("currenciesMainCardList.showMore", "Показать больше");
 
   return (
     <View style={[styles.wrapper, style]}>

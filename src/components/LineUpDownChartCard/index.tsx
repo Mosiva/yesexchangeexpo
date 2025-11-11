@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Image,
   ImageSourcePropType,
@@ -40,6 +41,7 @@ export default function LineUpDownChartCard({
   expanded: initialExpanded = false,
   branchId,
 }: Props) {
+  const { t } = useTranslation();
   const router = useRouter();
   const [expanded, setExpanded] = useState(initialExpanded);
   const visible = expanded ? items : items.slice(0, initial);
@@ -60,7 +62,9 @@ export default function LineUpDownChartCard({
             })
           }
         >
-          <Text style={styles.moreText}>Показать больше</Text>
+          <Text style={styles.moreText}>
+            {t("currenciesMainCardList.showMore", "Показать больше")}
+          </Text>
         </Pressable>
       )}
     </View>
