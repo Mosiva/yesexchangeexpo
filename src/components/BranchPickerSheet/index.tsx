@@ -232,9 +232,11 @@ export default function BranchPickerSheet({
       // если уже нормальная строка — оставляем
     }
 
-    if (todayHours === t("branchPickerSheet.open24Hours", "Открыто (24 часа)")) {
+    if (
+      todayHours === t("branchPickerSheet.open24Hours", "Открыто (24 часа)")
+    ) {
       return t("branchPickerSheet.open24Hours", "Открыто (24 часа)");
-  }
+    }
 
     const match = todayHours.match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
     if (!match) return t("branchPickerSheet.noData", "Нет данных");
@@ -451,8 +453,25 @@ export default function BranchPickerSheet({
             <Text style={styles.workLabel}>
               {t("branchPickerSheet.schedule", "График")}
             </Text>
+
             {selectedBranch.schedule &&
               (() => {
+                // ✅ Берем сокращённые дни из локали (Вс, Пн, Вт...)
+                const daysShort = t("datepicker.days", {
+                  returnObjects: true,
+                }) as string[];
+
+                // ✅ Мап длинных названий → короткие, в нужном порядке
+                const dayMap: Record<string, string> = {
+                  Понедельник: daysShort[1],
+                  Вторник: daysShort[2],
+                  Среда: daysShort[3],
+                  Четверг: daysShort[4],
+                  Пятница: daysShort[5],
+                  Суббота: daysShort[6],
+                  Воскресенье: daysShort[0],
+                };
+
                 const daysOrder = [
                   "Понедельник",
                   "Вторник",
@@ -463,13 +482,13 @@ export default function BranchPickerSheet({
                   "Воскресенье",
                 ];
 
-                // преобразуем в массив [день, часы]
+                // ✅ Преобразуем в массив [день, часы]
                 const entries = daysOrder.map((day) => [
                   day,
                   selectedBranch.schedule?.[day] ?? "—",
                 ]);
 
-                // сгруппировать одинаковые часы
+                // ✅ Группируем одинаковые часы
                 const groups: { days: string[]; hours: string }[] = [];
                 for (const [day, hours] of entries) {
                   const last = groups[groups.length - 1];
@@ -480,17 +499,8 @@ export default function BranchPickerSheet({
                   }
                 }
 
-                // сокращения для дней
-                const shortDay = (day: string) =>
-                  ({
-                    Понедельник: "пн",
-                    Вторник: "вт",
-                    Среда: "ср",
-                    Четверг: "чт",
-                    Пятница: "пт",
-                    Суббота: "сб",
-                    Воскресенье: "вс",
-                  }[day] || day);
+                // ✅ Диапазон (пн–пт или вт–вс)
+                const shortDay = (day: string) => dayMap[day] ?? day;
 
                 return groups.map((g, idx) => {
                   const range =
@@ -499,6 +509,7 @@ export default function BranchPickerSheet({
                           g.days[g.days.length - 1]
                         )}`
                       : shortDay(g.days[0]);
+
                   return (
                     <View style={styles.scheduleRow} key={idx}>
                       <Text style={styles.day}>{range}</Text>
