@@ -1,6 +1,9 @@
 {
   "language": "Қазақ",
   "common": {
+    "currency": "Валюта",
+    "searchByCurrencyName": "Валютаны іздеу",
+    "viewArchive": "Архив көру",
     "auth": "Авторизациядан өту",
     "ru": "Орыс",
     "en": "Ағылшын",

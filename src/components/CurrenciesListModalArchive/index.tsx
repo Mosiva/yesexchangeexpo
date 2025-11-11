@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FlatList,
   Pressable,
@@ -33,11 +34,13 @@ export default function CurrenciesListModalArchive({
   onConfirm,
   value = ["USD"],
   items,
-  buttonText = "Посмотреть архив",
+  buttonText,
 }: Props) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set(value));
+  buttonText = buttonText || t("common.viewArchive", "Посмотреть архив");
 
   useEffect(() => {
     if (visible) setSelected(new Set(value));
@@ -101,7 +104,7 @@ export default function CurrenciesListModalArchive({
 
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Валюта</Text>
+            <Text style={styles.title}>{t("common.currency", "Валюта")}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={8}>
               <Ionicons name="close" size={22} color="#111827" />
             </TouchableOpacity>
@@ -117,7 +120,7 @@ export default function CurrenciesListModalArchive({
             />
             <TextInput
               style={styles.searchInput}
-              placeholder="Поиск по названию валюты"
+              placeholder={t("common.searchByCurrencyName", "Поиск по названию валюты")}
               value={query}
               onChangeText={setQuery}
               autoCorrect={false}

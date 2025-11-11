@@ -1,6 +1,9 @@
 {
   "language": "English",
   "common": {
+    "currency": "Currency",
+    "searchByCurrencyName": "Search by currency name",
+    "viewArchive": "View archive",
     "auth": "Authorize",
     "ru": "Russian",
     "en": "English",
