@@ -93,6 +93,20 @@ export default function BranchPickerSheet({
   const dataToShow = tab === "nearby" ? nearbyBranches : filteredAll;
 
   const renderBranchItem = ({ item }: { item: Branch }) => {
+    const safeDecode = (str?: string | null) => {
+      if (!str) return "—";
+
+      try {
+        str = decodeURIComponent(escape(str));
+      } catch {}
+
+      // ✅ Нормализация круглосуточно
+      if (/круглосуточно/i.test(str)) {
+        return t("branchPickerSheet.open24Hours", "Открыто (24 часа)");
+      }
+
+      return str;
+    };
     const fullSchedule = {
       Понедельник: safeDecode(item.schedule?.[0]),
       Вторник: safeDecode(item.schedule?.[1]),
@@ -109,7 +123,9 @@ export default function BranchPickerSheet({
 
     // ✅ 1. Если все дни одинаковые
     if (allDays.every((v) => v === allDays[0])) {
-      shortSchedule = `${t("branchPickerSheet.mondayToSunday", "пн–вс")}: ${allDays[0]}`;
+      shortSchedule = `${t("branchPickerSheet.mondayToSunday", "пн–вс")}: ${
+        allDays[0]
+      }`;
     }
     // ✅ 2. Если пн–сб одинаковые, а вс другое
     else if (
@@ -118,14 +134,26 @@ export default function BranchPickerSheet({
     ) {
       const sunday = fullSchedule.Воскресенье;
       if (/выход/i.test(sunday)) {
-        shortSchedule = `${t("branchPickerSheet.mondayToSaturday", "пн–сб")}: ${allDays[0]}, ${t("branchPickerSheet.sunday", "вс")}: ${t("branchPickerSheet.closed", "выходной")}`;
+        shortSchedule = `${t("branchPickerSheet.mondayToSaturday", "пн–сб")}: ${
+          allDays[0]
+        }, ${t("branchPickerSheet.sunday", "вс")}: ${t(
+          "branchPickerSheet.closed",
+          "выходной"
+        )}`;
       } else {
-        shortSchedule = `${t("branchPickerSheet.mondayToSaturday", "пн–сб")}: ${allDays[0]}, ${t("branchPickerSheet.sunday", "вс")}: ${sunday}`;
+        shortSchedule = `${t("branchPickerSheet.mondayToSaturday", "пн–сб")}: ${
+          allDays[0]
+        }, ${t("branchPickerSheet.sunday", "вс")}: ${sunday}`;
       }
     }
     // ✅ 3. Иначе — fallback
     else {
-      shortSchedule = `${t("branchPickerSheet.mondayToFriday", "пн–пт")}: ${fullSchedule.Понедельник}, ${t("branchPickerSheet.saturday", "сб")}: ${fullSchedule.Суббота}, ${t("branchPickerSheet.sunday", "вс")}: ${fullSchedule.Воскресенье}`;
+      shortSchedule = `${t("branchPickerSheet.mondayToFriday", "пн–пт")}: ${
+        fullSchedule.Понедельник
+      }, ${t("branchPickerSheet.saturday", "сб")}: ${fullSchedule.Суббота}, ${t(
+        "branchPickerSheet.sunday",
+        "вс"
+      )}: ${fullSchedule.Воскресенье}`;
     }
 
     return (
@@ -150,7 +178,11 @@ export default function BranchPickerSheet({
 
         <View style={{ flex: 1 }}>
           <Text style={styles.itemTitle}>
-            {safeDecode(item.city ?? item.title ?? t("branchPickerSheet.noName", "Без названия"))}
+            {safeDecode(
+              item.city ??
+                item.title ??
+                t("branchPickerSheet.noName", "Без названия")
+            )}
           </Text>
           <Text style={styles.itemAddress} numberOfLines={1}>
             {safeDecode(item.address)}
@@ -163,7 +195,8 @@ export default function BranchPickerSheet({
 
           {item.distanceKm != null && (
             <Text style={styles.itemDistance}>
-              {item.distanceKm.toFixed(1)} {t("branchPickerSheet.kmFromYou", "км от вас")}
+              {item.distanceKm.toFixed(1)}{" "}
+              {t("branchPickerSheet.kmFromYou", "км от вас")}
             </Text>
           )}
         </View>
@@ -199,7 +232,9 @@ export default function BranchPickerSheet({
       // если уже нормальная строка — оставляем
     }
 
-    if (/круглосуточно/i.test(todayHours)) return t("branchPickerSheet.open24Hours", "Открыто (24 часа)");
+    if (todayHours === t("branchPickerSheet.open24Hours", "Открыто (24 часа)")) {
+      return t("branchPickerSheet.open24Hours", "Открыто (24 часа)");
+  }
 
     const match = todayHours.match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
     if (!match) return t("branchPickerSheet.noData", "Нет данных");
@@ -211,23 +246,23 @@ export default function BranchPickerSheet({
     end.setHours(eh, em, 0, 0);
 
     if (now >= start && now <= end) {
-      return `${t("branchPickerSheet.openUntil", "Открыто до")} ${String(eh).padStart(2, "0")}:${String(em).padStart(
-        2,
-        "0"
-      )}`;
+      return `${t("branchPickerSheet.openUntil", "Открыто до")} ${String(
+        eh
+      ).padStart(2, "0")}:${String(em).padStart(2, "0")}`;
     } else {
-      return `${t("branchPickerSheet.closedUntil", "Закрыто до")} ${String(sh).padStart(2, "0")}:${String(sm).padStart(
-        2,
-        "0"
-      )}`;
+      return `${t("branchPickerSheet.closedUntil", "Закрыто до")} ${String(
+        sh
+      ).padStart(2, "0")}:${String(sm).padStart(2, "0")}`;
     }
   };
 
   /** Цвет статуса */
   const getBranchStatusColor = (schedule?: Record<string, string>) => {
     const text = getBranchStatusText(schedule);
-    if (text.startsWith(t("branchPickerSheet.open", "Открыто"))) return "#16A34A"; // зелёный
-    if (text.startsWith(t("branchPickerSheet.closed", "Закрыто"))) return "#DC2626"; // красный
+    if (text.startsWith(t("branchPickerSheet.open", "Открыто")))
+      return "#16A34A"; // зелёный
+    if (text.startsWith(t("branchPickerSheet.closed", "Закрыто")))
+      return "#DC2626"; // красный
     return "#6B7280"; // серый
   };
 
@@ -238,10 +273,16 @@ export default function BranchPickerSheet({
       await Share.share({
         message: `📍 ${safeDecode(selectedBranch?.city ?? "")}, ${safeDecode(
           selectedBranch?.address ?? ""
-        )}\n ${t("branchPickerSheet.viewIn2GIS", "Посмотреть в 2ГИС")}: ${link}`,
+        )}\n ${t(
+          "branchPickerSheet.viewIn2GIS",
+          "Посмотреть в 2ГИС"
+        )}: ${link}`,
       });
     } catch (e: any) {
-      Alert.alert(t("branchPickerSheet.shareFailed", "Не удалось поделиться"), e?.message ?? "");
+      Alert.alert(
+        t("branchPickerSheet.shareFailed", "Не удалось поделиться"),
+        e?.message ?? ""
+      );
     }
   };
 
@@ -257,7 +298,9 @@ export default function BranchPickerSheet({
       <BottomSheetView style={styles.content}>
         {!selectedBranch ? (
           <>
-            <Text style={styles.sheetTitle}>{t("branchPickerSheet.selectOffice", "Выберите офис обмена")}</Text>
+            <Text style={styles.sheetTitle}>
+              {t("branchPickerSheet.selectOffice", "Выберите офис обмена")}
+            </Text>
 
             {/* Поиск */}
             <View style={styles.searchBox}>
@@ -265,7 +308,10 @@ export default function BranchPickerSheet({
               <TextInput
                 value={query}
                 onChangeText={setQuery}
-                placeholder={t("branchPickerSheet.searchByAddress", "Поиск по адресу")}
+                placeholder={t(
+                  "branchPickerSheet.searchByAddress",
+                  "Поиск по адресу"
+                )}
                 style={styles.searchInput}
                 returnKeyType="search"
               />
@@ -307,7 +353,10 @@ export default function BranchPickerSheet({
               <View style={{ paddingVertical: 32, alignItems: "center" }}>
                 <ActivityIndicator size="small" color={ORANGE} />
                 <Text style={{ marginTop: 8, color: SUB }}>
-                  {t("branchPickerSheet.determiningLocation", "Определяем местоположение...")}
+                  {t(
+                    "branchPickerSheet.determiningLocation",
+                    "Определяем местоположение..."
+                  )}
                 </Text>
               </View>
             ) : dataToShow.length === 0 ? (
@@ -326,8 +375,14 @@ export default function BranchPickerSheet({
                   }}
                 >
                   {tab === "nearby"
-                    ? t("branchPickerSheet.noNearbyBranches", "Нет филиалов поблизости")
-                    : t("branchPickerSheet.noBranchesFound", "Филиалы не найдены")}
+                    ? t(
+                        "branchPickerSheet.noNearbyBranches",
+                        "Нет филиалов поблизости"
+                      )
+                    : t(
+                        "branchPickerSheet.noBranchesFound",
+                        "Филиалы не найдены"
+                      )}
                 </Text>
               </View>
             ) : (
@@ -349,7 +404,9 @@ export default function BranchPickerSheet({
               <View style={{ flex: 1 }}>
                 <Text style={styles.title}>
                   {safeDecode(
-                    selectedBranch.city ?? selectedBranch.title ?? t("branchPickerSheet.branch", "Филиал")
+                    selectedBranch.city ??
+                      selectedBranch.title ??
+                      t("branchPickerSheet.branch", "Филиал")
                   )}
                 </Text>
                 <Text style={styles.address}>
@@ -378,7 +435,9 @@ export default function BranchPickerSheet({
             </ScrollView>
 
             {/* Время работы */}
-            <Text style={styles.workLabel}>{t("branchPickerSheet.workTimeToday", "Время работы сегодня")}</Text>
+            <Text style={styles.workLabel}>
+              {t("branchPickerSheet.workTimeToday", "Время работы сегодня")}
+            </Text>
             <Text
               style={[
                 styles.workNow,
@@ -389,7 +448,9 @@ export default function BranchPickerSheet({
             </Text>
 
             {/* График */}
-            <Text style={styles.workLabel}>{t("branchPickerSheet.schedule", "График")}</Text>
+            <Text style={styles.workLabel}>
+              {t("branchPickerSheet.schedule", "График")}
+            </Text>
             {selectedBranch.schedule &&
               (() => {
                 const daysOrder = [
@@ -450,7 +511,9 @@ export default function BranchPickerSheet({
             {/* Контакты */}
             {selectedBranch.contactPhone && (
               <>
-                <Text style={styles.workLabel}>{t("branchPickerSheet.contacts", "Контакты")}</Text>
+                <Text style={styles.workLabel}>
+                  {t("branchPickerSheet.contacts", "Контакты")}
+                </Text>
                 <View style={styles.contactRow}>
                   <Ionicons name="call" size={18} color={ORANGE} />
                   <Text style={styles.contactText}>
@@ -471,7 +534,9 @@ export default function BranchPickerSheet({
                   size={22}
                   color="#9CA3AF"
                 />
-                <Text style={styles.shareText}>{t("branchPickerSheet.share", "Поделиться")}</Text>
+                <Text style={styles.shareText}>
+                  {t("branchPickerSheet.share", "Поделиться")}
+                </Text>
               </TouchableOpacity>
             ) : (
               <Pressable
@@ -491,7 +556,10 @@ export default function BranchPickerSheet({
               >
                 <Text style={styles.ctaText}>
                   {isRateLocked
-                    ? t("branchPickerSheet.bookByRate", "Забронировать по курсу")
+                    ? t(
+                        "branchPickerSheet.bookByRate",
+                        "Забронировать по курсу"
+                      )
                     : t("branchPickerSheet.bookHere", "Забронировать тут")}
                 </Text>
               </Pressable>
