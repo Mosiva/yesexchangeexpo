@@ -9,6 +9,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Animated,
   Easing,
@@ -32,6 +33,7 @@ const TEXT = "#111827";
 const SUB = "#6B7280";
 
 export default function BranchPickerScreen() {
+  const { t } = useTranslation();
   const p = useLocalSearchParams();
   const isRateLocked = p.isRateLocked === 'true';
 
@@ -162,12 +164,12 @@ export default function BranchPickerScreen() {
           <View style={styles.addressRow}>
             <Ionicons name="location" size={20} color={ORANGE} />
             <View style={{ marginLeft: 8 }}>
-              <Text style={styles.myAddrLabel}>Моё местоположение</Text>
+              <Text style={styles.myAddrLabel}>{t("nearby.myAddress", "Моё местоположение")}</Text>
               <Text style={styles.myAddrValue}>
                 {loadingLocation
-                  ? "Определяем..."
+                  ? t("nearby.loading", "Определяем...")
                   : permissionDenied
-                  ? "Доступ запрещён"
+                  ? t("nearby.permissionDenied", "Доступ запрещён")
                   : address}
               </Text>
             </View>
@@ -177,7 +179,7 @@ export default function BranchPickerScreen() {
             style={styles.refreshBtn}
             onPress={() => requestLocation()}
           >
-            <Text style={styles.refreshText}>Обновить</Text>
+            <Text style={styles.refreshText}>{t("nearby.refresh", "Обновить")}</Text>
           </Pressable>
         </View>
       </View>
@@ -264,12 +266,12 @@ export default function BranchPickerScreen() {
       {permissionDenied && (
         <View style={styles.permissionOverlay}>
           <Ionicons name="alert-circle-outline" size={48} color={ORANGE} />
-          <Text style={styles.permissionTitle}>Геолокация отключена</Text>
+          <Text style={styles.permissionTitle}>{t("nearby.locationDisabled", "Геолокация отключена")}</Text>
           <Text style={styles.permissionDesc}>
-            Чтобы показать ближайшие филиалы, разрешите доступ к местоположению
+            {t("nearby.locationPermissionDescription", "Чтобы показать ближайшие филиалы, разрешите доступ к местоположению")}
           </Text>
           <Pressable style={styles.retryBtn} onPress={() => requestLocation()}>
-            <Text style={styles.retryText}>Попробовать снова</Text>
+            <Text style={styles.retryText}>{t("nearby.tryAgain", "Попробовать снова")}</Text>
           </Pressable>
         </View>
       )}
