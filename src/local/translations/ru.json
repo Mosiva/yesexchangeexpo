@@ -329,5 +329,32 @@
     "buyOutput": "Отдать",
     "ctaText": "Забронировать",
     "rateHint": "По курсу"
+  },
+  "norates": {
+    "withrates": {
+      "bookingWithRateExplanation": "Данный вид брони подразумевает сохранение курса",
+      "iSell": "Я продаю",
+      "iBuy": "Я покупаю",
+      "withDiscount": "С",
+      "discount": "скидкой",
+      "withPremium": "С",
+      "premium": "наценкой",
+      "total": "Итого",
+      "yourAmount": "Ваша сумма",
+      "sending": "Отправка...",
+      "reserve": "Забронировать",
+      "selectCurrency": "Выбрать валюту",
+      "leavePhone": "Оставьте номер телефона, на который хотите оформить бронь",
+      "onlyKzPrefixes": "Доступны только коды операторов Казахстана",
+      "errorDeterminingCurrencyOrBranch": "Не удалось определить валюту или филиал.",
+      "error": "Ошибка",
+      "enterValidPhone": "Введите корректный номер телефона Казахстана (+7 7XX XXX-XX-XX).",
+      "kztRateNotFound": "Не найден курс KZT.",
+      "errorCreatingBooking": "Не удалось создать бронь. Попробуйте ещё раз.",
+      "discountOnlyAvailableForFirstBookingOrAmountGreaterThan500000": "Скидка доступна только на первую бронь или сумму больше 500 000 тенге",
+      "premiumOnlyAvailableForFirstBookingOrAmountGreaterThan500000": "Наценка доступна только на первую бронь или сумму больше 500 000 тенге",
+      "discountOnlyAvailableForAmountGreaterThan500000": "Скидка доступна только при сумме больше 500 000 тенге",
+      "premiumOnlyAvailableForAmountGreaterThan500000": "Наценка доступна только при сумме больше 500 000 тенге"
+    }
   }
 }

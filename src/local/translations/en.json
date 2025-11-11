@@ -331,5 +331,32 @@
     "buyOutput": "Give",
     "ctaText": "Reserve",
     "rateHint": "By rate"
+  },
+  "norates": {
+    "withrates": {
+      "bookingWithRateExplanation": "This type of reservation locks in the selected exchange rate",
+      "iSell": "I sell",
+      "iBuy": "I buy",
+      "withDiscount": "With",
+      "discount": "discount",
+      "withPremium": "With",
+      "premium": "premium",
+      "total": "Total",
+      "yourAmount": "Your amount",
+      "sending": "Sending...",
+      "reserve": "Reserve",
+      "selectCurrency": "Select currency",
+      "leavePhone": "Leave the phone number you want to use for the reservation",
+      "onlyKzPrefixes": "Only Kazakhstan operator codes are allowed",
+      "errorDeterminingCurrencyOrBranch": "Failed to determine currency or branch.",
+      "error": "Error",
+      "enterValidPhone": "Enter a valid Kazakhstan phone number (+7 7XX XXX-XX-XX).",
+      "kztRateNotFound": "KZT rate not found.",
+      "errorCreatingBooking": "Failed to create reservation. Please try again.",
+      "discountOnlyAvailableForFirstBookingOrAmountGreaterThan500000": "The discount is available only for the first reservation or for amounts above 500,000 tenge",
+      "premiumOnlyAvailableForFirstBookingOrAmountGreaterThan500000": "The premium is available only for the first reservation or for amounts above 500,000 tenge",
+      "discountOnlyAvailableForAmountGreaterThan500000": "The discount is available only for amounts above 500,000 tenge",
+      "premiumOnlyAvailableForAmountGreaterThan500000": "The premium is available only for amounts above 500,000 tenge"
+    }
   }
 }

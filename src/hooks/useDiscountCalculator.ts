@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useToAmountMutation } from "../services/yesExchange";
 import type { BookingOperationType } from "../types/api";
 
@@ -12,12 +13,6 @@ function useDebounce<T>(value: T, delay = 400): T {
   }, [value, delay]);
 
   return debounced;
-}
-
-/** округление */
-function roundAmount(value: number, precision = 2): number {
-  if (!isFinite(value)) return 0;
-  return Number(value.toFixed(precision));
 }
 
 type Args = {
@@ -44,6 +39,7 @@ export function useDiscountCalculator({
     toAmount?: number;
     discountPercent?: number;
   } | null>(null);
+  const { t } = useTranslation();
 
   const debouncedAmount = useDebounce(fromAmount, 450);
 
@@ -121,14 +117,14 @@ export function useDiscountCalculator({
 
     if (!canShowDiscount) {
       return isBuy
-        ? "Скидка доступна только при сумме больше 500 000 тенге"
-        : "Наценка доступна только при сумме больше 500 000 тенге";
+        ? t("norates.withrates.discountOnlyAvailableForAmountGreaterThan500000", "Скидка доступна только при сумме больше 500 000 тенге")
+        : t("norates.withrates.premiumOnlyAvailableForAmountGreaterThan500000", "Наценка доступна только при сумме больше 500 000 тенге");
     }
 
     if (clientDiscountAvailable === true) {
       return isBuy
-        ? "Скидка доступна только на первую бронь или сумму больше 500 000 тенге"
-        : "Наценка доступна только на первую бронь или сумму больше 500 000 тенге";
+        ? t("norates.withrates.discountOnlyAvailableForFirstBookingOrAmountGreaterThan500000", "Скидка доступна только на первую бронь или сумму больше 500 000 тенге")
+        : t("norates.withrates.premiumOnlyAvailableForFirstBookingOrAmountGreaterThan500000", "Наценка доступна только на первую бронь или сумму больше 500 000 тенге");
     }
 
     return isBuy

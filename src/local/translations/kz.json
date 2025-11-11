@@ -331,5 +331,32 @@
     "buyOutput": "Беру",
     "ctaText": "Брондау",
     "rateHint": "Курс бойынша"
+  },
+  "norates": {
+    "withrates": {
+      "bookingWithRateExplanation": "Бұл бронь түрі таңдалған валюталық курсты сақтайды",
+      "iSell": "Мен сатамын",
+      "iBuy": "Мен сатып аламын",
+      "withDiscount": "Жеңілдікпен",
+      "discount": "жеңілдік",
+      "withPremium": "Наценкамен",
+      "premium": "наценка",
+      "total": "Жалпы",
+      "yourAmount": "Сіздің сомаңыз",
+      "sending": "Жіберілуде...",
+      "reserve": "Брондау",
+      "selectCurrency": "Валютаны таңдаңыз",
+      "leavePhone": "Бронь жасау үшін телефон нөміріңізді қалдырыңыз",
+      "onlyKzPrefixes": "Тек Қазақстан операторларының кодтары қолжетімді",
+      "errorDeterminingCurrencyOrBranch": "Валютаны немесе филиалды анықтау мүмкін болмады.",
+      "error": "Қате",
+      "enterValidPhone": "Қазақстанның дұрыс телефон нөмірін енгізіңіз (+7 7XX XXX-XX-XX).",
+      "kztRateNotFound": "KZT бағамы табылмады.",
+      "errorCreatingBooking": "Бронь жасау мүмкін болмады. Қайтадан көріңіз.",
+      "discountOnlyAvailableForFirstBookingOrAmountGreaterThan500000": "Жеңілдік тек алғашқы броньға немесе 500 000 теңгеден жоғары сомаға қолжетімді",
+      "premiumOnlyAvailableForFirstBookingOrAmountGreaterThan500000": "Наценка тек алғашқы броньға немесе 500 000 теңгеден жоғары сомаға қолжетімді",
+      "discountOnlyAvailableForAmountGreaterThan500000": "Жеңілдік тек 500 000 теңгеден жоғары сомаға қолжетімді",
+      "premiumOnlyAvailableForAmountGreaterThan500000": "Наценка тек 500 000 теңгеден жоғары сомаға қолжетімді"
+    }
   }
 }
