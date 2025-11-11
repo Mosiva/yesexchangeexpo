@@ -295,5 +295,21 @@
     "workTimeToday": "Work time today",
     "schedule": "Schedule",
     "contacts": "Contacts"
+  },
+  "main": {
+    "addressLabel": "Address",
+    "errorLoadingBranches": "Failed to load branches",
+    "selectBranch": "Select a branch",
+    "determiningNearestBranch": "Determining nearest branch...",
+    "defaultBranch": "Default branch (Astana)",
+    "errorDeterminingNearestBranch": "Failed to determine nearest branch",
+    "nearestBranchByLocation": "Nearest branch based on your location",
+    "selectedBranchManually": "Branch selected manually",
+    "errorLoadingExchangeRates": "Failed to load exchange rates",
+    "retry": "Retry",
+    "archive": "Archive",
+    "news": "News",
+    "errorLoadingNbkRates": "Failed to load NBK rates",
+    "nbkRatesLabel": "NbRK rate"
   }
 }

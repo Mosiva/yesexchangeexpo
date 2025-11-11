@@ -189,7 +189,7 @@ export default function MainScreen() {
       code: r.currency?.code ?? "",
       value: r.rate,
       delta: Number(r.changePercent) || 0,
-      label: "Курс НБ РК",
+      label: t("main.nbkRatesLabel", "Курс НБ РК"),
       name: r.currency?.name ?? "",
     }));
   }, [rawNbkRates]);
@@ -342,7 +342,7 @@ export default function MainScreen() {
               style={styles.addrIcon}
             />
             <View style={{ flex: 1 }}>
-              <Text style={styles.addrLabel}>Адрес</Text>
+              <Text style={styles.addrLabel}>{t("main.addressLabel", "Адрес")}</Text>
               <Skeleton width="90%" height={60} style={styles.skeletonItem} />
             </View>
           </View>
@@ -355,8 +355,8 @@ export default function MainScreen() {
               style={styles.addrIcon}
             />
             <View style={{ flex: 1 }}>
-              <Text style={styles.addrLabel}>Адрес</Text>
-              <Text style={styles.errorText}>Ошибка загрузки филиалов</Text>
+              <Text style={styles.addrLabel}>{t("main.addressLabel", "Адрес")}</Text>
+              <Text style={styles.errorText}>{t("main.errorLoadingBranches", "Ошибка загрузки филиалов")}</Text>
             </View>
             <TouchableOpacity
               onPress={() => refetchBranches()}
@@ -377,34 +377,34 @@ export default function MainScreen() {
               style={styles.addrIcon}
             />
             <View style={{ flex: 1 }}>
-              <Text style={styles.addrLabel}>Адрес</Text>
+              <Text style={styles.addrLabel}>{t("main.addressLabel", "Адрес")}</Text>
 
               {/* 🏦 Основной адрес */}
               <Text style={styles.addrValue}>
                 {selectedBranch
                   ? `${selectedBranch.city}, ${selectedBranch.address}`
-                  : "Выберите филиал"}
+                  : t("main.selectBranch", "Выберите филиал")}
               </Text>
 
               {/* 💬 Подпись под адресом */}
               {isNearestBranchLoading ? (
                 <Text style={styles.addrHint}>
-                  Определяем ближайший филиал...
+                  {t("main.determiningNearestBranch", "Определяем ближайший филиал...")}
                 </Text>
               ) : permissionDenied ? (
                 <Text style={styles.addrHint}>
-                  Филиал по умолчанию (Астана)
+                  {t("main.defaultBranch", "Филиал по умолчанию (Астана)")}
                 </Text>
               ) : isNearestBranchError ? (
                 <Text style={styles.addrHint}>
-                  Не удалось определить ближайший филиал
+                  {t("main.errorDeterminingNearestBranch", "Не удалось определить ближайший филиал")}
                 </Text>
               ) : selectedBranch?.id === rawNearestBranch?.id ? (
                 <Text style={styles.addrHint}>
-                  Ближайший филиал по вашему местоположению
+                  {t("main.nearestBranchByLocation", "Ближайший филиал по вашему местоположению")}
                 </Text>
               ) : (
-                <Text style={styles.addrHint}>Выбран филиал вручную</Text>
+                <Text style={styles.addrHint}>{t("main.selectedBranchManually", "Выбран филиал вручную")}</Text>
               )}
             </View>
 
@@ -427,12 +427,12 @@ export default function MainScreen() {
           </View>
         ) : isExchangeRatesError ? (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>Ошибка загрузки курсов валют</Text>
+            <Text style={styles.errorText}>{t("main.errorLoadingExchangeRates", "Ошибка загрузки курсов валют")}</Text>
             <TouchableOpacity
               style={styles.retryButton}
               onPress={() => refetchExchangeRates()}
             >
-              <Text style={styles.retryButtonText}>Повторить</Text>
+              <Text style={styles.retryButtonText}>{t("main.retry", "Повторить")}</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -463,7 +463,7 @@ export default function MainScreen() {
                 : styles.tabTextMuted,
             ]}
           >
-            Архив
+            {t("main.archive", "Архив")}
           </Text>
         </Pressable>
 
@@ -477,7 +477,7 @@ export default function MainScreen() {
               activeTab === "news" ? styles.tabTextActive : styles.tabTextMuted,
             ]}
           >
-            Новости
+            {t("main.news", "Новости")}
           </Text>
         </Pressable>
       </View>
@@ -537,12 +537,12 @@ export default function MainScreen() {
         </View>
       ) : isNbkRatesError ? (
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Ошибка загрузки курсов НБК</Text>
+          <Text style={styles.errorText}>{t("main.errorLoadingNbkRates", "Ошибка загрузки курсов НБК")}</Text>
           <TouchableOpacity
             style={styles.retryButton}
             onPress={() => refetchNbkRates()}
           >
-            <Text style={styles.retryButtonText}>Повторить</Text>
+            <Text style={styles.retryButtonText}>{t("main.retry", "Повторить")}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -584,7 +584,7 @@ export default function MainScreen() {
           onPress={() => setDropdownVisible(false)}
         >
           <View style={styles.dropdownContainer}>
-            <Text style={styles.dropdownTitle}>Выберите филиал</Text>
+            <Text style={styles.dropdownTitle}>{t("main.selectBranch", "Выберите филиал")}</Text>
             <FlatList
               data={Array.isArray(branches) ? branches : []}
               keyExtractor={(item) => item.id.toString()}

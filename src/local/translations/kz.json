@@ -295,5 +295,21 @@
     "workTimeToday": "Бүгін қызмет көрсету уақыты",
     "schedule": " Жұмыс кестесі",
     "contacts": "Байланыс"
+  },
+  "main": {
+    "addressLabel": "Мекенжай",
+    "errorLoadingBranches": "Филиалдарды жүктеу қатесі",
+    "selectBranch": "Филиалды таңдаңыз",
+    "determiningNearestBranch": "Ең жақын филиалды анықтап жатырмыз...",
+    "defaultBranch": "Әдепкі филиал (Астана)",
+    "errorDeterminingNearestBranch": "Ең жақын филиалды анықтау мүмкін болмады",
+    "nearestBranchByLocation": "Сіздің орналасқан жеріңізге ең жақын филиал",
+    "selectedBranchManually": "Филиал қолмен таңдалды",
+    "errorLoadingExchangeRates": "Валюта бағамдарын жүктеу қатесі",
+    "retry": "Қайта көру",
+    "archive": "Мұрағат",
+    "news": "Жаңалықтар",
+    "errorLoadingNbkRates": "ҰБ бағамдарын жүктеу қатесі",
+    "nbkRatesLabel": "ҚРҰБ бағамы"
   }
 }

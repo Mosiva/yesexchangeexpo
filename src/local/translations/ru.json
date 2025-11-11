@@ -293,5 +293,21 @@
     "workTimeToday": "Время работы сегодня",
     "schedule": "График",
     "contacts": "Контакты"
+  },
+  "main": {
+    "addressLabel": "Адрес",
+    "errorLoadingBranches": "Ошибка загрузки филиалов",
+    "selectBranch": "Выберите филиал",
+    "determiningNearestBranch": "Определяем ближайший филиал...",
+    "defaultBranch": "Филиал по умолчанию (Астана)",
+    "errorDeterminingNearestBranch": "Не удалось определить ближайший филиал",
+    "nearestBranchByLocation": "Ближайший филиал по вашему местоположению",
+    "selectedBranchManually": "Выбран филиал вручную",
+    "errorLoadingExchangeRates": "Ошибка загрузки курсов валют",
+    "retry": "Повторить",
+    "archive": "Архив",
+    "news": "Новости",
+    "errorLoadingNbkRates": "Ошибка загрузки курсов НБК",
+    "nbkRatesLabel": "Курс НБ РК"
   }
 }
