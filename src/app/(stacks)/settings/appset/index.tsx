@@ -19,13 +19,15 @@ const ORANGE = "#F58220";
 export default function AppSetScreen() {
   const { t } = useTranslation();
   const [lightTheme, setLightTheme] = useState(false);
-  const { isGuest } = useAuth();
+  const { isGuest, language } = useAuth();
 
   const [langModalVisible, setLangModalVisible] = useState(false);
   const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
   const [notifModalVisible, setNotifModalVisible] = useState(false);
 
-  const [currentLang, setCurrentLang] = useState<"kz" | "ru" | "en">("ru");
+  const [currentLang, setCurrentLang] = useState<"kz" | "ru" | "en">(
+    language as "kz" | "ru" | "en"
+  );
   const [selectedCurrencies, setSelectedCurrencies] = useState<string[]>([
     "USD",
     "RUB",
@@ -39,7 +41,10 @@ export default function AppSetScreen() {
 
   const nextTheme = lightTheme
     ? { label: t("appset.theme.dark", "Тёмная"), icon: "moon-outline" as const }
-    : { label: t("appset.theme.light", "Светлая"), icon: "sunny-outline" as const };
+    : {
+        label: t("appset.theme.light", "Светлая"),
+        icon: "sunny-outline" as const,
+      };
 
   return (
     <View style={styles.container}>
@@ -54,7 +59,9 @@ export default function AppSetScreen() {
             <Ionicons name={nextTheme.icon} size={22} color={ORANGE} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle}>{t("appset.theme", "Тема приложения")}</Text>
+            <Text style={styles.cardTitle}>
+              {t("appset.theme", "Тема приложения")}
+            </Text>
             <Text style={styles.cardSub}>{nextTheme.label}</Text>
           </View>
           <SwitchPill
