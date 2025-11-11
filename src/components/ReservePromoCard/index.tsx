@@ -1,28 +1,28 @@
 // components/ReservePromoCard.tsx
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
-    Image,
-    ImageSourcePropType,
-    Platform,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  ImageSourcePropType,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 type Props = {
   onPress: () => void;
-  title?: string;
-  ctaText?: string;
   photo?: ImageSourcePropType;
 };
 
 export default function ReservePromoCard({
   onPress,
-  title = "Бронирование\nкурса/суммы",
-  ctaText = "Забронировать",
   photo = require("../../../assets/images/team.png"),
 }: Props) {
+  const { t } = useTranslation();
+  const titleText = t("reservePromoCard.title", "Бронирование\nкурса/суммы");
+  const ctaTextText = t("reservePromoCard.ctaText", "Забронировать");
   // Slightly smaller image on Android
   const IMG_PCT = Platform.select({ ios: "54%", android: "50%" })!;
   // How wide the dark left side is
@@ -57,14 +57,14 @@ export default function ReservePromoCard({
 
       {/* Content on top */}
       <View style={styles.content}>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title}>{titleText}</Text>
 
         <TouchableOpacity
           style={styles.cta}
           onPress={onPress}
           activeOpacity={0.9}
         >
-          <Text style={styles.ctaText}>{ctaText}</Text>
+          <Text style={styles.ctaText}>{ctaTextText}</Text>
         </TouchableOpacity>
       </View>
     </View>

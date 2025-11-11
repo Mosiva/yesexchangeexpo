@@ -317,5 +317,9 @@
     "sale": "Sell",
     "hide": "Hide",
     "showMore": "Show more"
+  },
+  "reservePromoCard": {
+    "title": "Reservation\ncourse/amount",
+    "ctaText": "Reserve"
   }
 }
