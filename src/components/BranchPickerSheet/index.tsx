@@ -19,6 +19,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import BranchScheduleBlock from "../BranchScheduleBlock";
 
 const ORANGE = "#F58220";
 const TEXT = "#111827";
@@ -454,70 +455,9 @@ export default function BranchPickerSheet({
               {t("branchPickerSheet.schedule", "График")}
             </Text>
 
-            {selectedBranch.schedule &&
-              (() => {
-                // ✅ Берем сокращённые дни из локали (Вс, Пн, Вт...)
-                const daysShort = t("datepicker.days", {
-                  returnObjects: true,
-                }) as string[];
-
-                // ✅ Мап длинных названий → короткие, в нужном порядке
-                const dayMap: Record<string, string> = {
-                  Понедельник: daysShort[1],
-                  Вторник: daysShort[2],
-                  Среда: daysShort[3],
-                  Четверг: daysShort[4],
-                  Пятница: daysShort[5],
-                  Суббота: daysShort[6],
-                  Воскресенье: daysShort[0],
-                };
-
-                const daysOrder = [
-                  "Понедельник",
-                  "Вторник",
-                  "Среда",
-                  "Четверг",
-                  "Пятница",
-                  "Суббота",
-                  "Воскресенье",
-                ];
-
-                // ✅ Преобразуем в массив [день, часы]
-                const entries = daysOrder.map((day) => [
-                  day,
-                  selectedBranch.schedule?.[day] ?? "—",
-                ]);
-
-                // ✅ Группируем одинаковые часы
-                const groups: { days: string[]; hours: string }[] = [];
-                for (const [day, hours] of entries) {
-                  const last = groups[groups.length - 1];
-                  if (last && last.hours === hours) {
-                    last.days.push(day);
-                  } else {
-                    groups.push({ days: [day], hours });
-                  }
-                }
-
-                // ✅ Диапазон (пн–пт или вт–вс)
-                const shortDay = (day: string) => dayMap[day] ?? day;
-
-                return groups.map((g, idx) => {
-                  const range =
-                    g.days.length > 1
-                      ? `${shortDay(g.days[0])}–${shortDay(
-                          g.days[g.days.length - 1]
-                        )}`
-                      : shortDay(g.days[0]);
-
-                  return (
-                    <View style={styles.scheduleRow} key={idx}>
-                      <Text style={styles.day}>{range}</Text>
-                      <Text style={styles.hours}>{g.hours}</Text>
-                    </View>
-                  );
-                });
-              })()}
+            {selectedBranch.schedule && (
+              <BranchScheduleBlock schedule={selectedBranch.schedule} />
+            )}
 
             {/* Контакты */}
             {selectedBranch.contactPhone && (
