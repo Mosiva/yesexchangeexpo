@@ -58,6 +58,7 @@ const getTodayDate = () => {
 };
 // Текущее локальное время
 const LocalTime = () => {
+  const { t } = useTranslation();
   const [now, setNow] = useState(new Date());
 
   React.useEffect(() => {
@@ -65,23 +66,24 @@ const LocalTime = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const months = [
-    "января",
-    "февраля",
-    "марта",
-    "апреля",
-    "мая",
-    "июня",
-    "июля",
-    "августа",
-    "сентября",
-    "октября",
-    "ноября",
-    "декабря",
-  ];
+  // ✅ Берём месяцы из перевода
+  const nominativeMonths = t("datepicker.months", {
+    returnObjects: true,
+  }) as string[];
+
+  // ✅ Преобразуем в родительный падеж
+  const genitiveMonths = nominativeMonths.map((m) => {
+    return (
+      m
+        .toLowerCase()
+        .replace("ь", "я")          // Январь → Января
+        .replace("й", "я")          // Май → Мая
+        .replace("т", "та")         // Август → Августа
+    );
+  });
 
   const day = String(now.getDate()).padStart(2, "0");
-  const month = months[now.getMonth()];
+  const month = genitiveMonths[now.getMonth()];
   const year = now.getFullYear();
   const hours = String(now.getHours()).padStart(2, "0");
   const minutes = String(now.getMinutes()).padStart(2, "0");
@@ -92,7 +94,6 @@ const LocalTime = () => {
     </Text>
   );
 };
-
 export default function MainScreen() {
   const { location, loading, permissionDenied } = useUserLocation();
   const [refreshing, setRefreshing] = useState(false);
