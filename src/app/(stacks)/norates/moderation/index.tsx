@@ -1,6 +1,7 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   ScrollView,
@@ -37,6 +38,7 @@ const COLORS = {
 };
 
 export default function ModerationScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const p = useLocalSearchParams<Params>();
@@ -49,7 +51,7 @@ export default function ModerationScreen() {
 
   // Fallbacks
   const id = p.id ?? "00000";
-  const kind = p.kind ?? "Без привязки к курсу";
+  const kind = p.kind ?? t("norates.moderation.kind", "Без привязки к курсу");
   const amount = p.amount ?? "1000";
   const currency = p.currency ?? "USD";
   const rateText = p.rateText ?? "1 KZT = 0,001861123 USD";
@@ -64,14 +66,14 @@ export default function ModerationScreen() {
       await doCancelBooking({
         id: Number(id),
       }).unwrap();
-      Alert.alert("Успешно", "Бронь успешно отменена.", [
+      Alert.alert(t("norates.moderation.success", "Успешно"), t("norates.moderation.bookingCancelled", "Бронь успешно отменена."), [
         { text: "ОК", onPress: () => router.replace("/(tabs)/reserve") },
       ]);
     } catch (err: any) {
       console.error("❌ Cancel booking error:", err);
       Alert.alert(
-        "Ошибка",
-        err?.data?.message || err?.error || "Не удалось отменить бронь"
+        t("norates.moderation.error", "Ошибка"),
+        err?.data?.message || err?.error || t("norates.moderation.bookingCancelledError", "Не удалось отменить бронь")
       );
     }
   };
@@ -86,7 +88,7 @@ export default function ModerationScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.lead}>
-          Заявка принята в работу, ожидайте звонка от нашего специалиста
+          {t("norates.moderation.applicationAccepted", "Заявка принята в работу, ожидайте звонка от нашего специалиста")}
         </Text>
 
         {/* Card */}
@@ -96,9 +98,9 @@ export default function ModerationScreen() {
 
           <View style={{ height: 16 }} />
 
-          <Row label="Сумма брони:" value={`${amount} ${currency}`} big />
+          <Row label={t("norates.moderation.bookingAmount", "Сумма брони:")} value={`${amount} ${currency}`} big />
           <View style={{ height: 10 }} />
-          <Row label="По курсу:" value={rateText}>
+          <Row label={t("norates.moderation.bookingRate", "По курсу:")} value={rateText}>
             {isNoRate && (
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 {/* Info icon + tooltip */}
@@ -118,7 +120,7 @@ export default function ModerationScreen() {
                 {showTooltip && (
                   <View style={styles.tooltip}>
                     <Text style={styles.tooltipText}>
-                      Курс на момент создания заявки
+                      {t("norates.moderation.bookingRateTooltip", "Курс на момент создания заявки")}
                     </Text>
                   </View>
                 )}
@@ -126,7 +128,7 @@ export default function ModerationScreen() {
             )}
           </Row>
           <View style={{ height: 10 }} />
-          <Row label="Адрес:" value={address} />
+          <Row label={t("norates.moderation.bookingAddress", "Адрес:")} value={address} />
 
           {/* Отменить бронь (только если не гость) */}
           {!isGuest && (
@@ -134,7 +136,7 @@ export default function ModerationScreen() {
               style={styles.dangerBtn}
               onPress={() => setShowCancelModal(true)}
             >
-              <Text style={styles.dangerText}>Отменить бронь</Text>
+              <Text style={styles.dangerText}>{t("norates.moderation.cancelBooking", "Отменить бронь")}</Text>
             </TouchableOpacity>
           )}
         </View>

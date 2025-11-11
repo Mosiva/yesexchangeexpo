@@ -380,6 +380,17 @@
       "premiumOnlyAvailableForFirstBookingOrAmountGreaterThan500000": "Наценка тек алғашқы броньға немесе 500 000 теңгеден жоғары сомаға қолжетімді",
       "discountOnlyAvailableForAmountGreaterThan500000": "Жеңілдік тек 500 000 теңгеден жоғары сомаға қолжетімді",
       "premiumOnlyAvailableForAmountGreaterThan500000": "Наценка тек 500 000 теңгеден жоғары сомаға қолжетімді"
+    },
+    "moderation": {
+      "title": "Өтініш қабылданды, маманның қоңырауын күтіңіз",
+      "bookingAmount": "Бронь сомасы:",
+      "bookingRate": "Курс бойынша:",
+      "bookingRateTooltip": "Өтініш жасалған сәттегі курс",
+      "bookingAddress": "Мекенжай:",
+      "cancelBooking": "Бронды болдырмау",
+      "bookingCancelled": "Брон сәтті болдырылды.",
+      "bookingCancelledError": "Бронды болдырмау мүмкін болмады",
+      "applicationAccepted": "Өтініш қабылданды, маманның қоңырауын күтіңіз"
     }
   }
 }
