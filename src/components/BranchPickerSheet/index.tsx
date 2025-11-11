@@ -5,6 +5,7 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -16,7 +17,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 const ORANGE = "#F58220";
@@ -63,6 +64,7 @@ export default function BranchPickerSheet({
   isRateLocked = false,
   isNearbyScreen = false,
 }: Props) {
+  const { t } = useTranslation();
   const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["35%", "85%"], []);
   const [query, setQuery] = useState("");
@@ -107,7 +109,7 @@ export default function BranchPickerSheet({
 
     // ✅ 1. Если все дни одинаковые
     if (allDays.every((v) => v === allDays[0])) {
-      shortSchedule = `пн–вс: ${allDays[0]}`;
+      shortSchedule = `${t("branchPickerSheet.mondayToSunday", "пн–вс")}: ${allDays[0]}`;
     }
     // ✅ 2. Если пн–сб одинаковые, а вс другое
     else if (
@@ -116,14 +118,14 @@ export default function BranchPickerSheet({
     ) {
       const sunday = fullSchedule.Воскресенье;
       if (/выход/i.test(sunday)) {
-        shortSchedule = `пн–сб: ${allDays[0]}, вс: выходной`;
+        shortSchedule = `${t("branchPickerSheet.mondayToSaturday", "пн–сб")}: ${allDays[0]}, ${t("branchPickerSheet.sunday", "вс")}: ${t("branchPickerSheet.closed", "выходной")}`;
       } else {
-        shortSchedule = `пн–сб: ${allDays[0]}, вс: ${sunday}`;
+        shortSchedule = `${t("branchPickerSheet.mondayToSaturday", "пн–сб")}: ${allDays[0]}, ${t("branchPickerSheet.sunday", "вс")}: ${sunday}`;
       }
     }
     // ✅ 3. Иначе — fallback
     else {
-      shortSchedule = `пн–пт: ${fullSchedule.Понедельник}, сб: ${fullSchedule.Суббота}, вс: ${fullSchedule.Воскресенье}`;
+      shortSchedule = `${t("branchPickerSheet.mondayToFriday", "пн–пт")}: ${fullSchedule.Понедельник}, ${t("branchPickerSheet.saturday", "сб")}: ${fullSchedule.Суббота}, ${t("branchPickerSheet.sunday", "вс")}: ${fullSchedule.Воскресенье}`;
     }
 
     return (
@@ -148,7 +150,7 @@ export default function BranchPickerSheet({
 
         <View style={{ flex: 1 }}>
           <Text style={styles.itemTitle}>
-            {safeDecode(item.city ?? item.title ?? "Без названия")}
+            {safeDecode(item.city ?? item.title ?? t("branchPickerSheet.noName", "Без названия"))}
           </Text>
           <Text style={styles.itemAddress} numberOfLines={1}>
             {safeDecode(item.address)}
@@ -161,7 +163,7 @@ export default function BranchPickerSheet({
 
           {item.distanceKm != null && (
             <Text style={styles.itemDistance}>
-              {item.distanceKm.toFixed(1)} км от вас
+              {item.distanceKm.toFixed(1)} {t("branchPickerSheet.kmFromYou", "км от вас")}
             </Text>
           )}
         </View>
@@ -173,7 +175,7 @@ export default function BranchPickerSheet({
 
   /** Возвращает текст статуса “Открыто / Закрыто” */
   const getBranchStatusText = (schedule?: Record<string, string>) => {
-    if (!schedule) return "Нет данных";
+    if (!schedule) return t("branchPickerSheet.noData", "Нет данных");
     const now = new Date();
     const weekday = now.getDay(); // 0 = воскресенье, 1 = понедельник, ...
     const days = [
@@ -188,7 +190,7 @@ export default function BranchPickerSheet({
     const todayKey = days[weekday];
 
     let todayHours = schedule[todayKey];
-    if (!todayHours) return "Нет данных";
+    if (!todayHours) return t("branchPickerSheet.noData", "Нет данных");
 
     // безопасная попытка декодировать
     try {
@@ -197,10 +199,10 @@ export default function BranchPickerSheet({
       // если уже нормальная строка — оставляем
     }
 
-    if (/круглосуточно/i.test(todayHours)) return "Открыто (24 часа)";
+    if (/круглосуточно/i.test(todayHours)) return t("branchPickerSheet.open24Hours", "Открыто (24 часа)");
 
     const match = todayHours.match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
-    if (!match) return "Нет данных";
+    if (!match) return t("branchPickerSheet.noData", "Нет данных");
 
     const [_, sh, sm, eh, em] = match.map(Number);
     const start = new Date(now);
@@ -209,12 +211,12 @@ export default function BranchPickerSheet({
     end.setHours(eh, em, 0, 0);
 
     if (now >= start && now <= end) {
-      return `Открыто до ${String(eh).padStart(2, "0")}:${String(em).padStart(
+      return `${t("branchPickerSheet.openUntil", "Открыто до")} ${String(eh).padStart(2, "0")}:${String(em).padStart(
         2,
         "0"
       )}`;
     } else {
-      return `Закрыто до ${String(sh).padStart(2, "0")}:${String(sm).padStart(
+      return `${t("branchPickerSheet.closedUntil", "Закрыто до")} ${String(sh).padStart(2, "0")}:${String(sm).padStart(
         2,
         "0"
       )}`;
@@ -224,8 +226,8 @@ export default function BranchPickerSheet({
   /** Цвет статуса */
   const getBranchStatusColor = (schedule?: Record<string, string>) => {
     const text = getBranchStatusText(schedule);
-    if (text.startsWith("Открыто")) return "#16A34A"; // зелёный
-    if (text.startsWith("Закрыто")) return "#DC2626"; // красный
+    if (text.startsWith(t("branchPickerSheet.open", "Открыто"))) return "#16A34A"; // зелёный
+    if (text.startsWith(t("branchPickerSheet.closed", "Закрыто"))) return "#DC2626"; // красный
     return "#6B7280"; // серый
   };
 
@@ -236,10 +238,10 @@ export default function BranchPickerSheet({
       await Share.share({
         message: `📍 ${safeDecode(selectedBranch?.city ?? "")}, ${safeDecode(
           selectedBranch?.address ?? ""
-        )}\nПосмотреть в 2ГИС: ${link}`,
+        )}\n ${t("branchPickerSheet.viewIn2GIS", "Посмотреть в 2ГИС")}: ${link}`,
       });
     } catch (e: any) {
-      Alert.alert("Не удалось поделиться", e?.message ?? "");
+      Alert.alert(t("branchPickerSheet.shareFailed", "Не удалось поделиться"), e?.message ?? "");
     }
   };
 
@@ -255,7 +257,7 @@ export default function BranchPickerSheet({
       <BottomSheetView style={styles.content}>
         {!selectedBranch ? (
           <>
-            <Text style={styles.sheetTitle}>Выберите офис обмена</Text>
+            <Text style={styles.sheetTitle}>{t("branchPickerSheet.selectOffice", "Выберите офис обмена")}</Text>
 
             {/* Поиск */}
             <View style={styles.searchBox}>
@@ -263,7 +265,7 @@ export default function BranchPickerSheet({
               <TextInput
                 value={query}
                 onChangeText={setQuery}
-                placeholder="Поиск по адресу"
+                placeholder={t("branchPickerSheet.searchByAddress", "Поиск по адресу")}
                 style={styles.searchInput}
                 returnKeyType="search"
               />
@@ -281,7 +283,7 @@ export default function BranchPickerSheet({
                     tab === "nearby" && styles.tabTextActive,
                   ]}
                 >
-                  Рядом
+                  {t("branchPickerSheet.nearby", "Рядом")}
                 </Text>
               </Pressable>
 
@@ -295,7 +297,7 @@ export default function BranchPickerSheet({
                     tab === "all" && styles.tabTextActive,
                   ]}
                 >
-                  Все филиалы
+                  {t("branchPickerSheet.allBranches", "Все филиалы")}
                 </Text>
               </Pressable>
             </View>
@@ -305,7 +307,7 @@ export default function BranchPickerSheet({
               <View style={{ paddingVertical: 32, alignItems: "center" }}>
                 <ActivityIndicator size="small" color={ORANGE} />
                 <Text style={{ marginTop: 8, color: SUB }}>
-                  Определяем местоположение...
+                  {t("branchPickerSheet.determiningLocation", "Определяем местоположение...")}
                 </Text>
               </View>
             ) : dataToShow.length === 0 ? (
@@ -324,8 +326,8 @@ export default function BranchPickerSheet({
                   }}
                 >
                   {tab === "nearby"
-                    ? "Нет филиалов поблизости"
-                    : "Филиалы не найдены"}
+                    ? t("branchPickerSheet.noNearbyBranches", "Нет филиалов поблизости")
+                    : t("branchPickerSheet.noBranchesFound", "Филиалы не найдены")}
                 </Text>
               </View>
             ) : (
@@ -334,10 +336,9 @@ export default function BranchPickerSheet({
                 keyExtractor={(b) => String(b.id)}
                 renderItem={renderBranchItem}
                 ItemSeparatorComponent={() => <View style={styles.sep} />}
-                contentContainerStyle={{ paddingBottom: 170}}
+                contentContainerStyle={{ paddingBottom: 170 }}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
-           
               />
             )}
           </>
@@ -348,7 +349,7 @@ export default function BranchPickerSheet({
               <View style={{ flex: 1 }}>
                 <Text style={styles.title}>
                   {safeDecode(
-                    selectedBranch.city ?? selectedBranch.title ?? "Филиал"
+                    selectedBranch.city ?? selectedBranch.title ?? t("branchPickerSheet.branch", "Филиал")
                   )}
                 </Text>
                 <Text style={styles.address}>
@@ -470,7 +471,7 @@ export default function BranchPickerSheet({
                   size={22}
                   color="#9CA3AF"
                 />
-                <Text style={styles.shareText}>Поделиться</Text>
+                <Text style={styles.shareText}>{t("branchPickerSheet.share", "Поделиться")}</Text>
               </TouchableOpacity>
             ) : (
               <Pressable
@@ -490,8 +491,8 @@ export default function BranchPickerSheet({
               >
                 <Text style={styles.ctaText}>
                   {isRateLocked
-                    ? "Забронировать по курсу"
-                    : "Забронировать тут"}
+                    ? t("branchPickerSheet.bookByRate", "Забронировать по курсу")
+                    : t("branchPickerSheet.bookHere", "Забронировать тут")}
                 </Text>
               </Pressable>
             )}
