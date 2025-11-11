@@ -106,7 +106,7 @@ export default function Layout() {
       <Tabs.Screen
         name="profile"
         options={{
-          tabBarLabel: "Профиль",
+          tabBarLabel: t("profile.title", "Профиль"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-circle" size={size} color={color} />
           ),
