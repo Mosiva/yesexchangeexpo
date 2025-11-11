@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Pressable,
@@ -9,85 +9,99 @@ import {
   Text,
   View,
 } from "react-native";
-import CurrenciesModal from "../../../../components/CurrenciesModal"; // поправь путь
+
+import CurrenciesModal from "../../../../components/CurrenciesModal";
 import LanguageChooseModal from "../../../../components/LanguageModal";
-import NotificationsModal from "../../../../components/NotificationsModal"; // поправь путь
+import NotificationsModal from "../../../../components/NotificationsModal";
+import { SwitchPill } from "../../../../components/SwitchPill";
+import { useTheme } from "../../../../hooks/useTheme";
 import { useAuth } from "../../../../providers/Auth";
+import { ThemeContext } from "../../../../providers/ThemeProvider";
 
 const ORANGE = "#F58220";
 
 export default function AppSetScreen() {
   const { t } = useTranslation();
-  const [lightTheme, setLightTheme] = useState(false);
+  const { theme, colors } = useTheme();
+  const { setMode } = useContext(ThemeContext);
+
   const { isGuest, language } = useAuth();
+
+  const s = makeStyles(colors);
+  const isLight = theme === "light";
 
   const [langModalVisible, setLangModalVisible] = useState(false);
   const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
   const [notifModalVisible, setNotifModalVisible] = useState(false);
 
-  const [currentLang, setCurrentLang] = useState<"kz" | "ru" | "en">(
+  const [currentLang, setCurrentLang] = useState(
     language as "kz" | "ru" | "en"
   );
-  const [selectedCurrencies, setSelectedCurrencies] = useState<string[]>([
+
+  const [selectedCurrencies, setSelectedCurrencies] = useState([
     "USD",
     "RUB",
     "EUR",
   ]);
+
   const [notifPrefs, setNotifPrefs] = useState({
     rates: true,
     finance: true,
     yesNews: false,
   });
 
-  const nextTheme = lightTheme
-    ? { label: t("appset.theme.dark", "Тёмная"), icon: "moon-outline" as const }
-    : {
-        label: t("appset.theme.light", "Светлая"),
-        icon: "sunny-outline" as const,
-      };
+  const nextTheme = isLight
+    ? { label: t("appset.theme.light", "Светлая"), icon: "sunny-outline" }
+    : { label: t("appset.theme.dark", "Тёмная"), icon: "moon-outline" };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+    <View style={s.container}>
+      <StatusBar barStyle={isLight ? "dark-content" : "light-content"} />
+
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
-        keyboardShouldPersistTaps="handled"
       >
-        {/* Theme */}
-        <View style={styles.card}>
-          <View style={styles.leftIconWrap}>
-            <Ionicons name={nextTheme.icon} size={22} color={ORANGE} />
+        {/* === THEME === */}
+        <View style={s.card}>
+          <View style={s.leftIconWrap}>
+            <Ionicons name={nextTheme.icon as any} size={22} color={ORANGE} />
           </View>
+
           <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle}>
+            <Text style={s.cardTitle}>
               {t("appset.theme", "Тема приложения")}
             </Text>
-            <Text style={styles.cardSub}>{nextTheme.label}</Text>
+            <Text style={s.cardSub}>{nextTheme.label}</Text>
           </View>
+
           <SwitchPill
-            value={lightTheme}
-            onToggle={() => setLightTheme((v) => !v)}
+            value={!isLight}
+            onToggle={() => setMode(isLight ? "dark" : "light")}
           />
         </View>
 
-        {/* Currency */}
+        {/* === CURRENCY === */}
         <SettingsCard
+          colors={colors}
           icon="cash-outline"
           title={t("appset.currency", "Валюта на главном табло")}
           subtitle={selectedCurrencies.join(", ")}
           onPress={() => setCurrencyModalVisible(true)}
         />
 
-        {/* Language */}
+        {/* === LANGUAGE === */}
         <SettingsCard
+          colors={colors}
           icon="globe-outline"
           title={t("appset.language", "Язык приложения")}
           subtitle={currentLang.toUpperCase()}
           onPress={() => setLangModalVisible(true)}
         />
 
+        {/* === NOTIFICATIONS === */}
         {!isGuest && (
           <SettingsCard
+            colors={colors}
             icon="notifications-outline"
             title={t("appset.notifications", "Уведомления")}
             subtitle={
@@ -100,7 +114,7 @@ export default function AppSetScreen() {
         )}
       </ScrollView>
 
-      {/* Modals */}
+      {/* === MODALS === */}
       <LanguageChooseModal
         visible={langModalVisible}
         value={currentLang}
@@ -134,92 +148,68 @@ export default function AppSetScreen() {
   );
 }
 
-function SettingsCard({
-  icon,
-  title,
-  subtitle,
-  onPress,
-}: {
-  icon: string;
-  title: string;
-  subtitle?: string;
-  onPress: () => void;
-}) {
+// ================================
+// ✅ SETTINGS CARD COMPONENT
+// ================================
+function SettingsCard({ icon, title, subtitle, onPress, colors }: any) {
+  const s = makeStyles(colors);
+
   return (
-    <Pressable style={styles.card} onPress={onPress}>
-      <View style={styles.leftIconWrap}>
-        <Ionicons name={icon as any} size={22} color={ORANGE} />
+    <Pressable style={s.card} onPress={onPress}>
+      <View style={s.leftIconWrap}>
+        <Ionicons name={icon} size={22} color={ORANGE} />
       </View>
+
       <View style={{ flex: 1 }}>
-        <Text style={styles.cardTitle}>{title}</Text>
-        {subtitle ? <Text style={styles.cardSub}>{subtitle}</Text> : null}
+        <Text style={s.cardTitle}>{title}</Text>
+        {subtitle && <Text style={s.cardSub}>{subtitle}</Text>}
       </View>
-      <Ionicons name="chevron-forward" size={22} color="#9CA3AF" />
+
+      <Ionicons name="chevron-forward" size={22} color={colors.subtext} />
     </Pressable>
   );
 }
 
-function SwitchPill({
-  value,
-  onToggle,
-}: {
-  value: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <Pressable
-      style={[styles.switchTrack, value ? styles.switchOn : styles.switchOff]}
-      onPress={onToggle}
-    >
-      <View style={[styles.switchThumb, { left: value ? 42 : 3 }]}>
-        <Ionicons name={value ? "moon" : "sunny"} size={16} color={ORANGE} />
-      </View>
-    </Pressable>
-  );
-}
+// ================================
+// ✅ THEME STYLES (dynamic)
+// ================================
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+    card: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: colors.subtext + "33",
+      paddingHorizontal: 14,
+      paddingVertical: 16,
+      marginTop: 14,
+    },
 
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#ECECEC",
-    paddingHorizontal: 14,
-    paddingVertical: 16,
-    marginTop: 14,
-  },
-  leftIconWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  cardTitle: { fontSize: 14, fontWeight: "400", color: "#111827" },
-  cardSub: { marginTop: 4, color: "#6B7280", fontSize: 14 },
+    leftIconWrap: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 12,
+    },
 
-  // custom switch
-  switchTrack: {
-    width: 68,
-    height: 32,
-    borderRadius: 16,
-    padding: 3,
-    justifyContent: "center",
-  },
-  switchOn: { backgroundColor: "#2C2C2C" },
-  switchOff: { backgroundColor: "#E5E7EB" },
-  switchThumb: {
-    position: "absolute",
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
+    cardTitle: {
+      fontSize: 14,
+      fontWeight: "400",
+      color: colors.text,
+    },
+
+    cardSub: {
+      marginTop: 4,
+      color: colors.subtext,
+      fontSize: 14,
+    },
+  });

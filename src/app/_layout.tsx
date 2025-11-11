@@ -9,8 +9,8 @@ import {
 import Toast from "react-native-toast-message";
 import { Provider as ReduxProvider } from "react-redux";
 import store from "store";
-
 import useCachedResources from "../hooks/useCachedResources";
+import { ThemeProvider } from "../providers/ThemeProvider";
 
 export default function RootLayout() {
   const isReady = useCachedResources();
@@ -23,9 +23,11 @@ export default function RootLayout() {
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <ReduxProvider store={store}>
         <AuthProvider>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <Slot />
-          </GestureHandlerRootView>
+          <ThemeProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <Slot />
+            </GestureHandlerRootView>
+          </ThemeProvider>
           <Toast />
         </AuthProvider>
       </ReduxProvider>

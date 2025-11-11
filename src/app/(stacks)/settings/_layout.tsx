@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useTheme } from "../../../hooks/useTheme";
 
 function CustomHeader({
   title,
@@ -10,108 +11,126 @@ function CustomHeader({
   title: string;
   showBackButton?: boolean;
 }) {
-
   const router = useRouter();
+  const { colors, theme } = useTheme();
+
   const canGoBack =
     typeof router.canGoBack === "function" ? router.canGoBack() : false;
 
+  const s = makeStyles(colors);
+
   return (
-    <View style={styles.topBar}>
+    <View style={s.topBar}>
       {showBackButton && canGoBack ? (
         <Pressable onPress={() => router.back()} hitSlop={12}>
-          <Ionicons name="arrow-back" size={28} color="#000" />
+          <Ionicons name="arrow-back" size={28} color={colors.text} />
         </Pressable>
       ) : (
         <View style={{ width: 28 }} />
       )}
 
-      <Text style={styles.title}>{title}</Text>
+      <Text style={s.title}>{title}</Text>
     </View>
   );
 }
 
 export default function Layout() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+
   return (
-    
-    <Stack>
+    <Stack
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.background },
+        contentStyle: { backgroundColor: colors.background },
+      }}
+    >
       <Stack.Screen
         name="index"
         options={{
-          // Hide back by default + disable iOS swipe-back
-          header: () => (
-            <CustomHeader title={t("settings.title", "Настройки")} showBackButton={true} />
-          ),
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="aboutus/index"
-        options={{
-          // Hide back by default + disable iOS swipe-back
-          header: () => (
-            <CustomHeader title={t("aboutus.title", "О компании")} showBackButton={true} />
-          ),
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="jointoteam/index"
-        options={{
-          // Hide back by default + disable iOS swipe-back
-          header: () => (
-            <CustomHeader title={t("jointoteam.title", "Хочу в команду!")} showBackButton={true} />
-          ),
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="feedbacks/index"
-        options={{
-          // Hide back by default + disable iOS swipe-back
-          header: () => (
-            <CustomHeader title={t("feedbacks.title", "Отзывы и предложения")} showBackButton={true} />
-          ),
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="appset/index"
-        options={{
-          // Hide back by default + disable iOS swipe-back
           header: () => (
             <CustomHeader
-              title={t("appset.title", "Настройки")}
-              showBackButton={true}
+              title={t("settings.title", "Настройки")}
+              showBackButton
             />
           ),
           gestureEnabled: false,
         }}
       />
+
       <Stack.Screen
-        name="successform/index"
+        name="aboutus/index"
         options={{
-          headerShown: false,
+          header: () => (
+            <CustomHeader
+              title={t("aboutus.title", "О компании")}
+              showBackButton
+            />
+          ),
+          gestureEnabled: false,
         }}
       />
+
+      <Stack.Screen
+        name="jointoteam/index"
+        options={{
+          header: () => (
+            <CustomHeader
+              title={t("jointoteam.title", "Хочу в команду!")}
+              showBackButton
+            />
+          ),
+          gestureEnabled: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="feedbacks/index"
+        options={{
+          header: () => (
+            <CustomHeader
+              title={t("feedbacks.title", "Отзывы и предложения")}
+              showBackButton
+            />
+          ),
+          gestureEnabled: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="appset/index"
+        options={{
+          header: () => (
+            <CustomHeader
+              title={t("appset.title", "Настройки")}
+              showBackButton
+            />
+          ),
+          gestureEnabled: false,
+        }}
+      />
+
+      <Stack.Screen name="successform/index" options={{ headerShown: false }} />
     </Stack>
   );
 }
 
-const styles = StyleSheet.create({
-  topBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-    flexShrink: 1,
-  },
-});
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    topBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingTop: 60,
+      paddingHorizontal: 20,
+      paddingBottom: 16,
+      backgroundColor: colors.background,
+    },
+    title: {
+      fontSize: 20,
+      fontWeight: "bold",
+      textAlign: "center",
+      color: colors.text,
+      flexShrink: 1,
+    },
+  });
