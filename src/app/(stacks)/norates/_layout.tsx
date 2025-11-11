@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, Stack, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 function CustomHeader({
@@ -35,6 +36,7 @@ function CustomHeader({
 }
 
 export default function Layout() {
+  const { t } = useTranslation();
   return (
     <Stack>
       <Stack.Screen
@@ -55,7 +57,7 @@ export default function Layout() {
           // Hide back by default + disable iOS swipe-back
           header: () => (
             <CustomHeader
-              title="Бронь с привязкой к курсу"
+              title={t("norates.withrates.title", "Бронь с привязкой к курсу")}
               showBackButton={true}
             />
           ),

@@ -335,6 +335,7 @@
   },
   "norates": {
     "withrates": {
+      "title": "Бронь с привязкой к курсу",
       "bookingWithRateExplanation": "Данный вид брони подразумевает сохранение курса",
       "iSell": "Я продаю",
       "iBuy": "Я покупаю",

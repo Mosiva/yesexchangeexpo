@@ -337,6 +337,7 @@
   },
   "norates": {
     "withrates": {
+      "title": "Reservation with rate link",
       "bookingWithRateExplanation": "This type of reservation locks in the selected exchange rate",
       "iSell": "I sell",
       "iBuy": "I buy",
