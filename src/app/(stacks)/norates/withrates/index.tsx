@@ -314,20 +314,32 @@ export default function ReserveWithRateScreen() {
   /** ====== Сабмит ====== */
   const handleCreateBooking = async () => {
     if (!branchIdParam || !to?.id) {
-      Alert.alert("Ошибка", t("norates.withrates.errorDeterminingCurrencyOrBranch", "Не удалось определить валюту или филиал."));
+      Alert.alert(
+        "Ошибка",
+        t(
+          "norates.withrates.errorDeterminingCurrencyOrBranch",
+          "Не удалось определить валюту или филиал."
+        )
+      );
       return;
     }
     if (isGuest && !isValid) {
       Alert.alert(
         t("norates.withrates.error", "Ошибка"),
-        t("norates.withrates.enterValidPhone", "Введите корректный номер телефона Казахстана (+7 7XX XXX-XX-XX).")
+        t(
+          "norates.withrates.enterValidPhone",
+          "Введите корректный номер телефона Казахстана (+7 7XX XXX-XX-XX)."
+        )
       );
       return;
     }
     // ✅ Найдём курс тенге (KZT)
     const kztRate = currencies.find((c) => c.code === "KZT");
     if (!kztRate) {
-      Alert.alert(t("norates.withrates.error", "Ошибка"), t("norates.withrates.kztRateNotFound", "Не найден курс KZT."));
+      Alert.alert(
+        t("norates.withrates.error", "Ошибка"),
+        t("norates.withrates.kztRateNotFound", "Не найден курс KZT.")
+      );
       return;
     }
     const payload = {
@@ -358,7 +370,7 @@ export default function ReserveWithRateScreen() {
         params: {
           id: bookingId?.toString() ?? "",
           bitrixId: bookingBitrixId?.toString() ?? "",
-          kind: "С привязкой к курсу",
+          kind: t("norates.withrates.kind"),
           amount: displayAmount,
           currency: displayCurrency,
           rateText: `${rateLineLeft} = ${rateLineRight}`,
@@ -370,7 +382,10 @@ export default function ReserveWithRateScreen() {
       const msg =
         err?.data?.message ||
         err?.error ||
-        t("norates.withrates.errorCreatingBooking", "Не удалось создать бронь. Попробуйте ещё раз.");
+        t(
+          "norates.withrates.errorCreatingBooking",
+          "Не удалось создать бронь. Попробуйте ещё раз."
+        );
       Alert.alert(t("norates.withrates.error", "Ошибка"), msg);
     }
   };
@@ -404,7 +419,10 @@ export default function ReserveWithRateScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.subtitle}>
-          {t("norates.withrates.bookingWithRateExplanation", "Данный вид брони подразумевает сохранение курса")}
+          {t(
+            "norates.withrates.bookingWithRateExplanation",
+            "Данный вид брони подразумевает сохранение курса"
+          )}
         </Text>
 
         {/* Segmented control */}
@@ -498,8 +516,20 @@ export default function ReserveWithRateScreen() {
           <View style={styles.discountRow}>
             <Text style={styles.discountLabel}>
               {mode === "buy"
-                ? `${t("norates.withrates.withDiscount", "С")} ${finalPercent}% ${t("norates.withrates.discount", "скидкой")}:`
-                : `${t("norates.withrates.withPremium", "С")} ${finalPercent}% ${t("norates.withrates.premium", "наценкой")}:`}
+                ? `${t(
+                    "norates.withrates.withDiscount",
+                    "С"
+                  )} ${finalPercent}% ${t(
+                    "norates.withrates.discount",
+                    "скидкой"
+                  )}:`
+                : `${t(
+                    "norates.withrates.withPremium",
+                    "С"
+                  )} ${finalPercent}% ${t(
+                    "norates.withrates.premium",
+                    "наценкой"
+                  )}:`}
             </Text>
 
             <Text style={styles.discountValue}>
@@ -522,7 +552,10 @@ export default function ReserveWithRateScreen() {
           >
             <View style={{ marginTop: 20 }}>
               <Text style={styles.subtitle}>
-                {t("norates.withrates.leavePhone", "Оставьте номер телефона, на который хотите оформить бронь")}
+                {t(
+                  "norates.withrates.leavePhone",
+                  "Оставьте номер телефона, на который хотите оформить бронь"
+                )}
               </Text>
               <MaskInput
                 style={styles.input}
@@ -565,16 +598,23 @@ export default function ReserveWithRateScreen() {
 
         {digits.length >= 3 && !validPrefixes.includes(prefix) && (
           <Text style={styles.error}>
-            {t("norates.withrates.onlyKzPrefixes", "Доступны только коды операторов Казахстана")}
+            {t(
+              "norates.withrates.onlyKzPrefixes",
+              "Доступны только коды операторов Казахстана"
+            )}
           </Text>
         )}
       </ScrollView>
 
       {/* Footer */}
       <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
-        <Text style={styles.footerTitle}>{t("norates.withrates.total", "Итого")}</Text>
+        <Text style={styles.footerTitle}>
+          {t("norates.withrates.total", "Итого")}
+        </Text>
         <View style={styles.footerRow}>
-          <Text style={styles.footerLabel}>{t("norates.withrates.yourAmount", "Ваша сумма")}</Text>
+          <Text style={styles.footerLabel}>
+            {t("norates.withrates.yourAmount", "Ваша сумма")}
+          </Text>
           <Text
             style={[
               styles.footerValue,
@@ -599,7 +639,9 @@ export default function ReserveWithRateScreen() {
           onPress={handleCreateBooking}
         >
           <Text style={styles.ctaText}>
-            {isCreating || isCreatingGuest ? t("norates.withrates.sending", "Отправка...") : t("norates.withrates.reserve", "Забронировать")}
+            {isCreating || isCreatingGuest
+              ? t("norates.withrates.sending", "Отправка...")
+              : t("norates.withrates.reserve", "Забронировать")}
           </Text>
         </Pressable>
       </View>

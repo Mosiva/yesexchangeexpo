@@ -75,7 +75,7 @@ export default function Layout() {
           gestureEnabled: false,
           header: () => (
             <CustomHeader
-              title="В обработке"
+              title={t("norates.moderation.name", "В обработке")}
               showBackButton={true}
               onBack={() => router.replace("/(tabs)/(main)")}
             />

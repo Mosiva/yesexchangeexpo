@@ -278,7 +278,7 @@ export default function ReserveNoRateScreen() {
         params: {
           id: bookingId?.toString() ?? "",
           bitrixId: bookingBitrixId?.toString() ?? "",
-          kind: "Без привязки к курсу",
+          kind: t("norates.moderation.kind"),
           amount: displayAmount,
           currency: displayCurrency,
           rateText: `${rateLineLeft} = ${rateLineRight}`,

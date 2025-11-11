@@ -378,9 +378,11 @@
       "discountOnlyAvailableForFirstBookingOrAmountGreaterThan500000": "The discount is available only for the first reservation or for amounts above 500,000 tenge",
       "premiumOnlyAvailableForFirstBookingOrAmountGreaterThan500000": "The premium is available only for the first reservation or for amounts above 500,000 tenge",
       "discountOnlyAvailableForAmountGreaterThan500000": "The discount is available only for amounts above 500,000 tenge",
-      "premiumOnlyAvailableForAmountGreaterThan500000": "The premium is available only for amounts above 500,000 tenge"
+      "premiumOnlyAvailableForAmountGreaterThan500000": "The premium is available only for amounts above 500,000 tenge",
+      "kind": "With rate link"
     },
     "moderation": {
+      "name": "In processing",
       "title": "Your request has been accepted. Please wait for a call from our specialist",
       "bookingAmount": "Booking amount:",
       "bookingRate": "At the rate:",
@@ -389,7 +391,9 @@
       "cancelBooking": "Cancel reservation",
       "bookingCancelled": "Reservation successfully cancelled.",
       "bookingCancelledError": "Failed to cancel reservation",
-      "applicationAccepted": "Your request has been accepted. Please wait for a call from our specialist"
+      "applicationAccepted": "Your request has been accepted. Please wait for a call from our specialist",
+      "bookingNumber": "Booking number",
+      "kind": "Without rate link"
     }
   }
 }

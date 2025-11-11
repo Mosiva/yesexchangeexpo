@@ -377,9 +377,11 @@
       "discountOnlyAvailableForFirstBookingOrAmountGreaterThan500000": "Скидка доступна только на первую бронь или сумму больше 500 000 тенге",
       "premiumOnlyAvailableForFirstBookingOrAmountGreaterThan500000": "Наценка доступна только на первую бронь или сумму больше 500 000 тенге",
       "discountOnlyAvailableForAmountGreaterThan500000": "Скидка доступна только при сумме больше 500 000 тенге",
-      "premiumOnlyAvailableForAmountGreaterThan500000": "Наценка доступна только при сумме больше 500 000 тенге"
+      "premiumOnlyAvailableForAmountGreaterThan500000": "Наценка доступна только при сумме больше 500 000 тенге",
+      "kind": "С привязкой к курсу"
     },
     "moderation": {
+      "name": "В обработке",
       "title": "Заявка принята в работу, ожидайте звонка от нашего специалиста",
       "bookingAmount": "Сумма брони:",
       "bookingRate": "По курсу:",
@@ -388,7 +390,9 @@
       "cancelBooking": "Отменить бронь",
       "bookingCancelled": "Бронь успешно отменена.",
       "bookingCancelledError": "Не удалось отменить бронь",
-      "applicationAccepted": "Заявка принята в работу, ожидайте звонка от нашего специалиста"
+      "applicationAccepted": "Заявка принята в работу, ожидайте звонка от нашего специалиста",
+      "bookingNumber": "Заявка №",
+      "kind": "Без привязки к курсу"
     }
   }
 }

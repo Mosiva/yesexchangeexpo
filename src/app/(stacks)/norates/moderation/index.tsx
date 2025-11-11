@@ -93,7 +93,7 @@ export default function ModerationScreen() {
 
         {/* Card */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Заявка №{bitrixId}</Text>
+          <Text style={styles.cardTitle}>{t("norates.moderation.bookingNumber", "Заявка №")}{bitrixId}</Text>
           <Text style={styles.cardSub}>{kind}</Text>
 
           <View style={{ height: 16 }} />
