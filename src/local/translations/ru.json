@@ -516,6 +516,9 @@
     "noBranchesFound": "Филиалы не найдены",
     "branch": "Филиал",
     "viewIn2GIS": "Посмотреть в 2ГИС",
-    "mondayToFriday": "пн–пт"
+    "mondayToFriday": "пн–пт",
+    "workTimeToday": "Время работы сегодня",
+    "schedule": "График",
+    "contacts": "Контакты"
   }
 }

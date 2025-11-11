@@ -793,6 +793,9 @@
     "noBranchesFound": "No branches found",
     "branch": "Branch",
     "viewIn2GIS": "View in 2GIS",
-    "mondayToFriday": "Mon–Fri"
+    "mondayToFriday": "Mon–Fri",
+    "workTimeToday": "Work time today",
+    "schedule": "Schedule",
+    "contacts": "Contacts"
   }
 }

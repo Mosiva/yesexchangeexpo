@@ -378,7 +378,7 @@ export default function BranchPickerSheet({
             </ScrollView>
 
             {/* Время работы */}
-            <Text style={styles.workLabel}>Время работы сегодня</Text>
+            <Text style={styles.workLabel}>{t("branchPickerSheet.workTimeToday", "Время работы сегодня")}</Text>
             <Text
               style={[
                 styles.workNow,
@@ -389,7 +389,7 @@ export default function BranchPickerSheet({
             </Text>
 
             {/* График */}
-            <Text style={styles.workLabel}>График</Text>
+            <Text style={styles.workLabel}>{t("branchPickerSheet.schedule", "График")}</Text>
             {selectedBranch.schedule &&
               (() => {
                 const daysOrder = [
@@ -450,7 +450,7 @@ export default function BranchPickerSheet({
             {/* Контакты */}
             {selectedBranch.contactPhone && (
               <>
-                <Text style={styles.workLabel}>Контакты</Text>
+                <Text style={styles.workLabel}>{t("branchPickerSheet.contacts", "Контакты")}</Text>
                 <View style={styles.contactRow}>
                   <Ionicons name="call" size={18} color={ORANGE} />
                   <Text style={styles.contactText}>

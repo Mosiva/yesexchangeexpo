@@ -788,6 +788,9 @@
     "noBranchesFound": "Филиалдар табылмады",
     "branch": "Филиал",
     "viewIn2GIS": "2GIS-те қарау",
-    "mondayToFriday": "дс–жм"
+    "mondayToFriday": "дс–жм",
+    "workTimeToday": "Бүгін қызмет көрсету уақыты",
+    "schedule": " Жұмыс кестесі",
+    "contacts": "Байланыс"
   }
 }
