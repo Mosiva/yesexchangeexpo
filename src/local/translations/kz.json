@@ -311,5 +311,11 @@
     "news": "Жаңалықтар",
     "errorLoadingNbkRates": "ҰБ бағамдарын жүктеу қатесі",
     "nbkRatesLabel": "ҚРҰБ бағамы"
+  },
+  "currenciesMainCardList": {
+    "purchase": "Сатып алу",
+    "sale": "Сату",
+    "hide": "Жасыру",
+    "showMore": "Көбірек көрсету"
   }
 }

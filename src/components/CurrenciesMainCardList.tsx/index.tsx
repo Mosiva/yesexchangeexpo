@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { CurrencyCode } from "../../types/api";
 import CurrencyFlag from "../CurrencyFlag"; // ✅ подключаем твой компонент
@@ -36,6 +37,7 @@ export default function CurrenciesMainCardList({
   onPressMore,
   showMore = true,
 }: Props) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
 
   // which row's tooltip is visible (null = none)
@@ -69,8 +71,8 @@ export default function CurrenciesMainCardList({
     <View style={styles.container}>
       {visibleData.length > 0 && (
         <View style={styles.labelsRow}>
-          <Text style={styles.label}>Покупка</Text>
-          <Text style={styles.label}>Продажа</Text>
+          <Text style={styles.label}>{t("currenciesMainCardList.purchase", "Покупка")}</Text>
+          <Text style={styles.label}>{t("currenciesMainCardList.sale", "Продажа")}</Text>
         </View>
       )}
 
@@ -123,7 +125,7 @@ export default function CurrenciesMainCardList({
       {showMore && canExpand && (
         <TouchableOpacity style={styles.moreBtn} onPress={handleToggle}>
           <Text style={styles.moreText}>
-            {expanded ? "Скрыть" : "Показать больше"}
+            {expanded ? t("currenciesMainCardList.hide", "Скрыть") : t("currenciesMainCardList.showMore", "Показать больше")}
           </Text>
         </TouchableOpacity>
       )}

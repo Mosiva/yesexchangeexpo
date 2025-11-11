@@ -311,5 +311,11 @@
     "news": "News",
     "errorLoadingNbkRates": "Failed to load NBK rates",
     "nbkRatesLabel": "NbRK rate"
+  },
+  "currenciesMainCardList": {
+    "purchase": "Buy",
+    "sale": "Sell",
+    "hide": "Hide",
+    "showMore": "Show more"
   }
 }

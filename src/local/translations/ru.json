@@ -309,5 +309,11 @@
     "news": "Новости",
     "errorLoadingNbkRates": "Ошибка загрузки курсов НБК",
     "nbkRatesLabel": "Курс НБ РК"
+  },
+  "currenciesMainCardList": {
+    "purchase": "Покупка",
+    "sale": "Продажа",
+    "hide": "Скрыть",
+    "showMore": "Показать больше"
   }
 }
