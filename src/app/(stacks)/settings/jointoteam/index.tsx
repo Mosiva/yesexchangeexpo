@@ -20,7 +20,9 @@ import {
 import MaskInput from "react-native-mask-input";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { z } from "zod";
+import { useTheme } from "../../../../hooks/useTheme";
 import { useSubmitJobApplicationMutation } from "../../../../services/yesExchange";
+
 // --- Validation schema ---
 const schema = z.object({
   fullName: z.string().trim().min(1, "Введите ваше ФИО"),
@@ -37,20 +39,21 @@ type FormValues = z.infer<typeof schema>;
 
 export default function JoinToTeamScreen() {
   const { t } = useTranslation();
+  const { colors, theme } = useTheme();
+  const isLight = theme === "light";
+  const s = makeStyles(colors);
   const [submitJobApplication, { isLoading }] =
     useSubmitJobApplicationMutation();
   const insets = useSafeAreaInsets();
+
   const ATTACH_DISABLED = true;
 
-  // refs
   const emailRef = useRef<TextInput>(null);
   const phoneRef = useRef<TextInput>(null);
 
-  // phone states
   const [maskedPhone, setMaskedPhone] = useState("+7");
   const [digits, setDigits] = useState("");
 
-  // допустимые коды операторов РК
   const validPrefixes = [
     "700",
     "701",
@@ -73,7 +76,6 @@ export default function JoinToTeamScreen() {
   const isPrefixValid =
     digits.length >= 3 ? validPrefixes.includes(prefix) : true;
 
-  // файл (UI only)
   const [resume, setResume] =
     useState<DocumentPicker.DocumentPickerAsset | null>(null);
 
@@ -117,7 +119,7 @@ export default function JoinToTeamScreen() {
 
     const e164 = `+7${values.digits}`;
     try {
-      const res = await submitJobApplication({
+      await submitJobApplication({
         fullName: values.fullName.trim(),
         email: values.email.trim(),
         phone: e164,
@@ -143,14 +145,17 @@ export default function JoinToTeamScreen() {
   };
 
   return (
-    <View style={styles.root}>
-      <StatusBar barStyle="dark-content" />
+    <View style={s.root}>
+      <StatusBar
+        barStyle={isLight ? "dark-content" : "light-content"}
+        backgroundColor={colors.background}
+      />
       <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={[styles.container, { paddingBottom: 120 }]}
+        style={s.scroll}
+        contentContainerStyle={[s.container, { paddingBottom: 120 }]}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.subtitle}>
+        <Text style={s.subtitle}>
           {t(
             "jointoteam.subtitle",
             "Заполните форму, чтобы оставить свой отклик"
@@ -164,15 +169,16 @@ export default function JoinToTeamScreen() {
           render={({ field: { onChange, value } }) => (
             <>
               <TextInput
-                style={styles.input}
+                style={s.input}
                 placeholder={t("jointoteam.fullName", "Ваше ФИО*")}
+                placeholderTextColor={colors.subtext}
                 value={value}
                 onChangeText={onChange}
                 returnKeyType="next"
                 onSubmitEditing={() => emailRef.current?.focus()}
               />
               {errors.fullName && (
-                <Text style={styles.error}>{errors.fullName.message}</Text>
+                <Text style={s.error}>{errors.fullName.message}</Text>
               )}
             </>
           )}
@@ -186,8 +192,9 @@ export default function JoinToTeamScreen() {
             <>
               <TextInput
                 ref={emailRef}
-                style={styles.input}
+                style={s.input}
                 placeholder="Email*"
+                placeholderTextColor={colors.subtext}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -197,7 +204,7 @@ export default function JoinToTeamScreen() {
                 onSubmitEditing={() => phoneRef.current?.focus()}
               />
               {errors.email && (
-                <Text style={styles.error}>{errors.email.message}</Text>
+                <Text style={s.error}>{errors.email.message}</Text>
               )}
             </>
           )}
@@ -211,8 +218,9 @@ export default function JoinToTeamScreen() {
             <>
               <MaskInput
                 ref={phoneRef}
-                style={styles.input}
+                style={s.input}
                 placeholder="+7 (___) ___-__-__*"
+                placeholderTextColor={colors.subtext}
                 keyboardType="number-pad"
                 inputMode="numeric"
                 autoCorrect={false}
@@ -249,11 +257,14 @@ export default function JoinToTeamScreen() {
                 maxLength={19}
               />
               {errors.digits && (
-                <Text style={styles.error}>{errors.digits.message}</Text>
+                <Text style={s.error}>{errors.digits.message}</Text>
               )}
               {digits.length >= 3 && !isPrefixValid && (
-                <Text style={styles.error}>
-                  Доступны только коды операторов Казахстана
+                <Text style={s.error}>
+                  {t(
+                    "jointoteam.onlyKazakhstanOperators",
+                    "Доступны только коды операторов Казахстана"
+                  )}
                 </Text>
               )}
             </>
@@ -262,12 +273,12 @@ export default function JoinToTeamScreen() {
 
         {/* Resume */}
         <TouchableOpacity
-          style={[styles.attach, ATTACH_DISABLED && styles.disabled]}
+          style={[s.attach, ATTACH_DISABLED && s.disabled]}
           onPress={pickResume}
           disabled={ATTACH_DISABLED}
         >
-          <Ionicons name="attach-outline" size={22} color="#111827" />
-          <Text style={styles.attachText}>
+          <Ionicons name="attach-outline" size={22} color={colors.text} />
+          <Text style={s.attachText}>
             {resume?.name
               ? `Файл: ${resume.name}`
               : t("jointoteam.attachResume", "Прикрепить резюме")}
@@ -281,18 +292,19 @@ export default function JoinToTeamScreen() {
           render={({ field: { onChange, value } }) => (
             <>
               <TextInput
-                style={[styles.input, styles.textarea]}
+                style={[s.input, s.textarea]}
                 placeholder={t(
                   "jointoteam.coverLetter",
                   "Расскажите немного о себе*"
                 )}
+                placeholderTextColor={colors.subtext}
                 value={value}
                 onChangeText={onChange}
                 multiline
                 textAlignVertical="top"
               />
               {errors.coverLetter && (
-                <Text style={styles.error}>{errors.coverLetter.message}</Text>
+                <Text style={s.error}>{errors.coverLetter.message}</Text>
               )}
             </>
           )}
@@ -304,16 +316,16 @@ export default function JoinToTeamScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={0}
       >
-        <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 8 }]}>
+        <View style={[s.bottomBar, { paddingBottom: insets.bottom + 8 }]}>
           <TouchableOpacity
             style={[
-              styles.submit,
-              (!isValid || isSubmitting || isLoading) && styles.submitDisabled,
+              s.submit,
+              (!isValid || isSubmitting || isLoading) && s.submitDisabled,
             ]}
             onPress={handleSubmit(onSubmit)}
             disabled={!isValid || isSubmitting || isLoading}
           >
-            <Text style={styles.submitText}>
+            <Text style={s.submitText}>
               {isSubmitting || isLoading
                 ? t("jointoteam.sending", "Отправляем...")
                 : t("jointoteam.send", "Отправить")}
@@ -325,79 +337,74 @@ export default function JoinToTeamScreen() {
   );
 }
 
-const COLORS = {
-  orange: "#F58220",
-  text: "#111827",
-  subtext: "#6B7280",
-  inputBg: "#F7F7F9",
-  border: "#ECECEC",
-  bg: "#FFFFFF",
-  error: "#DC2626",
-};
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    root: { flex: 1, backgroundColor: colors.background },
+    scroll: { flex: 1 },
+    container: { paddingHorizontal: 16, paddingTop: 8 },
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: COLORS.bg },
-  scroll: { flex: 1 },
-  container: { paddingHorizontal: 16, paddingTop: 8 },
+    subtitle: {
+      fontSize: 14,
+      color: colors.subtext,
+      marginTop: 8,
+      marginBottom: 12,
+      fontWeight: "400",
+    },
 
-  subtitle: {
-    fontSize: 14,
-    color: COLORS.subtext,
-    marginTop: 8,
-    marginBottom: 12,
-    fontWeight: "400",
-  },
+    input: {
+      backgroundColor: colors.card,
+      borderColor: colors.subtext + "33",
+      borderWidth: 1,
+      borderRadius: 14,
+      fontSize: 16,
+      paddingVertical: 14,
+      paddingHorizontal: 14,
+      color: colors.text,
+      marginTop: 12,
+      fontWeight: "400",
+    },
+    textarea: { height: 140 },
 
-  input: {
-    backgroundColor: COLORS.inputBg,
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderRadius: 14,
-    fontSize: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    color: COLORS.text,
-    marginTop: 12,
-    fontWeight: "400",
-  },
-  textarea: { height: 140 },
+    attach: {
+      marginTop: 12,
+      backgroundColor: colors.card,
+      borderColor: colors.subtext + "33",
+      borderWidth: 1,
+      borderRadius: 14,
+      paddingVertical: 16,
+      paddingHorizontal: 14,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+    },
+    attachText: {
+      fontSize: 16,
+      color: colors.text,
+      fontWeight: "600",
+    },
 
-  attach: {
-    marginTop: 12,
-    backgroundColor: COLORS.inputBg,
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingVertical: 16,
-    paddingHorizontal: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  attachText: { fontSize: 16, color: COLORS.text, fontWeight: "600" },
-
-  bottomBar: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: COLORS.bg,
-    paddingHorizontal: 16,
-    paddingTop: 8,
-  },
-  submit: {
-    backgroundColor: COLORS.orange,
-    height: 56,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  submitDisabled: { opacity: 0.5 },
-  submitText: { color: "#fff", fontSize: 16, fontWeight: "700" },
-  error: {
-    color: COLORS.error,
-    marginTop: 4,
-    fontSize: 13,
-  },
-  disabled: { opacity: 0.5 },
-});
+    bottomBar: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: colors.background,
+      paddingHorizontal: 16,
+      paddingTop: 8,
+    },
+    submit: {
+      backgroundColor: colors.primary,
+      height: 56,
+      borderRadius: 16,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    submitDisabled: { opacity: 0.5 },
+    submitText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+    error: {
+      color: "#DC2626",
+      marginTop: 4,
+      fontSize: 13,
+    },
+    disabled: { opacity: 0.5 },
+  });

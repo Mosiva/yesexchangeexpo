@@ -18,6 +18,7 @@ import {
 import MaskInput from "react-native-mask-input";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { z } from "zod";
+import { useTheme } from "../../../../hooks/useTheme";
 import { useSubmitFeedbackMutation } from "../../../../services/yesExchange";
 
 // --- Validation schema ---
@@ -36,13 +37,15 @@ type FormValues = z.infer<typeof schema>;
 
 export default function FeedbacksScreen() {
   const { t } = useTranslation();
+  const { colors, theme } = useTheme();
+  const isLight = theme === "light";
+  const s = makeStyles(colors);
   const insets = useSafeAreaInsets();
-  const [submitFeedback, { isLoading }] = useSubmitFeedbackMutation();
 
+  const [submitFeedback, { isLoading }] = useSubmitFeedbackMutation();
   const emailRef = useRef<TextInput>(null);
   const phoneRef = useRef<TextInput>(null);
 
-  // phone states
   const [maskedPhone, setMaskedPhone] = useState("+7");
   const [digits, setDigits] = useState("");
 
@@ -90,62 +93,72 @@ export default function FeedbacksScreen() {
     const e164 = `+7${values.digits}`;
 
     try {
-      const res = await submitFeedback({
+      await submitFeedback({
         fullName: values.fullName.trim(),
         email: values.email.trim(),
         phone: e164,
         message: values.message.trim(),
       }).unwrap();
-      console.log("✅ Ответ сервера:", res);
+
       router.push({
         pathname: "/(stacks)/settings/successform",
         params: { isJointTeam: "false" },
       });
     } catch (err: any) {
-      console.error("❌ Ошибка при отправке:", err);
       const msg =
         err?.data?.message ||
         err?.error ||
         err?.message ||
-        t("feedbacks.error", "Не удалось отправить сообщение. Попробуйте позже.");
+        t(
+          "feedbacks.error",
+          "Не удалось отправить сообщение. Попробуйте позже."
+        );
       Alert.alert(t("feedbacks.error", "Ошибка"), String(msg));
     }
   };
 
   return (
-    <View style={styles.root}>
-      <StatusBar barStyle="dark-content" />
+    <View style={s.root}>
+      <StatusBar
+        barStyle={isLight ? "dark-content" : "light-content"}
+        backgroundColor={colors.background}
+      />
+
       <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={[styles.container, { paddingBottom: 120 }]}
+        style={s.scroll}
+        contentContainerStyle={[s.container, { paddingBottom: 120 }]}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.lead}>
-          {t("feedbacks.lead", "Уважаемые клиенты, мы всегда рады выслушать ваши предложения и отзывы. Заранее благодарим!")}
+        <Text style={s.lead}>
+          {t(
+            "feedbacks.lead",
+            "Уважаемые клиенты, мы всегда рады выслушать ваши предложения и отзывы. Заранее благодарим!"
+          )}
         </Text>
 
-        {/* ФИО */}
+        {/* === ФИО === */}
         <Controller
           control={control}
           name="fullName"
           render={({ field: { onChange, value } }) => (
             <>
               <TextInput
-                style={styles.input}
+                style={s.input}
                 placeholder={t("feedbacks.fullName", "Ваше ФИО*")}
+                placeholderTextColor={colors.subtext}
                 value={value}
                 onChangeText={onChange}
                 returnKeyType="next"
                 onSubmitEditing={() => emailRef.current?.focus()}
               />
               {errors.fullName && (
-                <Text style={styles.error}>{errors.fullName.message}</Text>
+                <Text style={s.error}>{errors.fullName.message}</Text>
               )}
             </>
           )}
         />
 
-        {/* Email */}
+        {/* === Email === */}
         <Controller
           control={control}
           name="email"
@@ -153,8 +166,9 @@ export default function FeedbacksScreen() {
             <>
               <TextInput
                 ref={emailRef}
-                style={styles.input}
+                style={s.input}
                 placeholder="Email*"
+                placeholderTextColor={colors.subtext}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -164,13 +178,13 @@ export default function FeedbacksScreen() {
                 onSubmitEditing={() => phoneRef.current?.focus()}
               />
               {errors.email && (
-                <Text style={styles.error}>{errors.email.message}</Text>
+                <Text style={s.error}>{errors.email.message}</Text>
               )}
             </>
           )}
         />
 
-        {/* Phone */}
+        {/* === Phone === */}
         <Controller
           control={control}
           name="digits"
@@ -178,8 +192,9 @@ export default function FeedbacksScreen() {
             <>
               <MaskInput
                 ref={phoneRef}
-                style={styles.input}
+                style={s.input}
                 placeholder="+7 (___) ___-__-__*"
+                placeholderTextColor={colors.subtext}
                 keyboardType="number-pad"
                 inputMode="numeric"
                 autoCorrect={false}
@@ -216,26 +231,30 @@ export default function FeedbacksScreen() {
                 maxLength={19}
               />
               {errors.digits && (
-                <Text style={styles.error}>{errors.digits.message}</Text>
+                <Text style={s.error}>{errors.digits.message}</Text>
               )}
               {digits.length >= 3 && !isPrefixValid && (
-                <Text style={styles.error}>
-                  {t("feedbacks.onlyKazakhstanOperators", "Доступны только коды операторов Казахстана")}
+                <Text style={s.error}>
+                  {t(
+                    "feedbacks.onlyKazakhstanOperators",
+                    "Доступны только коды операторов Казахстана"
+                  )}
                 </Text>
               )}
             </>
           )}
         />
 
-        {/* Message */}
+        {/* === Message === */}
         <Controller
           control={control}
           name="message"
           render={({ field: { onChange, value } }) => (
             <>
               <TextInput
-                style={[styles.input, styles.textarea]}
+                style={[s.input, s.textarea]}
                 placeholder={t("feedbacks.message", "Ваш отзыв или пожелания*")}
+                placeholderTextColor={colors.subtext}
                 value={value}
                 onChangeText={onChange}
                 multiline
@@ -243,29 +262,31 @@ export default function FeedbacksScreen() {
                 textAlignVertical="top"
               />
               {errors.message && (
-                <Text style={styles.error}>{errors.message.message}</Text>
+                <Text style={s.error}>{errors.message.message}</Text>
               )}
             </>
           )}
         />
       </ScrollView>
 
-      {/* Bottom fixed button */}
+      {/* === Bottom fixed button === */}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={0}
       >
-        <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 8 }]}>
+        <View style={[s.bottomBar, { paddingBottom: insets.bottom + 8 }]}>
           <TouchableOpacity
             style={[
-              styles.submit,
-              (!isValid || isSubmitting || isLoading) && styles.submitDisabled,
+              s.submit,
+              (!isValid || isSubmitting || isLoading) && s.submitDisabled,
             ]}
             disabled={!isValid || isSubmitting || isLoading}
             onPress={handleSubmit(onSubmit)}
           >
-            <Text style={styles.submitText}>
-              {isSubmitting || isLoading ? t("feedbacks.sending", "Отправляем...") : t("feedbacks.send", "Отправить")}
+            <Text style={s.submitText}>
+              {isSubmitting || isLoading
+                ? t("feedbacks.sending", "Отправляем...")
+                : t("feedbacks.send", "Отправить")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -274,65 +295,56 @@ export default function FeedbacksScreen() {
   );
 }
 
-const COLORS = {
-  orange: "#F58220",
-  text: "#111827",
-  subtext: "#6B7280",
-  inputBg: "#F7F7F9",
-  border: "#ECECEC",
-  bg: "#FFFFFF",
-  error: "#DC2626",
-};
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    root: { flex: 1, backgroundColor: colors.background },
+    scroll: { flex: 1 },
+    container: { paddingHorizontal: 16, paddingTop: 8 },
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: COLORS.bg },
-  scroll: { flex: 1 },
-  container: { paddingHorizontal: 16, paddingTop: 8 },
+    lead: {
+      fontSize: 14,
+      lineHeight: 22,
+      color: colors.subtext,
+      marginBottom: 12,
+      marginTop: 8,
+      fontWeight: "400",
+    },
 
-  lead: {
-    fontSize: 14,
-    lineHeight: 24,
-    color: COLORS.subtext,
-    marginBottom: 12,
-    marginTop: 8,
-    fontWeight: "400",
-  },
+    input: {
+      backgroundColor: colors.card,
+      borderColor: colors.subtext + "33",
+      borderWidth: 1,
+      borderRadius: 14,
+      fontSize: 16,
+      paddingVertical: 14,
+      paddingHorizontal: 14,
+      color: colors.text,
+      marginTop: 12,
+      fontWeight: "400",
+    },
+    textarea: { height: 160 },
 
-  input: {
-    backgroundColor: COLORS.inputBg,
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderRadius: 14,
-    fontSize: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    color: COLORS.text,
-    marginTop: 12,
-    fontWeight: "400",
-  },
-  textarea: { height: 160 },
-
-  bottomBar: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: COLORS.bg,
-    paddingHorizontal: 16,
-    paddingTop: 8,
-  },
-  submit: {
-    backgroundColor: COLORS.orange,
-    height: 56,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  submitDisabled: { opacity: 0.5 },
-  submitText: { color: "#fff", fontSize: 16, fontWeight: "700" },
-  error: {
-    color: COLORS.error,
-    marginTop: 4,
-    fontSize: 13,
-  },
-});
+    bottomBar: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: colors.background,
+      paddingHorizontal: 16,
+      paddingTop: 8,
+    },
+    submit: {
+      backgroundColor: colors.primary,
+      height: 56,
+      borderRadius: 16,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    submitDisabled: { opacity: 0.5 },
+    submitText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+    error: {
+      color: "#DC2626",
+      marginTop: 4,
+      fontSize: 13,
+    },
+  });
