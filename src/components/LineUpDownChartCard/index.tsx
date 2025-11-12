@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import CurrencyFlag from "../CurrencyFlag";
+
 /* ================== Types ================== */
 type Item = {
   code: string; // e.g. "USD"
@@ -76,7 +77,7 @@ function RateCard({ item, branchId }: { item: Item; branchId?: string }) {
   const trend: "up" | "down" | "same" =
     item.delta === 0 ? "same" : item.delta > 0 ? "up" : "down";
   const router = useRouter();
-
+  const { t } = useTranslation();
   return (
     <Pressable
       style={({ pressed }) => [
@@ -102,7 +103,9 @@ function RateCard({ item, branchId }: { item: Item; branchId?: string }) {
         </View>
 
         <View>
-          <Text style={styles.label}>{item.label ?? "Курс НБ РК"}</Text>
+          <Text style={styles.label}>
+            {t("main.nbkRatesLabel", "Курс НБ РК")}
+          </Text>
           <View style={styles.row}>
             <Text style={styles.code}>{item.code}</Text>
             <Text style={styles.value}>{formatNum(item.value)}</Text>

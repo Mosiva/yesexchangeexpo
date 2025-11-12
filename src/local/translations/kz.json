@@ -396,5 +396,12 @@
       "bookingNumber": "Өтініш №",
       "kind": "Валюта бағамына байланысты емес"
     }
+  },
+  "archives": {
+    "title": "Мұрағат",
+    "searchByCurrencyName": "Валюта бойынша іздеу",
+    "errorLoadingNbkRates": "ҰБ бағамдарын жүктеу қатесі",
+    "retry": "Қайталау",
+    "nothingFound": "Мұрағат табылмады"
   }
 }

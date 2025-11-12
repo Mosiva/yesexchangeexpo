@@ -395,5 +395,12 @@
       "bookingNumber": "Booking number",
       "kind": "Without rate link"
     }
+  },
+  "archives": {
+    "title": "Archive",
+    "searchByCurrencyName": "Search by currency name",
+    "errorLoadingNbkRates": "Failed to load NBK rates",
+    "retry": "Retry",
+    "nothingFound": "Nothing found"
   }
 }

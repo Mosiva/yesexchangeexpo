@@ -394,5 +394,12 @@
       "bookingNumber": "Заявка №",
       "kind": "Без привязки к курсу"
     }
+  },
+  "archives": {
+    "title": "Архив",
+    "searchByCurrencyName": "Поиск: USD / Доллар",
+    "errorLoadingNbkRates": "Ошибка загрузки курсов НБК",
+    "retry": "Повторить",
+    "nothingFound": "Ничего не найдено по запросу"
   }
 }

@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FlatList,
   RefreshControl,
@@ -23,6 +24,7 @@ import {
 /* ================= Helpers ================= */
 
 export default function ArchivesScreen() {
+  const { t } = useTranslation();
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState("");
   const { branchId } = useLocalSearchParams<{ branchId: string }>();
@@ -63,7 +65,7 @@ export default function ArchivesScreen() {
       code: r.currency?.code ?? "",
       value: r.rate,
       delta: Number(r.changePercent) || 0,
-      label: "Курс НБ РК",
+      label: t("archives.nbkRate", "Курс НБ РК"),
       name: r.currency?.name ?? "",
     }));
   }, [todayOnly]);
@@ -111,7 +113,7 @@ export default function ArchivesScreen() {
         <TextInput
           value={query}
           onChangeText={(t) => setQuery(t)}
-          placeholder="Поиск: USD / Доллар"
+          placeholder={t("archives.searchByCurrencyName", "Поиск: USD / Доллар")}
           placeholderTextColor="#9CA3AF"
           style={styles.searchInput}
           returnKeyType="search"
@@ -139,18 +141,18 @@ export default function ArchivesScreen() {
             </View>
           ) : isNbkRatesError ? (
             <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>Ошибка загрузки курсов НБК</Text>
+              <Text style={styles.errorText}>{t("archives.errorLoadingNbkRates", "Ошибка загрузки курсов НБК")}</Text>
               <TouchableOpacity
                 style={styles.retryButton}
                 onPress={() => refetchNbkRates()}
               >
-                <Text style={styles.retryButtonText}>Повторить</Text>
+                <Text style={styles.retryButtonText}>{t("archives.retry", "Повторить")}</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <View style={{ padding: 16 }}>
               <Text style={{ color: "#6B7280" }}>
-                Ничего не найдено по запросу “{query}”
+                {t("archives.nothingFound", "Ничего не найдено по запросу")} “{query}”
               </Text>
             </View>
           )
