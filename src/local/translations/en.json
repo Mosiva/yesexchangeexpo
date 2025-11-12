@@ -212,7 +212,21 @@
     "ok": "OK",
     "error": "Error",
     "errorMessage": "Failed to cancel reservation.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "applicationNumber": "Application number",
+    "bookingAmount": "Reservation amount",
+    "address": "Address",
+    "cancelReservation": "Cancel reservation",
+    "created": "Created",
+    "onModeration": "On moderation",
+    "notConfirmed": "Not confirmed",
+    "readyForPickup": "Ready for pickup",
+    "cancelled": "Cancelled",
+    "expired": "Expired",
+    "received": "Received",
+    "syncFailed": "Sync failed",
+    "externalDeleted": "External deleted",
+    "unknown": "Unknown"
   },
 
   "cancelReservationModal": {

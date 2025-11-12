@@ -213,7 +213,21 @@
     "ok": "ОК",
     "error": "Ошибка",
     "errorMessage": "Не удалось отменить бронь.",
-    "retry": "Повторить"
+    "retry": "Повторить",
+    "applicationNumber": "Заявка №",
+    "bookingAmount": "Сумма брони",
+    "address": "Адрес",
+    "cancelReservation": "Отменить бронь",
+    "created": "Создана",
+    "onModeration": "На модерации",
+    "notConfirmed": "Не подтверждена",
+    "readyForPickup": "Готова к выдаче",
+    "cancelled": "Отменена",
+    "expired": "Истекла",
+    "received": "Получено",
+    "syncFailed": "Ошибка синхронизации",
+    "externalDeleted": "Удалена внешне",
+    "unknown": "Неизвестно"
   },
   "cancelReservationModal": {
     "title": "Отмена брони",

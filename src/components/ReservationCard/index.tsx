@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export type Status =
@@ -30,6 +31,7 @@ export default function ReservationCard({
   data: Reservation;
   onCancel?: () => void;
 }) {
+  const { t } = useTranslation();
   const { date, amount, currency, address, status, number } = data;
   const prettyDate = toDDMMYYYY(date);
 
@@ -40,14 +42,14 @@ export default function ReservationCard({
     <View style={[styles.card, { backgroundColor: bg }]}>
       {/* title + status */}
       <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>Заявка №{number}</Text>
+        <Text style={styles.cardTitle}>{t("reserve.applicationNumber", "Заявка №")}{number}</Text>
         <StatusPill status={status} />
       </View>
       <Text style={styles.cardDate}>{prettyDate}</Text>
 
       {/* amount */}
       <View style={styles.row}>
-        <Text style={styles.rowLabel}>Сумма брони:</Text>
+        <Text style={styles.rowLabel}>{t("reserve.bookingAmount", "Сумма брони")}:</Text>
         <Text style={styles.amountText}>
           {amount} {currency}
         </Text>
@@ -55,72 +57,73 @@ export default function ReservationCard({
 
       {/* address */}
       <View style={[styles.row, { marginTop: 6 }]}>
-        <Text style={styles.rowLabel}>Адрес:</Text>
+        <Text style={styles.rowLabel}>{t("reserve.address", "Адрес")}:</Text>
         <Text style={styles.rowValue}>{address}</Text>
       </View>
 
       {/* cancel */}
       {isPending && (
         <TouchableOpacity style={styles.cancelBtn} onPress={onCancel}>
-          <Text style={styles.cancelBtnText}>Отменить бронь</Text>
+          <Text style={styles.cancelBtnText}>{t("reserve.cancelReservation", "Отменить бронь")}</Text>
         </TouchableOpacity>
       )}
     </View>
   );
 }
 function StatusPill({ status }: { status: Status }) {
+  const { t } = useTranslation();
   const map: Record<Status, { icon: any; color: string; text: string }> = {
     created: {
       icon: "time-outline",
       color: "#6B7280",
-      text: "Создана",
+      text: t("reserve.created", "Создана"),
     },
     pending_moderation: {
       icon: "hourglass-outline",
       color: "#727376",
-      text: "На модерации",
+      text: t("reserve.onModeration", "На модерации"),
     },
     not_confirmed: {
       icon: "help-circle-outline",
       color: "#EAB308",
-      text: "Не подтверждена",
+      text: t("reserve.notConfirmed", "Не подтверждена"),
     },
     ready_for_pickup: {
       icon: "checkmark-done-circle-outline",
       color: "#2563EB",
-      text: "Готова к выдаче",
+      text: t("reserve.readyForPickup", "Готова к выдаче"),
     },
     cancelled: {
       icon: "close-circle-outline",
       color: "#DC2626",
-      text: "Отменена",
+      text: t("reserve.cancelled", "Отменена"),
     },
     expired: {
       icon: "alert-circle-outline",
       color: "#9CA3AF",
-      text: "Истекла",
+      text: t("reserve.expired", "Истекла"),
     },
     received: {
       icon: "checkmark-circle",
       color: "#16A34A",
-      text: "Получено",
+      text: t("reserve.received", "Получено"),
     },
     sync_failed: {
       icon: "cloud-offline-outline",
       color: "#F87171",
-      text: "Ошибка синхронизации",
+      text: t("reserve.syncFailed", "Ошибка синхронизации"),
     },
     external_deleted: {
       icon: "trash-outline",
       color: "#9CA3AF",
-      text: "Удалена внешне",
+      text: t("reserve.externalDeleted", "Удалена внешне"),
     },
   };
 
   const item = map[status] ?? {
     icon: "alert-circle-outline",
     color: "#9CA3AF",
-    text: "Неизвестно",
+    text: t("reserve.unknown", "Неизвестно"),
   };
 
   return (

@@ -212,7 +212,21 @@
     "ok": "ОК",
     "error": "Қате",
     "errorMessage": "Броньды жою сәтсіз аяқталды.",
-    "retry": "Қайталау"
+    "retry": "Қайталау",
+    "applicationNumber": "Өтінім №",
+    "bookingAmount": "Бронь сомасы",
+    "address": "Мекенжайы",
+    "cancelReservation": "Броньдан бас тарту",
+    "created": "Құрылған",
+    "onModeration": "Модерацияда",
+    "notConfirmed": "Қабылданбады",
+    "readyForPickup": "Алынуға дайын",
+    "cancelled": "Жойылған",
+    "expired": "Истек",
+    "received": "Алынған",
+    "syncFailed": "Синхронизация қатесі",
+    "externalDeleted": "Жойылған",
+    "unknown": "Белгісіз"
   },
 
   "cancelReservationModal": {
