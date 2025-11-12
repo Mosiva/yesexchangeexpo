@@ -183,7 +183,7 @@ const makeStyles = (colors: any) =>
     card: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: colors.card,
+      backgroundColor: colors.background,
       borderRadius: 16,
       borderWidth: 1,
       borderColor: colors.subtext + "33",
