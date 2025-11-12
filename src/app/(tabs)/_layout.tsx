@@ -5,6 +5,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTheme } from "../../hooks/useTheme";
 
 const ORANGE = "#F58220";
 const INACTIVE = "#8E8E93";
@@ -12,11 +13,10 @@ const BAR_BG = "#fff";
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-
+  const { colors } = useTheme();
+  const s = makeStyles(colors);
   return (
-    <View
-      style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, 8) }]}
-    >
+    <View style={[s.tabBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
       {state.routes.map((route, index) => {
         const isFocused = state.index === index;
         const { options } = descriptors[route.key];
@@ -44,7 +44,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             onLongPress={() =>
               navigation.emit({ type: "tabLongPress", target: route.key })
             }
-            style={styles.tabItem}
+            style={s.tabItem}
             hitSlop={12}
             accessibilityRole="button"
             accessibilityState={isFocused ? { selected: true } : {}}
@@ -52,12 +52,12 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             {/* per-cell indicator → perfectly aligned */}
             <View
               pointerEvents="none"
-              style={[styles.cellIndicator, { opacity: isFocused ? 1 : 0 }]}
+              style={[s.cellIndicator, { opacity: isFocused ? 1 : 0 }]}
             />
             {typeof options.tabBarIcon === "function"
               ? options.tabBarIcon({ color, focused: isFocused, size: 26 })
               : null}
-            <Text style={[styles.label, { color }]}>{label as string}</Text>
+            <Text style={[s.label, { color }]}>{label as string}</Text>
           </Pressable>
         );
       })}
@@ -115,37 +115,37 @@ export default function Layout() {
     </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  tabBar: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    backgroundColor: BAR_BG,
-    height: Platform.select({
-      ios: 88,
-      android: 99,
-      default: 90,
-    }),
-  },
-  tabItem: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingTop: 10, // space below the indicator
-    gap: 4,
-  },
-  cellIndicator: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0, // <-- stretches exactly to the tab cell width
-    height: 4,
-    backgroundColor: ORANGE,
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: "700",
-  },
-});
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    tabBar: {
+      flexDirection: "row",
+      alignItems: "flex-end",
+      backgroundColor: colors.background,
+      height: Platform.select({
+        ios: 88,
+        android: 99,
+        default: 90,
+      }),
+    },
+    tabItem: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingTop: 10, // space below the indicator
+      gap: 4,
+    },
+    cellIndicator: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0, // <-- stretches exactly to the tab cell width
+      height: 4,
+      backgroundColor: ORANGE,
+      borderTopLeftRadius: 2,
+      borderTopRightRadius: 2,
+    },
+    label: {
+      fontSize: 12,
+      fontWeight: "700",
+    },
+  });

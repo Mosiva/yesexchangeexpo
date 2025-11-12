@@ -1,5 +1,8 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Image,
@@ -15,12 +18,9 @@ import {
   View,
 } from "react-native";
 import MaskInput from "react-native-mask-input";
-
-import { useRegisterMutation } from "../../../services/yesExchange";
-
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+import { useTheme } from "../../../hooks/useTheme";
+import { useRegisterMutation } from "../../../services/yesExchange";
 
 // ---- Schema ----
 const schema = z.object({
@@ -33,22 +33,24 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function RegisterScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
+  const { colors, theme } = useTheme();
+  const isLight = theme === "light";
+  const s = makeStyles(colors);
+
   const { phone: rawPhone } = useLocalSearchParams<{
     phone?: string | string[];
   }>();
-
   const [doRegister, { isLoading }] = useRegisterMutation();
 
   const lastNameRef = useRef<TextInput>(null);
   const phoneRef = useRef<TextInput>(null);
 
-  // по умолчанию сразу "+7"
   const [maskedPhone, setMaskedPhone] = useState("+7");
   const [showResidentError, setShowResidentError] = useState(false);
-  const [digits, setDigits] = React.useState("");
+  const [digits, setDigits] = useState("");
 
-  // допустимые коды операторов РК
   const validPrefixes = [
     "700",
     "701",
@@ -90,7 +92,7 @@ export default function RegisterScreen() {
   useEffect(() => {
     const p = Array.isArray(rawPhone) ? rawPhone[0] : rawPhone;
     if (p && p.startsWith("+7") && p.length === 12) {
-      const d = p.slice(2); // 10 цифр
+      const d = p.slice(2);
       setValue("digits", d, { shouldValidate: true });
       setMaskedPhone(
         `+7 (${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6, 8)}-${d.slice(
@@ -117,14 +119,13 @@ export default function RegisterScreen() {
         residentRK: values.residentRK,
       }).unwrap();
 
-      // ✅ сразу ведём на экран кода
       router.push({ pathname: "/(auth)/sendcode", params: { phone: e164 } });
     } catch (err: any) {
       const msg =
         err?.data?.message ||
         err?.error ||
-        "Не удалось зарегистрироваться. Попробуйте ещё раз.";
-      Alert.alert("Ошибка", String(msg));
+        t("register.errorInRegister");
+      Alert.alert(t("common.error"), String(msg));
     }
   };
 
@@ -134,37 +135,39 @@ export default function RegisterScreen() {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0} // отступ под хедер
+      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
     >
-      <StatusBar barStyle="dark-content" />
-      <View style={styles.viewcontainer}>
+      <StatusBar
+        barStyle={isLight ? "dark-content" : "light-content"}
+        backgroundColor={colors.background}
+      />
+      <View style={s.viewcontainer}>
         <ScrollView
-          contentContainerStyle={styles.container}
+          contentContainerStyle={s.container}
           keyboardShouldPersistTaps="handled"
         >
           <Image
             source={require("../../../../assets/images/icon.png")}
-            style={styles.logo}
+            style={s.logo}
             resizeMode="contain"
           />
 
-          <Text style={styles.title}>
-            Добро пожаловать{"\n"}в Yes Exchange!
-          </Text>
-          <Text style={styles.subtitle}>
-            Создайте свой аккаунт и получите{" "}
-            <Text style={styles.discount}>скидку 5%</Text>
+          <Text style={s.title}>{t("register.welcome", "Добро пожаловать")}{"\n"}{t("register.welcomeMessage", "в Yes Exchange!")}</Text>
+          <Text style={s.subtitle}>
+            {t("register.createAccount", "Создайте свой аккаунт и получите")}{" "}
+            <Text style={s.discount}>{t("register.discount", "скидку 5%")}</Text>
           </Text>
 
-          {/* First Name */}
+          {/* Имя */}
           <Controller
             control={control}
             name="firstName"
             render={({ field: { onChange, onBlur, value } }) => (
               <>
                 <TextInput
-                  style={styles.input}
-                  placeholder="Ваше имя*"
+                  style={s.input}
+                  placeholder={t("register.yourName", "Ваше имя")}
+                  placeholderTextColor={colors.subtext}
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -172,21 +175,22 @@ export default function RegisterScreen() {
                   onSubmitEditing={() => lastNameRef.current?.focus()}
                 />
                 {errors.firstName && (
-                  <Text style={styles.error}>{errors.firstName.message}</Text>
+                  <Text style={s.error}>{errors.firstName.message}</Text>
                 )}
               </>
             )}
           />
 
-          {/* Last Name */}
+          {/* Фамилия */}
           <Controller
             control={control}
             name="lastName"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 ref={lastNameRef}
-                style={styles.input}
-                placeholder="Ваша фамилия"
+                style={s.input}
+                placeholder={t("register.yourLastName", "Ваша фамилия")}
+                placeholderTextColor={colors.subtext}
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
@@ -196,7 +200,7 @@ export default function RegisterScreen() {
             )}
           />
 
-          {/* Phone */}
+          {/* Телефон */}
           <Controller
             control={control}
             name="digits"
@@ -204,8 +208,9 @@ export default function RegisterScreen() {
               <>
                 <MaskInput
                   ref={phoneRef}
-                  style={styles.input}
+                  style={s.input}
                   placeholder="+7 (___) ___-__-__ *"
+                  placeholderTextColor={colors.subtext}
                   keyboardType="number-pad"
                   inputMode="numeric"
                   autoCorrect={false}
@@ -242,46 +247,39 @@ export default function RegisterScreen() {
                   maxLength={19}
                 />
                 {errors.digits && (
-                  <Text style={styles.error}>{errors.digits.message}</Text>
+                  <Text style={s.error}>{errors.digits.message}</Text>
                 )}
                 {digits.length >= 3 && !isPrefixValid && (
-                  <Text style={styles.error}>
-                    Доступны только коды операторов Казахстана
+                  <Text style={s.error}>
+                    {t("register.onlyKazakhstanOperators", "Доступны только коды операторов Казахстана")}
                   </Text>
                 )}
               </>
             )}
           />
 
-          {/* Resident RK */}
+          {/* Резидент */}
           <Controller
             control={control}
             name="residentRK"
             render={({ field: { value, onChange } }) => (
               <>
                 <Pressable
-                  style={styles.checkboxRow}
+                  style={s.checkboxRow}
                   onPress={() => {
                     setShowResidentError(false);
                     onChange(!value);
                   }}
                 >
-                  <View
-                    style={[
-                      styles.checkboxBox,
-                      value && styles.checkboxBoxChecked,
-                    ]}
-                  >
-                    {value && <View style={styles.checkboxDot} />}
+                  <View style={[s.checkboxBox, value && s.checkboxBoxChecked]}>
+                    {value && <View style={s.checkboxDot} />}
                   </View>
-                  <Text style={styles.checkboxLabel}>
-                    Я являюсь резидентом РК
-                  </Text>
+                  <Text style={s.checkboxLabel}>{t("register.iAmResidentOfRK", "Я являюсь резидентом РК")}</Text>
                 </Pressable>
 
                 {showResidentError && !value && (
-                  <Text style={styles.error}>
-                    Регистрация доступна только для граждан РК
+                  <Text style={s.error}>
+                    {t("register.registrationOnlyForResidentsOfRK", "Регистрация доступна только для граждан РК")}
                   </Text>
                 )}
               </>
@@ -289,119 +287,107 @@ export default function RegisterScreen() {
           />
 
           <TouchableOpacity
-            style={[styles.cta, disabled && styles.ctaDisabled]}
+            style={[s.cta, disabled && s.ctaDisabled]}
             disabled={disabled}
             onPress={handleSubmit(onSubmit)}
           >
-            <Text style={styles.ctaText}>
-              {isLoading || isSubmitting ? "Отправка..." : "Зарегистрироваться"}
+            <Text style={s.ctaText}>
+              {isLoading || isSubmitting ? t("register.sending", "Отправка...") : t("register.register", "Зарегистрироваться")}
             </Text>
           </TouchableOpacity>
-
-          {/* <Pressable style={{ marginTop: 18 }} onPress={() => router.back()}>
-            <Text style={styles.loginText}>Войти</Text>
-          </Pressable> */}
         </ScrollView>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
-const COLORS = {
-  orange: "#F58220",
-  text: "#111827",
-  subtext: "#6B7280",
-  inputBorder: "#E5E7EB",
-  inputBg: "#FFFFFF",
-  error: "#DC2626",
-};
-
-const styles = StyleSheet.create({
-  viewcontainer: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  container: {
-    padding: 25,
-    paddingTop: 10,
-    backgroundColor: "#fff",
-    flexGrow: 1,
-    justifyContent: "flex-start",
-  },
-  logo: {
-    width: 122,
-    height: 80,
-    alignSelf: "center",
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: "800",
-    color: COLORS.text,
-    textAlign: "center",
-  },
-  subtitle: {
-    marginTop: 10,
-    fontSize: 16,
-    lineHeight: 22,
-    color: COLORS.subtext,
-    textAlign: "center",
-    marginBottom: 12,
-  },
-  discount: { color: COLORS.orange, fontWeight: "800" },
-  input: {
-    borderWidth: 1,
-    borderColor: COLORS.inputBorder,
-    backgroundColor: COLORS.inputBg,
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 14,
-    fontSize: 16,
-    marginTop: 12,
-  },
-  error: {
-    color: COLORS.error,
-    marginTop: 6,
-    fontSize: 13,
-  },
-  checkboxRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  checkboxBox: {
-    width: 22,
-    height: 22,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: "#9CA3AF",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  checkboxBoxChecked: { borderColor: COLORS.orange },
-  checkboxDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 3,
-    backgroundColor: COLORS.orange,
-  },
-  checkboxLabel: { fontSize: 16, color: COLORS.text },
-  cta: {
-    backgroundColor: COLORS.orange,
-    paddingVertical: 18,
-    borderRadius: 14,
-    alignItems: "center",
-    marginTop: 18,
-  },
-  ctaDisabled: { opacity: 0.5 },
-  ctaText: { color: "#fff", fontWeight: "800", fontSize: 18 },
-  loginText: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: COLORS.text,
-    textAlign: "center",
-  },
-});
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    viewcontainer: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    container: {
+      padding: 25,
+      paddingTop: 10,
+      backgroundColor: colors.background,
+      flexGrow: 1,
+    },
+    logo: {
+      width: 122,
+      height: 80,
+      alignSelf: "center",
+      marginBottom: 24,
+    },
+    title: {
+      fontSize: 28,
+      lineHeight: 34,
+      fontWeight: "800",
+      color: colors.text,
+      textAlign: "center",
+    },
+    subtitle: {
+      marginTop: 10,
+      fontSize: 16,
+      lineHeight: 22,
+      color: colors.subtext,
+      textAlign: "center",
+      marginBottom: 12,
+    },
+    discount: { color: colors.primary, fontWeight: "800" },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.subtext + "33",
+      backgroundColor: colors.card,
+      borderRadius: 12,
+      paddingVertical: 16,
+      paddingHorizontal: 14,
+      fontSize: 16,
+      color: colors.text,
+      marginTop: 12,
+    },
+    error: {
+      color: "#DC2626",
+      marginTop: 6,
+      fontSize: 13,
+    },
+    checkboxRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    checkboxBox: {
+      width: 22,
+      height: 22,
+      borderRadius: 4,
+      borderWidth: 2,
+      borderColor: colors.subtext,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 12,
+    },
+    checkboxBoxChecked: { borderColor: colors.primary },
+    checkboxDot: {
+      width: 12,
+      height: 12,
+      borderRadius: 3,
+      backgroundColor: colors.primary,
+    },
+    checkboxLabel: { fontSize: 16, color: colors.text },
+    cta: {
+      backgroundColor: colors.primary,
+      paddingVertical: 18,
+      borderRadius: 14,
+      alignItems: "center",
+      marginTop: 18,
+    },
+    ctaDisabled: { opacity: 0.5 },
+    ctaText: { color: "#fff", fontWeight: "800", fontSize: 18 },
+    loginText: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: colors.text,
+      textAlign: "center",
+    },
+  });

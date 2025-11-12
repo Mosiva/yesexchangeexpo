@@ -1,6 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useTheme } from "../../hooks/useTheme";
 
 function CustomHeader({
   title,
@@ -10,20 +12,25 @@ function CustomHeader({
   showBackButton?: boolean;
 }) {
   const router = useRouter();
+  const { colors } = useTheme();
+  const s = makeStyles(colors);
 
   return (
-    <View style={styles.topBar}>
+    <View style={s.topBar}>
       {showBackButton && (
         <Pressable onPress={() => router.replace("/(tabs)/profile")}>
-          <Ionicons name="arrow-back" size={30} color="black" />
+          <Ionicons name="arrow-back" size={30} color={colors.text} />
         </Pressable>
       )}
-      <Text style={styles.title}>{title}</Text>
+      <Text style={s.title}>{title}</Text>
     </View>
   );
 }
 
 export default function Layout() {
+  const { colors } = useTheme();
+  const { t } = useTranslation();
+
   return (
     <Stack>
       <Stack.Screen
@@ -47,29 +54,31 @@ export default function Layout() {
       <Stack.Screen
         name="register/index"
         options={{
-          header: () => <CustomHeader title="Регистрация" />,
+          header: () => <CustomHeader title={t("register.title")} />,
         }}
       />
     </Stack>
   );
 }
 
-const styles = StyleSheet.create({
-  topBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  login: {
-    fontSize: 16,
-    color: "#4F7942",
-  },
-});
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    topBar: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingTop: 60,
+      paddingHorizontal: 20,
+      paddingBottom: 16,
+      backgroundColor: colors.background,
+    },
+    title: {
+      fontSize: 20,
+      fontWeight: "bold",
+      color: colors.text,
+    },
+    login: {
+      fontSize: 16,
+      color: "#4F7942",
+    },
+  });

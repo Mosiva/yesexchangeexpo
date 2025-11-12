@@ -437,5 +437,22 @@
     "apply": "Қолданып беру",
     "limit": "Ограничение",
     "youCanSelectPeriodNotMoreThan1Month": "Вы можете выбрать период не более 1 месяца"
+  },
+  "register": {
+    "title": "Тіркелу",
+    "welcome": "Қош келдіңіз",
+    "welcomeMessage": "Yes Exchange-ке!",
+    "createAccount": "Өзіңіздің аккаунтыңызды жасау және",
+    "discount": "5% жеңілдік алу",
+    "yourName": "Сіздің атыңыз",
+    "yourLastName": "Сіздің тегіңіз",
+    "onlyKazakhstanOperators": "Тек Қазақстан операторларының кодтары қолжетімді",
+    "iAmResidentOfRK": "Мен Қазақстанда тұрамын",
+    "registrationOnlyForResidentsOfRK": "Регистрация доступна только для граждан РК",
+    "sending": "Жіберілуде...",
+    "register": "Тіркелу",
+    "error": "Қате",
+    "errorInRegister": "Тіркелу сәтсіз аяқталды. Қайталап көріңіз.",
+    "errorMessage": "Тіркелу сәтсіз аяқталды. Қайталап көріңіз."
   }
 }

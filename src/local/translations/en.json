@@ -436,5 +436,22 @@
     "apply": "Apply",
     "limit": "Limit",
     "youCanSelectPeriodNotMoreThan1Month": "You can select a period no more than 1 month"
+  },
+  "register": {
+    "title": "Registration",
+    "welcome": "Welcome",
+    "welcomeMessage": "to Yes Exchange!",
+    "createAccount": "Create your account and get",
+    "discount": "discount 5%",
+    "yourName": "Your name",
+    "yourLastName": "Your surname",
+    "onlyKazakhstanOperators": "Only Kazakhstan operator codes are available",
+    "iAmResidentOfRK": "I am a resident of RK",
+    "registrationOnlyForResidentsOfRK": "Registration is only available for residents of RK",
+    "sending": "Sending...",
+    "register": "Register",
+    "error": "Error",
+    "errorInRegister": "Registration failed. Please try again.",
+    "errorMessage": "Registration failed. Please try again."
   }
 }
