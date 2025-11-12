@@ -18,6 +18,7 @@ import {
 } from "react-native";
 import MaskInput from "react-native-mask-input";
 import { clientApi } from "services";
+import { useTheme } from "../../../hooks/useTheme";
 import { useLoginMutation } from "../../../services/yesExchange";
 
 const { useGetClientQuery } = clientApi;
@@ -38,6 +39,9 @@ function formatPhoneE164ToPretty(p?: string) {
 export default function ProfileScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { colors, theme } = useTheme();
+  const isLight = theme === "light";
+  const s = makeStyles(colors);
   const { logout, error, isGuest } = useAuth();
 
   const {
@@ -118,20 +122,25 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView
-      contentContainerStyle={styles.container}
+      contentContainerStyle={s.container}
       keyboardShouldPersistTaps="handled"
     >
-      <StatusBar barStyle="dark-content" />
+      <StatusBar
+        barStyle={isLight ? "dark-content" : "light-content"}
+        backgroundColor={colors.background}
+      />
+
       {!isAuthed ? (
         // -------------------- GUEST MODE --------------------
         <>
-          <Text style={styles.subtitle}>
+          <Text style={s.subtitle}>
             {t("profile.subtitle", "Войдите в аккаунт или создайте новый")}
           </Text>
 
           <MaskInput
-            style={styles.input}
+            style={s.input}
             placeholder="+7 (___) ___-__-__"
+            placeholderTextColor={colors.subtext}
             keyboardType="number-pad"
             inputMode="numeric"
             autoCorrect={false}
@@ -165,23 +174,24 @@ export default function ProfileScreen() {
             maxLength={19}
           />
 
-          {/* Ошибка при неверном коде */}
           {digits.length >= 3 && !validPrefixes.includes(prefix) && (
-            <Text style={styles.error}>
+            <Text style={s.error}>
               {t("profile.error", "Доступны только коды операторов Казахстана")}
             </Text>
           )}
 
           <TouchableOpacity
             style={[
-              styles.primaryBtn,
-              (!isValid || isLoading) && styles.primaryBtnDisabled,
+              s.primaryBtn,
+              (!isValid || isLoading) && s.primaryBtnDisabled,
             ]}
             onPress={handleSendCode}
             disabled={!isValid || isLoading}
           >
-            <Text style={styles.primaryBtnText}>
-              {isLoading ? t("profile.sendingCode", "Отправляем код...") : t("profile.login", "Войти")}
+            <Text style={s.primaryBtnText}>
+              {isLoading
+                ? t("profile.sendingCode", "Отправляем код...")
+                : t("profile.login", "Войти")}
             </Text>
           </TouchableOpacity>
 
@@ -189,7 +199,9 @@ export default function ProfileScreen() {
             onPress={() => router.push("/(auth)/register")}
             style={{ marginTop: 24 }}
           >
-            <Text style={styles.linkText}>{t("profile.register", "Зарегистрироваться")}</Text>
+            <Text style={s.linkText}>
+              {t("profile.register", "Зарегистрироваться")}
+            </Text>
           </Pressable>
 
           {(isLoading || isClientLoading) && <Loader />}
@@ -197,53 +209,65 @@ export default function ProfileScreen() {
       ) : (
         // -------------------- USER MODE --------------------
         <>
-          <View style={styles.nameRow}>
-            <Text style={styles.fullName} numberOfLines={1}>
+          <View style={s.nameRow}>
+            <Text style={s.fullName} numberOfLines={1}>
               {[client.firstName, client.lastName].filter(Boolean).join(" ")}
             </Text>
             <Pressable
               hitSlop={10}
-              accessibilityLabel={t("profile.editProfile", "Редактировать профиль")}
+              accessibilityLabel={t(
+                "profile.editProfile",
+                "Редактировать профиль"
+              )}
               onPress={() => router.push("/(tabs)/profile/editprofile")}
             >
-              <MaterialCommunityIcons name="pencil" size={24} color="#727376" />
+              <MaterialCommunityIcons
+                name="pencil"
+                size={24}
+                color={colors.subtext}
+              />
             </Pressable>
           </View>
 
-          <Text style={styles.phoneText}>
+          <Text style={s.phoneText}>
             {formatPhoneE164ToPretty(client.phone)}
           </Text>
 
           <Pressable
-            style={styles.cardRow}
-            accessibilityLabel={t("profile.reserveHistory", "История бронирования")}
+            style={s.cardRow}
+            accessibilityLabel={t(
+              "profile.reserveHistory",
+              "История бронирования"
+            )}
             onPress={() =>
               router.push({
                 pathname: "/(tabs)/profile/reservehistory",
-                params: {
-                  phone: client.phone,
-                },
+                params: { phone: client.phone },
               })
             }
           >
-            <View style={styles.cardLeft}>
+            <View style={s.cardLeft}>
               <MaterialCommunityIcons
                 name="history"
                 size={24}
-                color="#F58220"
+                color={colors.primary}
               />
             </View>
-            <Text style={styles.cardText}>{t("profile.reserveHistory", "История бронирования")}</Text>
-            <Ionicons name="chevron-forward" size={22} color="#9CA3AF" />
+            <Text style={s.cardText}>
+              {t("profile.reserveHistory", "История бронирования")}
+            </Text>
+            <Ionicons name="chevron-forward" size={22} color={colors.subtext} />
           </Pressable>
 
           <Pressable
             onPress={logout}
-            style={styles.logoutRow}
+            style={s.logoutRow}
             accessibilityLabel={t("profile.logout", "Выйти из профиля")}
           >
             <Ionicons name="log-out-outline" size={20} color="#DC2626" />
-            <Text style={styles.logoutText}>{t("profile.logout", "Выйти из профиля")}</Text>
+            <Text style={s.logoutText}>
+              {t("profile.logout", "Выйти из профиля")}
+            </Text>
           </Pressable>
         </>
       )}
@@ -251,124 +275,109 @@ export default function ProfileScreen() {
   );
 }
 
-const COLORS = {
-  orange: "#F58220",
-  text: "#111827",
-  subtext: "#6B7280",
-  border: "#E5E7EB",
-  bg: "#FFFFFF",
-  error: "#DC2626",
-};
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      padding: 20,
+      backgroundColor: colors.background,
+      flexGrow: 1,
+    },
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    backgroundColor: COLORS.bg,
-    flexGrow: 1,
-  },
+    fullName: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: colors.text,
+      flex: 1,
+      marginRight: 12,
+    },
+    phoneText: {
+      fontSize: 16,
+      color: colors.subtext,
+      marginTop: 6,
+      marginBottom: 16,
+      fontWeight: "400",
+    },
+    nameRow: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
 
-  // Titles
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: COLORS.text,
-    marginBottom: 24,
-  },
-  fullName: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: COLORS.text,
-    flex: 1,
-    marginRight: 12,
-  },
-  phoneText: {
-    fontSize: 16,
-    color: COLORS.text,
-    marginTop: 6,
-    marginBottom: 16,
-    fontWeight: "400",
-  },
-  nameRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+    // Card row
+    cardRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: colors.subtext + "33",
+      paddingHorizontal: 14,
+      paddingVertical: 16,
+      marginTop: 20,
+    },
+    cardLeft: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 12,
+    },
+    cardText: {
+      fontSize: 14,
+      color: colors.text,
+      flex: 1,
+      fontWeight: "400",
+    },
 
-  // Card row
-  cardRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    paddingHorizontal: 14,
-    paddingVertical: 16,
-    marginTop: 20,
-  },
-  cardLeft: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  cardText: {
-    fontSize: 14,
-    color: COLORS.text,
-    flex: 1,
-    fontWeight: "400",
-  },
+    // Logout
+    logoutRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      alignSelf: "center",
+      marginTop: 28,
+      gap: 8,
+    },
+    logoutText: {
+      color: "#DC2626",
+      fontSize: 14,
+      fontWeight: "700",
+    },
 
-  // Logout
-  logoutRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "center",
-    marginTop: 28,
-    gap: 8,
-  },
-  logoutText: {
-    color: "#DC2626",
-    fontSize: 14,
-    fontWeight: "700",
-  },
-
-  // Guest form styles
-  subtitle: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: COLORS.subtext,
-    textAlign: "center",
-    marginBottom: 16,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.bg,
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 14,
-    fontSize: 16,
-  },
-  error: {
-    color: COLORS.error,
-    marginTop: 6,
-    fontSize: 13,
-  },
-  primaryBtn: {
-    backgroundColor: COLORS.orange,
-    paddingVertical: 18,
-    borderRadius: 14,
-    alignItems: "center",
-    marginTop: 18,
-  },
-  primaryBtnDisabled: { opacity: 0.5 },
-  primaryBtnText: { color: "#fff", fontWeight: "800", fontSize: 18 },
-  linkText: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: COLORS.text,
-    textAlign: "center",
-  },
-});
+    // Guest form styles
+    subtitle: {
+      fontSize: 16,
+      lineHeight: 22,
+      color: colors.subtext,
+      textAlign: "center",
+      marginBottom: 16,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.subtext + "33",
+      backgroundColor: colors.card,
+      borderRadius: 12,
+      paddingVertical: 16,
+      paddingHorizontal: 14,
+      fontSize: 16,
+      color: colors.text,
+    },
+    error: {
+      color: "#DC2626",
+      marginTop: 6,
+      fontSize: 13,
+    },
+    primaryBtn: {
+      backgroundColor: colors.primary,
+      paddingVertical: 18,
+      borderRadius: 14,
+      alignItems: "center",
+      marginTop: 18,
+    },
+    primaryBtnDisabled: { opacity: 0.5 },
+    primaryBtnText: { color: "#fff", fontWeight: "800", fontSize: 18 },
+    linkText: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: colors.text,
+      textAlign: "center",
+    },
+  });
