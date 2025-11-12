@@ -453,5 +453,17 @@
     "error": "Error",
     "errorInRegister": "Registration failed. Please try again.",
     "errorMessage": "Registration failed. Please try again."
+  },
+  "sendcode": {
+    "title": "Enter the code from the SMS",
+    "wrongCode": "Wrong code, please try again",
+    "codeSentAgain": "Code sent again",
+    "errorSendingCode": "Failed to send code. Please try again later.",
+    "codeSentTo": "Code sent to",
+    "checking": "Checking...",
+    "confirmCode": "Confirm code",
+    "sendingCode": "Sending...",
+    "sendCode": "Send code",
+    "sendCodeAgainIn": "Send code again in"
   }
 }

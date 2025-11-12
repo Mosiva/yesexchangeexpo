@@ -15,66 +15,82 @@ import {
   Text,
   View,
 } from "react-native";
+import { clientApi } from "services";
 import LoginDiscountBanner from "../../../components/LoginDiscountBanner";
+import { useTheme } from "../../../hooks/useTheme";
 import { useAuth } from "../../../providers/Auth";
 
-import { clientApi } from "services";
 const { useGetClientQuery } = clientApi;
 
 export default function ReserveScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { theme, colors } = useTheme();
+  const isLight = theme === "light";
+  const s = makeStyles(colors);
   const { isGuest } = useAuth();
+
   const {
     data: rawClient,
-    refetch: refetchClient,
     isLoading: isClientLoading,
     isError: isClientError,
   } = useGetClientQuery({});
-
   const client: any = (rawClient as any)?.data ?? rawClient ?? null;
+
   return (
     <ScrollView
-      style={styles.container}
+      style={s.container}
       contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
       keyboardShouldPersistTaps="handled"
     >
-      <StatusBar barStyle="dark-content" />
+      <StatusBar
+        barStyle={isLight ? "dark-content" : "light-content"}
+        backgroundColor={colors.background}
+      />
 
       {/* Top tiles */}
-      <View style={styles.tilesRow}>
+      <View style={s.tilesRow}>
         <Tile
           title={t("reserve.noRate", "Без привязки\nк курсу")}
-          Icon={<FontAwesome6 name="money-bills" size={24} color={ORANGE} />}
+          Icon={
+            <FontAwesome6 name="money-bills" size={24} color={colors.primary} />
+          }
           onPress={() => router.push("/(stacks)/norates/branchpicker")}
+          colors={colors}
         />
         <Tile
           title={t("reserve.withRate", "С привязкой\nк курсу")}
           sub={t("reserve.withRateSub", "Бронь до 30 минут")}
-          Icon={<MaterialIcons name="analytics" size={24} color={ORANGE} />}
+          Icon={
+            <MaterialIcons name="analytics" size={24} color={colors.primary} />
+          }
           onPress={() =>
             router.push({
               pathname: "/(stacks)/norates/branchpicker",
-              params: {
-                isRateLocked: "true",
-              },
+              params: { isRateLocked: "true" },
             })
           }
+          colors={colors}
         />
       </View>
 
       {/* Gold reservation */}
-      <Pressable
-        style={styles.wideCard}
-        // onPress={() => router.push("/(reserve)/gold")}
-      >
-        <View style={styles.rowLeft}>
-          <View style={[styles.iconBadge]}>
-            <MaterialCommunityIcons name="gold" size={24} color={ORANGE} />
+      <Pressable style={s.wideCard}>
+        <View style={s.rowLeft}>
+          <View style={s.iconBadge}>
+            <MaterialCommunityIcons
+              name="gold"
+              size={24}
+              color={colors.primary}
+            />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.wideTitle}>{t("reserve.goldReservation", "Бронирование золота")}</Text>
-            <Text style={styles.wideSub}>{t("reserve.goldReservationSub", "Золотые слитки НБ РК")}</Text>
+            <Text style={s.wideTitle}>
+              {t("reserve.goldReservation", "Бронирование золота")}
+            </Text>
+            <Text style={s.wideSub}>
+              {t("reserve.goldReservationSub", "Золотые слитки НБ РК")}
+            </Text>
           </View>
         </View>
       </Pressable>
@@ -82,20 +98,22 @@ export default function ReserveScreen() {
       {/* History row */}
       {!isGuest ? (
         <Pressable
-          style={styles.historyRow}
+          style={s.historyRow}
           onPress={() => router.push("/(tabs)/reserve/reservehistoryr")}
         >
-          <View style={styles.rowLeft}>
-            <View style={[styles.iconBadge]}>
+          <View style={s.rowLeft}>
+            <View style={s.iconBadge}>
               <MaterialCommunityIcons
                 name="history"
                 size={24}
-                color="#F58220"
+                color={colors.primary}
               />
             </View>
-            <Text style={styles.historyText}>{t("reserve.history", "История бронирования")}</Text>
+            <Text style={s.historyText}>
+              {t("profile.reserveHistory", "История бронирования")}
+            </Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+          <Ionicons name="chevron-forward" size={20} color={colors.subtext} />
         </Pressable>
       ) : (
         <LoginDiscountBanner onPress={() => router.push("/(tabs)/profile")} />
@@ -111,102 +129,114 @@ function Tile({
   sub,
   Icon,
   onPress,
+  colors,
 }: {
   title: string;
   sub?: string;
   Icon: React.ReactNode;
   onPress?: () => void;
+  colors: any;
 }) {
   return (
-    <Pressable style={styles.tile} onPress={onPress}>
-      <View style={[styles.iconBadge]}>{Icon}</View>
-      <Text style={styles.tileTitle}>{title}</Text>
-      {sub ? <Text style={styles.tileSub}>{sub}</Text> : null}
+    <Pressable style={[tileStyles(colors).tile]} onPress={onPress}>
+      <View style={tileStyles(colors).iconBadge}>{Icon}</View>
+      <Text style={tileStyles(colors).tileTitle}>{title}</Text>
+      {sub ? <Text style={tileStyles(colors).tileSub}>{sub}</Text> : null}
     </Pressable>
   );
 }
 
 /* -------------------- styles -------------------- */
 
-const ORANGE = "#F58220";
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    screenTitle: {
+      fontSize: 32,
+      fontWeight: "800",
+      color: colors.text,
+      marginTop: 16,
+      marginBottom: 12,
+    },
+    tilesRow: {
+      flexDirection: "row",
+      gap: 12,
+      marginBottom: 12,
+    },
+    wideCard: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: colors.subtext + "33",
+      paddingHorizontal: 14,
+      paddingVertical: 16,
+      marginTop: 12,
+    },
+    rowLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
+    iconBadge: {
+      width: 40,
+      height: 40,
+      borderRadius: 28,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    wideTitle: { fontSize: 14, fontWeight: "600", color: colors.text },
+    wideSub: {
+      fontSize: 12,
+      color: colors.subtext,
+      marginTop: 2,
+      fontWeight: "400",
+    },
+    historyRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: colors.subtext + "33",
+      paddingHorizontal: 14,
+      paddingVertical: 18,
+      marginTop: 14,
+    },
+    historyText: { fontSize: 14, fontWeight: "600", color: colors.text },
+  });
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
+const tileStyles = (colors: any) =>
+  StyleSheet.create({
+    tile: {
+      flex: 1,
 
-  screenTitle: {
-    fontSize: 32,
-    fontWeight: "800",
-    color: "#111827",
-    marginTop: 16,
-    marginBottom: 12,
-  },
-
-  tilesRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 12,
-  },
-  tile: {
-    flex: 1,
-    backgroundColor: "#F7F7F9",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#ECECEC",
-    padding: 16,
-    minHeight: 170,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  iconBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: 28,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  tileTitle: {
-    fontSize: 14,
-    lineHeight: 26,
-    fontWeight: "600",
-    color: "#111827",
-    textAlign: "center",
-  },
-  tileSub: {
-    marginTop: 10,
-    fontSize: 12,
-    color: "#6B7280",
-    fontWeight: "400",
-  },
-
-  wideCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#F7F7F9",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#ECECEC",
-    paddingHorizontal: 14,
-    paddingVertical: 16,
-    marginTop: 12,
-  },
-  rowLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
-  wideTitle: { fontSize: 14, fontWeight: "600", color: "#111827" },
-  wideSub: { fontSize: 12, color: "#6B7280", marginTop: 2, fontWeight: "400" },
-
-  historyRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#E9EDF2",
-    paddingHorizontal: 14,
-    paddingVertical: 18,
-    marginTop: 14,
-  },
-  historyText: { fontSize: 14, fontWeight: "600", color: "#111827" },
-});
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: colors.subtext + "33",
+      padding: 16,
+      minHeight: 170,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    iconBadge: {
+      width: 40,
+      height: 40,
+      borderRadius: 28,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    tileTitle: {
+      fontSize: 14,
+      lineHeight: 26,
+      fontWeight: "600",
+      color: colors.text,
+      textAlign: "center",
+    },
+    tileSub: {
+      marginTop: 10,
+      fontSize: 12,
+      color: colors.subtext,
+      fontWeight: "400",
+    },
+  });

@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useTheme } from "../../../hooks/useTheme";
 
 function CustomHeader({
   title,
@@ -11,24 +12,27 @@ function CustomHeader({
   showBackButton?: boolean;
 }) {
   const router = useRouter();
+  const { colors, theme } = useTheme();
+
   const canGoBack =
     typeof router.canGoBack === "function" ? router.canGoBack() : false;
 
+  const s = makeStyles(colors);
+
   return (
-    <View style={styles.topBar}>
+    <View style={s.topBar}>
       {showBackButton && canGoBack ? (
         <Pressable onPress={() => router.back()} hitSlop={12}>
-          <Ionicons name="arrow-back" size={28} color="#000" />
+          <Ionicons name="arrow-back" size={28} color={colors.text} />
         </Pressable>
       ) : (
         <View style={{ width: 28 }} />
       )}
 
-      <Text style={styles.title}>{title}</Text>
+      <Text style={s.title}>{title}</Text>
     </View>
   );
 }
-
 export default function Layout() {
   const { t } = useTranslation();
   return (
@@ -50,7 +54,10 @@ export default function Layout() {
         options={{
           // Hide back by default + disable iOS swipe-back
           header: () => (
-            <CustomHeader title="История бронирования" showBackButton={true} />
+            <CustomHeader
+              title={t("profile.reserveHistory", "История брони")}
+              showBackButton={true}
+            />
           ),
         }}
       />
@@ -58,20 +65,20 @@ export default function Layout() {
   );
 }
 
-const styles = StyleSheet.create({
-  topBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-    flexShrink: 1,
-  },
-});
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    topBar: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingTop: 60,
+      paddingHorizontal: 20,
+      paddingBottom: 16,
+      backgroundColor: colors.background,
+    },
+    title: {
+      fontSize: 20,
+      fontWeight: "bold",
+      color: colors.text,
+    },
+  });

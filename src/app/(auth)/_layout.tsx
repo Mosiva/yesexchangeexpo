@@ -28,7 +28,6 @@ function CustomHeader({
 }
 
 export default function Layout() {
-  const { colors } = useTheme();
   const { t } = useTranslation();
 
   return (
@@ -48,7 +47,7 @@ export default function Layout() {
       <Stack.Screen
         name="sendcode/index"
         options={{
-          header: () => <CustomHeader title="Введите код из смс" />,
+          header: () => <CustomHeader title={t("sendcode.title")} />,
         }}
       />
       <Stack.Screen
