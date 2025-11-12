@@ -8,7 +8,7 @@ export const Loader = () => {
     <View style={styles.overlay}>
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#4F7942" />
-        <Text style={styles.text}>{t("application.loading")}</Text>
+        <Text style={styles.text}>{t("common.loading")}</Text>
       </View>
     </View>
   );

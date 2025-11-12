@@ -73,13 +73,11 @@ const LocalTime = () => {
 
   // ✅ Преобразуем в родительный падеж
   const genitiveMonths = nominativeMonths.map((m) => {
-    return (
-      m
-        .toLowerCase()
-        .replace("ь", "я")          // Январь → Января
-        .replace("й", "я")          // Май → Мая
-        .replace("т", "та")         // Август → Августа
-    );
+    return m
+      .toLowerCase()
+      .replace("ь", "я") // Январь → Января
+      .replace("й", "я") // Май → Мая
+      .replace("т", "та"); // Август → Августа
   });
 
   const day = String(now.getDate()).padStart(2, "0");
@@ -328,7 +326,11 @@ export default function MainScreen() {
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <Pressable hitSlop={12} onPress={handlePressSettings}>
+          <Pressable
+            hitSlop={12}
+
+            // onPress={handlePressSettings}
+          >
             <Ionicons name="settings" size={22} color="#fff" />
           </Pressable>
         </View>
@@ -343,7 +345,9 @@ export default function MainScreen() {
               style={styles.addrIcon}
             />
             <View style={{ flex: 1 }}>
-              <Text style={styles.addrLabel}>{t("main.addressLabel", "Адрес")}</Text>
+              <Text style={styles.addrLabel}>
+                {t("main.addressLabel", "Адрес")}
+              </Text>
               <Skeleton width="90%" height={60} style={styles.skeletonItem} />
             </View>
           </View>
@@ -356,8 +360,12 @@ export default function MainScreen() {
               style={styles.addrIcon}
             />
             <View style={{ flex: 1 }}>
-              <Text style={styles.addrLabel}>{t("main.addressLabel", "Адрес")}</Text>
-              <Text style={styles.errorText}>{t("main.errorLoadingBranches", "Ошибка загрузки филиалов")}</Text>
+              <Text style={styles.addrLabel}>
+                {t("main.addressLabel", "Адрес")}
+              </Text>
+              <Text style={styles.errorText}>
+                {t("main.errorLoadingBranches", "Ошибка загрузки филиалов")}
+              </Text>
             </View>
             <TouchableOpacity
               onPress={() => refetchBranches()}
@@ -378,7 +386,9 @@ export default function MainScreen() {
               style={styles.addrIcon}
             />
             <View style={{ flex: 1 }}>
-              <Text style={styles.addrLabel}>{t("main.addressLabel", "Адрес")}</Text>
+              <Text style={styles.addrLabel}>
+                {t("main.addressLabel", "Адрес")}
+              </Text>
 
               {/* 🏦 Основной адрес */}
               <Text style={styles.addrValue}>
@@ -390,7 +400,10 @@ export default function MainScreen() {
               {/* 💬 Подпись под адресом */}
               {isNearestBranchLoading ? (
                 <Text style={styles.addrHint}>
-                  {t("main.determiningNearestBranch", "Определяем ближайший филиал...")}
+                  {t(
+                    "main.determiningNearestBranch",
+                    "Определяем ближайший филиал..."
+                  )}
                 </Text>
               ) : permissionDenied ? (
                 <Text style={styles.addrHint}>
@@ -398,14 +411,22 @@ export default function MainScreen() {
                 </Text>
               ) : isNearestBranchError ? (
                 <Text style={styles.addrHint}>
-                  {t("main.errorDeterminingNearestBranch", "Не удалось определить ближайший филиал")}
+                  {t(
+                    "main.errorDeterminingNearestBranch",
+                    "Не удалось определить ближайший филиал"
+                  )}
                 </Text>
               ) : selectedBranch?.id === rawNearestBranch?.id ? (
                 <Text style={styles.addrHint}>
-                  {t("main.nearestBranchByLocation", "Ближайший филиал по вашему местоположению")}
+                  {t(
+                    "main.nearestBranchByLocation",
+                    "Ближайший филиал по вашему местоположению"
+                  )}
                 </Text>
               ) : (
-                <Text style={styles.addrHint}>{t("main.selectedBranchManually", "Выбран филиал вручную")}</Text>
+                <Text style={styles.addrHint}>
+                  {t("main.selectedBranchManually", "Выбран филиал вручную")}
+                </Text>
               )}
             </View>
 
@@ -428,12 +449,19 @@ export default function MainScreen() {
           </View>
         ) : isExchangeRatesError ? (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{t("main.errorLoadingExchangeRates", "Ошибка загрузки курсов валют")}</Text>
+            <Text style={styles.errorText}>
+              {t(
+                "main.errorLoadingExchangeRates",
+                "Ошибка загрузки курсов валют"
+              )}
+            </Text>
             <TouchableOpacity
               style={styles.retryButton}
               onPress={() => refetchExchangeRates()}
             >
-              <Text style={styles.retryButtonText}>{t("main.retry", "Повторить")}</Text>
+              <Text style={styles.retryButtonText}>
+                {t("main.retry", "Повторить")}
+              </Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -538,12 +566,16 @@ export default function MainScreen() {
         </View>
       ) : isNbkRatesError ? (
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{t("main.errorLoadingNbkRates", "Ошибка загрузки курсов НБК")}</Text>
+          <Text style={styles.errorText}>
+            {t("main.errorLoadingNbkRates", "Ошибка загрузки курсов НБК")}
+          </Text>
           <TouchableOpacity
             style={styles.retryButton}
             onPress={() => refetchNbkRates()}
           >
-            <Text style={styles.retryButtonText}>{t("main.retry", "Повторить")}</Text>
+            <Text style={styles.retryButtonText}>
+              {t("main.retry", "Повторить")}
+            </Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -585,7 +617,9 @@ export default function MainScreen() {
           onPress={() => setDropdownVisible(false)}
         >
           <View style={styles.dropdownContainer}>
-            <Text style={styles.dropdownTitle}>{t("main.selectBranch", "Выберите филиал")}</Text>
+            <Text style={styles.dropdownTitle}>
+              {t("main.selectBranch", "Выберите филиал")}
+            </Text>
             <FlatList
               data={Array.isArray(branches) ? branches : []}
               keyExtractor={(item) => item.id.toString()}

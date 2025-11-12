@@ -60,7 +60,8 @@
     "downloadpresentation": "Download presentation",
     "format": "Format",
     "onmain": "Back to home",
-    "somethingWentWrong": "Something went wrong. Check your internet connection and try again."
+    "somethingWentWrong": "Something went wrong. Check your internet connection and try again.",
+    "loading": "Loading..."
   },
   "authByCode": {
     "title": "Authorization",
