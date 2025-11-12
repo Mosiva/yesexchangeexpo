@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Animated,
@@ -46,6 +47,7 @@ export default function FxLineChart({
   source,
   onChangePeriod,
 }: Props) {
+  const { t } = useTranslation();
   const [period, setPeriod] = useState<"day" | "week" | "month">("day");
   const [selectedPoint, setSelectedPoint] = useState<{
     x: number;
@@ -168,7 +170,7 @@ export default function FxLineChart({
           },
         ];
 
-  const legend = source === "nbrk" ? ["Курс НБРК"] : ["Покупка", "Продажа"];
+  const legend = source === "nbrk" ? [t("archive.nbkRate", "Курс НБРК")] : [t("archive.purchase", "Покупка"), t("archive.sale", "Продажа")];
 
   return (
     <View>
@@ -182,15 +184,15 @@ export default function FxLineChart({
               </Text>
             </View>
             <Pressable onPress={handleResetRange}>
-              <Text style={styles.resetText}>Сбросить</Text>
+              <Text style={styles.resetText}>{t("archive.reset", "Сбросить")}</Text>
             </Pressable>
             <Pressable
               style={styles.calendarBtn}
               onPress={() => {
                 Alert.alert(
-                  "Диапазон уже выбран",
-                  "Чтобы выбрать новые даты, сначала сбросьте текущий период.",
-                  [{ text: "Вернуться", style: "cancel" }]
+                  t("archive.rangeAlreadySelected", "Диапазон уже выбран"),
+                  t("archive.toSelectNewDates", "Чтобы выбрать новые даты, сначала сбросьте текущий период."),
+                  [{ text: t("archive.return", "Вернуться"), style: "cancel" }]
                 );
               }}
             >
@@ -201,17 +203,17 @@ export default function FxLineChart({
           <>
             <View style={styles.segmentGroup}>
               <Segment
-                label="День"
+                label={t("archive.day", "День")}
                 active={period === "day"}
                 onPress={() => handleChangePeriod("day")}
               />
               <Segment
-                label="Неделя"
+                label={t("archive.week", "Неделя")}
                 active={period === "week"}
                 onPress={() => handleChangePeriod("week")}
               />
               <Segment
-                label="Месяц"
+                label={t("archive.month", "Месяц")}
                 active={period === "month"}
                 onPress={() => handleChangePeriod("month")}
               />

@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { useTranslation } from "react-i18next";
 
 function CustomHeader({
   title,
@@ -30,6 +31,7 @@ function CustomHeader({
 }
 
 export default function Layout() {
+  const { t } = useTranslation();
   return (
     <Stack>
       <Stack.Screen
@@ -47,14 +49,24 @@ export default function Layout() {
       <Stack.Screen
         name="archives/index"
         options={{
-          header: () => <CustomHeader title="Архив" showBackButton={true} />,
+          header: () => (
+            <CustomHeader
+              title={t("archives.title", "Архив")}
+              showBackButton={true}
+            />
+          ),
           gestureEnabled: true,
         }}
       />
       <Stack.Screen
         name="archives/[id]"
         options={{
-          header: () => <CustomHeader title="Архив" showBackButton={true} />,
+          header: () => (
+            <CustomHeader
+              title={t("archives.title", "Архив")}
+              showBackButton={true}
+            />
+          ),
         }}
       />
       <Stack.Screen

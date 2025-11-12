@@ -329,7 +329,7 @@ export default function MainScreen() {
           <Pressable
             hitSlop={12}
 
-            // onPress={handlePressSettings}
+            onPress={handlePressSettings}
           >
             <Ionicons name="settings" size={22} color="#fff" />
           </Pressable>

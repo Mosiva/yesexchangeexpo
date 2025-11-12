@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { StatusBar, Text, View } from "react-native";
 import { Loader } from "../../../components";
 import ArchiveDetailCard from "../../../components/ArchiveDetailCard";
@@ -13,6 +14,7 @@ import { ymdLocal } from "../../../utils/nbkDateUtils";
 
 export default function ArchiveDetailScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { id, branchId } = useLocalSearchParams<{
     id: string;
     branchId: string;
@@ -106,7 +108,6 @@ export default function ArchiveDetailScreen() {
     from: range.from,
     to: range.to,
     currencyCode: currentCode,
-
   });
 
   const nbkRatesItem = Array.isArray(rawNbkRatesItem) ? rawNbkRatesItem : [];
@@ -115,7 +116,11 @@ export default function ArchiveDetailScreen() {
     ? nbkRatesItem.map((r: any) => {
         const [day, month, year] = r.date.split(".");
         const isoDate = `${year}-${month}-${day}T00:00:00`;
-        return { ts: isoDate, rate: Number(r.rate), changePercent: Number(r.changePercent) };
+        return {
+          ts: isoDate,
+          rate: Number(r.rate),
+          changePercent: Number(r.changePercent),
+        };
       })
     : [];
 
@@ -154,7 +159,10 @@ export default function ArchiveDetailScreen() {
         }}
       >
         <Text style={{ fontSize: 16, color: "#6B7280", textAlign: "center" }}>
-          Не удалось загрузить данные курса. Попробуйте позже.
+          {t(
+            "archives.errorLoadingNbkRates",
+            "Не удалось загрузить данные курса. Попробуйте позже."
+          )}
         </Text>
       </View>
     );

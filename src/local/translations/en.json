@@ -403,5 +403,24 @@
     "errorLoadingNbkRates": "Failed to load NBK rates",
     "retry": "Retry",
     "nothingFound": "Nothing found"
+  },
+  "archive": {
+    "date": "Date",
+    "purchase": "Purchase",
+    "sale": "Sale",
+    "nbkRate": "NBK Rate",
+    "details": "Details",
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "rangeAlreadySelected": "Range already selected",
+    "toSelectNewDates": "To select new dates, first reset the current period.",
+    "return": "Return",
+    "reset": "Reset",
+    "selectPeriod": "Select period",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "limit": "Limit",
+    "youCanSelectPeriodNotMoreThan1Month": "You can select a period no more than 1 month"
   }
 }

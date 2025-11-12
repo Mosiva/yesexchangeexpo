@@ -402,5 +402,24 @@
     "errorLoadingNbkRates": "Ошибка загрузки курсов НБК",
     "retry": "Повторить",
     "nothingFound": "Ничего не найдено по запросу"
+  },
+  "archive": {
+    "date": "Дата",
+    "purchase": "Покупка",
+    "sale": "Продажа",
+    "nbkRate": "Курс НБРК",
+    "details": "Детали",
+    "day": "День",
+    "week": "Неделя",
+    "month": "Месяц",
+    "rangeAlreadySelected": "Диапазон уже выбран",
+    "toSelectNewDates": "Чтобы выбрать новые даты, сначала сбросьте текущий период.",
+    "return": "Вернуться",
+    "reset": "Сбросить",
+    "selectPeriod": "Выберите период",
+    "cancel": "Отмена",
+    "apply": "Применить",
+    "limit": "Ограничение",
+    "youCanSelectPeriodNotMoreThan1Month": "Вы можете выбрать период не более 1 месяца"
   }
 }

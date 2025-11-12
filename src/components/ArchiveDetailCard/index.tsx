@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import CurrencyFlag from "../CurrencyFlag";
@@ -54,6 +55,7 @@ export default function ArchiveDetailCard({
   latestNbkRates,
   onChangePeriod,
 }: Props) {
+  const { t } = useTranslation();
   const data = rows ?? [];
 
   const [source, setSource] = useState<"yes" | "nbrk">("nbrk");
@@ -102,7 +104,7 @@ export default function ArchiveDetailCard({
           onPress={() => setSource("yes")}
         />
         <Pill
-          label="НБ РК"
+          label={t("archive.nbkRate", "НБ РК")}
           active={source === "nbrk"}
           onPress={() => setSource("nbrk")}
         />
@@ -164,7 +166,7 @@ export default function ArchiveDetailCard({
                     </Text>
                   )}
                 </View>
-                <Text style={styles.caption}>Покупка</Text>
+                <Text style={styles.caption}>{t("archive.purchase", "Покупка")}</Text>
               </View>
             </View>
 
@@ -206,7 +208,7 @@ export default function ArchiveDetailCard({
                     </Text>
                   )}
                 </View>
-                <Text style={styles.caption}>Продажа</Text>
+                <Text style={styles.caption}>{t("archive.sale", "Продажа")}</Text>
               </View>
             </View>
           </View>
@@ -248,7 +250,7 @@ export default function ArchiveDetailCard({
                     </Text>
                   )}
                 </View>
-                <Text style={styles.caption}>Курс НБРК</Text>
+                <Text style={styles.caption}>{t("archive.nbkRate", "Курс НБРК")}</Text>
               </View>
             </View>
           </View>
@@ -270,14 +272,14 @@ export default function ArchiveDetailCard({
       </View>
 
       {/* ✅ Таблица */}
-      <Text style={styles.tableTitle}>Детали</Text>
+      <Text style={styles.tableTitle}>{t("archive.details", "Детали")}</Text>
 
       {source === "yes" ? (
         <>
           <View style={styles.tableHeader}>
-            <Text style={[styles.th, { flex: 1.4 }]}>Дата</Text>
-            <Text style={[styles.th, { flex: 1 }]}>Покупка</Text>
-            <Text style={[styles.th, { flex: 1 }]}>Продажа</Text>
+            <Text style={[styles.th, { flex: 1.4 }]}>{t("archive.date", "Дата")}</Text>
+            <Text style={[styles.th, { flex: 1 }]}>{t("archive.purchase", "Покупка")}</Text>
+            <Text style={[styles.th, { flex: 1 }]}>{t("archive.sale", "Продажа")}</Text>
           </View>
 
           {normalizedRows.map((r, i) => {
@@ -295,8 +297,8 @@ export default function ArchiveDetailCard({
       ) : (
         <>
           <View style={styles.tableHeader}>
-            <Text style={[styles.th, { flex: 1.4 }]}>Дата</Text>
-            <Text style={[styles.th, { flex: 1 }]}>Курс НБКР</Text>
+            <Text style={[styles.th, { flex: 1.4 }]}>{t("archive.date", "Дата")}</Text>
+            <Text style={[styles.th, { flex: 1 }]}>{t("archive.nbkRate", "Курс НБКР")}</Text>
           </View>
 
           {nbkRows?.map((r, i) => {

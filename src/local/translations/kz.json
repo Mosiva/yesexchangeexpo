@@ -404,5 +404,24 @@
     "errorLoadingNbkRates": "ҰБ бағамдарын жүктеу қатесі",
     "retry": "Қайталау",
     "nothingFound": "Мұрағат табылмады"
+  },
+  "archive": {
+    "date": "Күні",
+    "purchase": "Сатып алу",
+    "sale": "Сату",
+    "nbkRate": "ҚРҰБ бағамы",
+    "details": "Мәліметтер",
+    "day": "Күн",
+    "week": "Апта",
+    "month": "Ай",
+    "rangeAlreadySelected": "Диапазон алынған",
+    "toSelectNewDates": "Жаңа даталар таңдау үшін, алдын ала барынша датасын тастаңыз.",
+    "return": "Қайту",
+    "reset": "Тастау",
+    "selectPeriod": "Период таңдаңыз",
+    "cancel": "Болдырмау",
+    "apply": "Қолданып беру",
+    "limit": "Ограничение",
+    "youCanSelectPeriodNotMoreThan1Month": "Вы можете выбрать период не более 1 месяца"
   }
 }

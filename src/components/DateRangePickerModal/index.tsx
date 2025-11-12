@@ -95,8 +95,8 @@ export const DateRangePickerModal = forwardRef<DateRangePickerModalRef, Props>(
           Math.abs(date.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24);
         if (diffDays > 31) {
           Alert.alert(
-            "Ограничение",
-            "Вы можете выбрать период не более 1 месяца"
+            t("archive.limit", "Ограничение"),
+            t("archive.youCanSelectPeriodNotMoreThan1Month", "Вы можете выбрать период не более 1 месяца")
           );
           setFromDate(null);
           setToDate(null);
@@ -149,10 +149,10 @@ export const DateRangePickerModal = forwardRef<DateRangePickerModalRef, Props>(
           >
             {/* --- Заголовок --- */}
             <View style={styles.headerRow}>
-              <Text style={styles.modalTitle}>Выберите период</Text>
+              <Text style={styles.modalTitle}>{t("archive.selectPeriod", "Выберите период")}</Text>
               {(fromDate || toDate) && (
                 <TouchableOpacity onPress={handleReset}>
-                  <Text style={styles.resetText}>Сбросить</Text>
+                  <Text style={styles.resetText}>{t("archive.reset", "Сбросить")}</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -226,7 +226,7 @@ export const DateRangePickerModal = forwardRef<DateRangePickerModalRef, Props>(
                 onPress={onClose}
               >
                 <Text style={[styles.buttonText, styles.cancelButtonText]}>
-                  Отмена
+                  {t("archive.cancel", "Отмена")}
                 </Text>
               </TouchableOpacity>
 
@@ -245,7 +245,7 @@ export const DateRangePickerModal = forwardRef<DateRangePickerModalRef, Props>(
                     (!fromDate || !toDate) && styles.buttonTextDisabled, // 👈 добавлено условие
                   ]}
                 >
-                  Применить
+                  {t("archive.apply", "Применить")}
                 </Text>
               </TouchableOpacity>
             </View>
