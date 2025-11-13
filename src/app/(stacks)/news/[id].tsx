@@ -1,6 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 import { StatusBar } from "react-native";
 import NewsDetailCard from "../../../components/NewsDetailCard";
+import { useTheme } from "../../../hooks/useTheme";
 
 type Params = {
   title?: string;
@@ -11,6 +12,8 @@ type Params = {
 
 export default function NewsDetail() {
   const { title, date, content, image } = useLocalSearchParams<Params>();
+  const { theme } = useTheme();
+  const isLight = theme === "light";
 
   const safeTitle = title || "Информационное сообщение\nпо валютному рынку";
   const safeDate = date || "24.12.2024";
@@ -23,7 +26,7 @@ export default function NewsDetail() {
 
   return (
     <>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isLight ? "dark-content" : "light-content"} />
       <NewsDetailCard
         title={safeTitle}
         date={safeDate}

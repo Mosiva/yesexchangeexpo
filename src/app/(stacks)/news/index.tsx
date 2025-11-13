@@ -2,15 +2,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
+import { useTheme } from "../../../hooks/useTheme";
 
 const ORANGE = "#F58220";
 
@@ -70,7 +71,9 @@ const SAMPLE: Record<TabKey, NewsItem[]> = {
 
 export default function NewsScreen() {
   const router = useRouter();
-
+  const { colors, theme } = useTheme();
+  const isLight = theme === "light";
+  const styles = makeStyles(colors);
   const [active, setActive] = useState<TabKey>("YesNews");
   const [query, setQuery] = useState("");
 
@@ -86,7 +89,7 @@ export default function NewsScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isLight ? "dark-content" : "light-content"} />
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
         keyboardShouldPersistTaps="handled"
@@ -144,79 +147,81 @@ export default function NewsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
 
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingTop: 6,
-    marginBottom: 6,
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 28,
-    fontWeight: "800",
-    color: "#111827",
-  },
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingTop: 6,
+      marginBottom: 6,
+    },
+    headerTitle: {
+      flex: 1,
+      textAlign: "center",
+      fontSize: 28,
+      fontWeight: "800",
+      color: "#111827",
+    },
 
-  tabsRow: {
-    flexDirection: "row",
-    gap: 14,
-    marginTop: 8,
-    marginBottom: 12,
-  },
-  tab: {
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: "#fff",
-  },
-  tabActive: {
-    backgroundColor: "#F4F5F7",
-    borderWidth: 1,
-    borderColor: "#ECECEC",
-  },
-  tabText: { color: "#6B7280", fontSize: 14, fontWeight: "400" },
-  tabTextActive: { color: "#111827" },
+    tabsRow: {
+      flexDirection: "row",
+      gap: 14,
+      marginTop: 8,
+      marginBottom: 12,
+    },
+    tab: {
+      paddingHorizontal: 18,
+      paddingVertical: 12,
+      borderRadius: 12,
+      backgroundColor: colors.background,
+    },
+    tabActive: {
+      backgroundColor: colors.tabActive,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    tabText: { color: colors.text, fontSize: 14, fontWeight: "400" },
+    tabTextActive: { color: colors.text },
 
-  searchWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ECECEC",
-    borderRadius: 14,
-    height: 52,
-    paddingHorizontal: 12,
-    marginBottom: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "400",
-    color: "#111827",
-  },
+    searchWrap: {
+      flexDirection: "row",
+      alignItems: "center",
+      borderWidth: 1,
+      borderColor: "#ECECEC",
+      borderRadius: 14,
+      height: 52,
+      paddingHorizontal: 12,
+      marginBottom: 10,
+      backgroundColor: "#F5F6F8",
+    },
+    searchInput: {
+      flex: 1,
+      fontSize: 16,
+      fontWeight: "400",
+      color: "#111827",
+    },
 
-  // (leftover shared styles you had)
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#ECECEC",
-    paddingHorizontal: 14,
-    paddingVertical: 16,
-    marginTop: 14,
-  },
-  cta: {
-    backgroundColor: ORANGE,
-    borderRadius: 16,
-    height: 56,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 16,
-  },
-  ctaText: { color: "#fff", fontSize: 16, fontWeight: "700" },
-});
+    // (leftover shared styles you had)
+    card: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: "#fff",
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: "#ECECEC",
+      paddingHorizontal: 14,
+      paddingVertical: 16,
+      marginTop: 14,
+    },
+    cta: {
+      backgroundColor: ORANGE,
+      borderRadius: 16,
+      height: 56,
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 16,
+    },
+    ctaText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  });

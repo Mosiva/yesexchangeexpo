@@ -10,6 +10,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import { useTheme } from "../../hooks/useTheme";
 
 type NewsItem = {
   id: string | number;
@@ -35,6 +36,9 @@ export default function NewsMainCardList({
   onDark = true,
   style,
 }: Props) {
+  const { colors,  } = useTheme();
+ 
+  const styles = makeStyles(colors);
   const { t } = useTranslation();
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
@@ -72,17 +76,17 @@ export default function NewsMainCardList({
               }
             }}
           >
-            <Text style={[styles.title, c.title]} numberOfLines={2}>
+            <Text style={[styles.title, c.title, { color: colors.text }]} numberOfLines={2}>
               {it.title}
             </Text>
 
             {!!it.summary && (
-              <Text style={[styles.summary, c.summary]} numberOfLines={2}>
+              <Text style={[styles.summary, c.summary, { color: colors.subtext }]} numberOfLines={2}>
                 {it.summary}
               </Text>
             )}
 
-            <Text style={[styles.date, c.date]}>{formatDateRU(it.date)}</Text>
+            <Text style={[styles.date, c.date, { color: colors.subtext }]}>{formatDateRU(it.date)}</Text>
           </Pressable>
 
           {idx !== visible.length - 1 && (
@@ -100,7 +104,7 @@ export default function NewsMainCardList({
             borderless: true,
           }}
         >
-          <Text style={[styles.moreText, c.more]}>{buttonLabel}</Text>
+          <Text style={[styles.moreText, c.more, { color: colors.subtext }]}>{buttonLabel}</Text>
         </Pressable>
       )}
     </View>
@@ -121,7 +125,7 @@ function formatDateRU(d: string | Date) {
     .replace(/\u00A0/g, " ");
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: any) => StyleSheet.create({
   wrapper: {
     borderRadius: 12,
     overflow: "hidden",
