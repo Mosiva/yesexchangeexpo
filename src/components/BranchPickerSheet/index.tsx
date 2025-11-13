@@ -542,7 +542,7 @@ const makeStyles = (colors: any) =>
       height: 48,
       marginBottom: 12,
     },
-    searchInput: { flex: 1, marginLeft: 8, fontSize: 16, color: colors.text },
+    searchInput: { flex: 1, marginLeft: 8, fontSize: 16 },
     tabs: { flexDirection: "row", gap: 12, marginBottom: 10 },
     tab: {
       flex: 1,

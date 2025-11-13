@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useTheme } from "../../hooks/useTheme";
 
 import { useTranslation } from "react-i18next";
 
@@ -11,6 +12,8 @@ function CustomHeader({
   title: string;
   showBackButton?: boolean;
 }) {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const router = useRouter();
   const canGoBack =
     typeof router.canGoBack === "function" ? router.canGoBack() : false;
@@ -19,7 +22,7 @@ function CustomHeader({
     <View style={styles.topBar}>
       {showBackButton && canGoBack ? (
         <Pressable onPress={() => router.back()} hitSlop={12}>
-          <Ionicons name="arrow-back" size={28} color="#000" />
+          <Ionicons name="arrow-back" size={28} color={colors.text} />
         </Pressable>
       ) : (
         <View style={{ width: 28 }} />
@@ -87,20 +90,22 @@ export default function Layout() {
   );
 }
 
-const styles = StyleSheet.create({
-  topBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-    flexShrink: 1,
-  },
-});
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    topBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingTop: 60,
+      paddingHorizontal: 20,
+      paddingBottom: 16,
+      backgroundColor: colors.background,
+    },
+    title: {
+      fontSize: 20,
+      fontWeight: "bold",
+      textAlign: "center",
+      flexShrink: 1,
+      color: colors.text,
+    },
+  });

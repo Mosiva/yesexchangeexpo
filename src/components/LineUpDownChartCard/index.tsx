@@ -184,8 +184,6 @@ function formatNum(n: number | string) {
 
 /* ------------------------------- styles ------------------------------- */
 
-const CARD_SHADOW = "rgba(0,0,0,0.06)";
-
 const makeStyles = (colors: any) =>
   StyleSheet.create({
     card: {
@@ -196,7 +194,7 @@ const makeStyles = (colors: any) =>
       borderRadius: 16,
       padding: 14,
       marginBottom: 12,
-      shadowColor: CARD_SHADOW,
+      shadowColor: colors.cardShadow,
       shadowOpacity: 1,
       shadowRadius: 8,
       shadowOffset: { width: 0, height: 2 },

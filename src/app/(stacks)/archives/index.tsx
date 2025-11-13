@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import LineUpDownChartCard from "../../../components/LineUpDownChartCard";
 import { Skeleton } from "../../../components/skeleton";
+import { useTheme } from "../../../hooks/useTheme";
 import { useNbkRatesQuery } from "../../../services/yesExchange";
 import {
   dmyLocal,
@@ -25,6 +26,9 @@ import {
 
 export default function ArchivesScreen() {
   const { t } = useTranslation();
+  const { colors, theme } = useTheme();
+  const isLight = theme === "light";
+  const styles = makeStyles(colors);
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState("");
   const { branchId } = useLocalSearchParams<{ branchId: string }>();
@@ -100,20 +104,26 @@ export default function ArchivesScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar
+        barStyle={isLight ? "dark-content" : "light-content"}
+        backgroundColor={colors.background}
+      />
 
       {/* 🔎 Search */}
       <View style={styles.searchContainer}>
         <Ionicons
           name="search"
           size={20}
-          color="#9CA3AF"
+          color={colors.subtext}
           style={{ marginRight: 8 }}
         />
         <TextInput
           value={query}
           onChangeText={(t) => setQuery(t)}
-          placeholder={t("archives.searchByCurrencyName", "Поиск: USD / Доллар")}
+          placeholder={t(
+            "archives.searchByCurrencyName",
+            "Поиск: USD / Доллар"
+          )}
           placeholderTextColor="#9CA3AF"
           style={styles.searchInput}
           returnKeyType="search"
@@ -141,18 +151,26 @@ export default function ArchivesScreen() {
             </View>
           ) : isNbkRatesError ? (
             <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{t("archives.errorLoadingNbkRates", "Ошибка загрузки курсов НБК")}</Text>
+              <Text style={styles.errorText}>
+                {t(
+                  "archives.errorLoadingNbkRates",
+                  "Ошибка загрузки курсов НБК"
+                )}
+              </Text>
               <TouchableOpacity
                 style={styles.retryButton}
                 onPress={() => refetchNbkRates()}
               >
-                <Text style={styles.retryButtonText}>{t("archives.retry", "Повторить")}</Text>
+                <Text style={styles.retryButtonText}>
+                  {t("archives.retry", "Повторить")}
+                </Text>
               </TouchableOpacity>
             </View>
           ) : (
             <View style={{ padding: 16 }}>
               <Text style={{ color: "#6B7280" }}>
-                {t("archives.nothingFound", "Ничего не найдено по запросу")} “{query}”
+                {t("archives.nothingFound", "Ничего не найдено по запросу")} “
+                {query}”
               </Text>
             </View>
           )
@@ -164,59 +182,60 @@ export default function ArchivesScreen() {
 
 /* ================= Styles ================= */
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
 
-  searchContainer: {
-    marginTop: 10,
-    marginBottom: 10,
-    marginHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    borderColor: "#ECECEC",
-    borderWidth: 1,
-    borderRadius: 14,
-    height: 52,
-    paddingHorizontal: 12,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "400",
-    color: "#111827",
-  },
+    searchContainer: {
+      marginTop: 10,
+      marginBottom: 10,
+      marginHorizontal: 16,
+      flexDirection: "row",
+      alignItems: "center",
+      borderColor: "#ECECEC",
+      borderWidth: 1,
+      borderRadius: 14,
+      height: 52,
+      paddingHorizontal: 12,
+      backgroundColor: "#F5F6F8",
+    },
+    searchInput: {
+      flex: 1,
+      fontSize: 16,
+      fontWeight: "400",
+    },
 
-  skeletonContainer: {
-    paddingHorizontal: 16,
-    gap: 12,
-    paddingTop: 12,
-  },
-  skeletonItem: {
-    borderRadius: 12,
-    marginBottom: 8,
-  },
+    skeletonContainer: {
+      paddingHorizontal: 16,
+      gap: 12,
+      paddingTop: 12,
+    },
+    skeletonItem: {
+      borderRadius: 12,
+      marginBottom: 8,
+    },
 
-  errorContainer: {
-    padding: 20,
-    alignItems: "center",
-    backgroundColor: "#FEF2F2",
-    marginHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#FECACA",
-  },
-  errorText: {
-    color: "#DC2626",
-    fontSize: 14,
-    fontWeight: "500",
-    marginBottom: 12,
-    textAlign: "center",
-  },
-  retryButton: {
-    backgroundColor: "#DC2626",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  retryButtonText: { color: "#fff", fontSize: 14, fontWeight: "600" },
-});
+    errorContainer: {
+      padding: 20,
+      alignItems: "center",
+      backgroundColor: "#FEF2F2",
+      marginHorizontal: 16,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: "#FECACA",
+    },
+    errorText: {
+      color: "#DC2626",
+      fontSize: 14,
+      fontWeight: "500",
+      marginBottom: 12,
+      textAlign: "center",
+    },
+    retryButton: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 8,
+    },
+    retryButtonText: { color: colors.text, fontSize: 14, fontWeight: "600" },
+  });
