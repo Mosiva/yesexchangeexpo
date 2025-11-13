@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTheme } from "../../hooks/useTheme";
 import { CurrencyCode } from "../../types/api";
 import CurrencyFlag from "../CurrencyFlag";
 
@@ -37,6 +38,8 @@ export default function CurrenciesListModalArchive({
   buttonText,
 }: Props) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set(value));
@@ -106,7 +109,7 @@ export default function CurrenciesListModalArchive({
           <View style={styles.header}>
             <Text style={styles.title}>{t("common.currency", "Валюта")}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={8}>
-              <Ionicons name="close" size={22} color="#111827" />
+              <Ionicons name="close" size={22} color={colors.text} />
             </TouchableOpacity>
           </View>
 
@@ -120,7 +123,10 @@ export default function CurrenciesListModalArchive({
             />
             <TextInput
               style={styles.searchInput}
-              placeholder={t("common.searchByCurrencyName", "Поиск по названию валюты")}
+              placeholder={t(
+                "common.searchByCurrencyName",
+                "Поиск по названию валюты"
+              )}
               value={query}
               onChangeText={setQuery}
               autoCorrect={false}
@@ -153,85 +159,91 @@ export default function CurrenciesListModalArchive({
   );
 }
 
-const styles = StyleSheet.create({
-  modal: { justifyContent: "flex-end", margin: 0 },
-  overlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.4)",
-  },
-  sheet: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    maxHeight: "90%",
-  },
-  handle: {
-    width: 44,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#E9ECEF",
-    alignSelf: "center",
-    marginBottom: 12,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-  title: { fontSize: 20, fontWeight: "700", color: "#111827" },
-  searchWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F5F6F8",
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 10,
-  },
-  searchInput: { flex: 1, fontSize: 16, color: "#111827" },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 16,
-    marginVertical: 1,
-    gap: 12,
-  },
-  radioOuter: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#D1D5DB",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  radioOuterOn: { borderColor: ORANGE },
-  radioInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: ORANGE,
-  },
-  code: { fontSize: 16, fontWeight: "700", color: "#111827" },
-  name: { fontSize: 12, color: "#6B7280", marginTop: 2, fontWeight: "400" },
-  sep: { height: 1, backgroundColor: "#ECECEC" },
-  bottomBar: {
-    position: "absolute",
-    left: 16,
-    right: 16,
-    bottom: 0,
-    backgroundColor: "transparent",
-  },
-  saveBtn: {
-    backgroundColor: ORANGE,
-    height: 56,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  saveText: { color: "#fff", fontSize: 16, fontWeight: "700" },
-});
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    modal: { justifyContent: "flex-end", margin: 0 },
+    overlay: {
+      flex: 1,
+      justifyContent: "flex-end",
+      backgroundColor: "rgba(0,0,0,0.4)",
+    },
+    sheet: {
+      backgroundColor: colors.background,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      paddingHorizontal: 16,
+      paddingTop: 8,
+      maxHeight: "90%",
+    },
+    handle: {
+      width: 44,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: "#E9ECEF",
+      alignSelf: "center",
+      marginBottom: 12,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 12,
+    },
+    title: { fontSize: 20, fontWeight: "700", color: colors.text },
+    searchWrap: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: "#F5F6F8",
+      borderRadius: 14,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      marginBottom: 10,
+    },
+    searchInput: { flex: 1, fontSize: 16, color: "#111827" },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 16,
+      marginVertical: 1,
+      gap: 12,
+    },
+    radioOuter: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      borderWidth: 2,
+      borderColor: colors.border,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    radioOuterOn: { borderColor: ORANGE },
+    radioInner: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      backgroundColor: ORANGE,
+    },
+    code: { fontSize: 16, fontWeight: "700", color: colors.text },
+    name: {
+      fontSize: 12,
+      color: colors.subtext,
+      marginTop: 2,
+      fontWeight: "400",
+    },
+    sep: { height: 1, backgroundColor: colors.border },
+    bottomBar: {
+      position: "absolute",
+      left: 16,
+      right: 16,
+      bottom: 0,
+      backgroundColor: "transparent",
+    },
+    saveBtn: {
+      backgroundColor: ORANGE,
+      height: 56,
+      borderRadius: 16,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    saveText: { color: colors.text, fontSize: 16, fontWeight: "700" },
+  });
