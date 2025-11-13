@@ -329,12 +329,7 @@ export default function BranchPickerSheet({
                 onPress={() => setTab("nearby")}
                 style={[s.tab, tab === "nearby" && s.tabActive]}
               >
-                <Text
-                  style={[
-                    s.tabText,
-                    tab === "nearby" && s.tabTextActive,
-                  ]}
-                >
+                <Text style={[s.tabText, tab === "nearby" && s.tabTextActive]}>
                   {t("branchPickerSheet.nearby", "Рядом")}
                 </Text>
               </Pressable>
@@ -343,12 +338,7 @@ export default function BranchPickerSheet({
                 onPress={() => setTab("all")}
                 style={[s.tab, tab === "all" && s.tabActive]}
               >
-                <Text
-                  style={[
-                    s.tabText,
-                    tab === "all" && s.tabTextActive,
-                  ]}
-                >
+                <Text style={[s.tabText, tab === "all" && s.tabTextActive]}>
                   {t("branchPickerSheet.allBranches", "Все филиалы")}
                 </Text>
               </Pressable>
@@ -526,89 +516,95 @@ export default function BranchPickerSheet({
 }
 
 /* 💅 Стили */
-const makeStyles = (colors: any) => StyleSheet.create({
-  sheetBg: {
-    backgroundColor: colors.background,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  handle: { width: 60, height: 4, backgroundColor: "#E9ECEF", borderRadius: 2 },
-  content: { flex: 1, padding: 16 },
-  sheetTitle: {
-    color: colors.text,
-    fontSize: 20,
-    fontWeight: "800",
-    marginBottom: 12,
-  },
-  searchBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F5F6F8",
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    height: 48,
-    marginBottom: 12,
-  },
-  searchInput: { flex: 1, marginLeft: 8, fontSize: 16, color: colors.text },
-  tabs: { flexDirection: "row", gap: 12, marginBottom: 10 },
-  tab: {
-    flex: 1,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: "#F5F6F8",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  tabActive: { backgroundColor: "#F0F1F3" },
-  tabText: { color: SUB, fontSize: 16, fontWeight: "700" },
-  tabTextActive: { color: TEXT },
-  item: { flexDirection: "row", alignItems: "center", paddingVertical: 7 },
-  pin: {
-    marginRight: 10,
-  },
-  itemTitle: { color: TEXT, fontSize: 18, fontWeight: "800" },
-  itemAddress: { color: SUB, marginTop: 4 },
-  itemDistance: { color: "#9CA3AF", fontSize: 13, marginTop: 2 },
-  sep: { height: 1, backgroundColor: BORDER },
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
-  title: { fontSize: 20, fontWeight: "800", color: TEXT },
-  address: { color: SUB, marginTop: 4 },
-  contactRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 6,
-  },
-  workLabel: { color: SUB, fontSize: 14, marginTop: 12, marginBottom: 4 },
-  contactText: { color: TEXT, fontSize: 16 },
-  cta: {
-    marginTop: 20,
-    backgroundColor: ORANGE,
-    borderRadius: 12,
-    height: 48,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  ctaText: { color: "#fff", fontWeight: "700", fontSize: 16 },
-  galleryRow: { flexDirection: "row", gap: 8, marginVertical: 12 },
-  galleryImage: {
-    width: 120,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 8,
-  },
-  workNow: { fontSize: 16, fontWeight: "700", marginBottom: 6 },
-  scheduleRow: { flexDirection: "row", justifyContent: "space-between" },
-  day: { fontWeight: "700", color: TEXT },
-  hours: { color: TEXT },
-  row: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
-  itemTime: { color: SUB },
-  shareRow: {
-    flexDirection: "row",
-    alignSelf: "center",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 24,
-  },
-  shareText: { color: "#6B7280", fontSize: 14, fontWeight: "700" },
-});
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    sheetBg: {
+      backgroundColor: colors.background,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+    },
+    handle: {
+      width: 60,
+      height: 4,
+      backgroundColor: "#E9ECEF",
+      borderRadius: 2,
+    },
+    content: { flex: 1, padding: 16 },
+    sheetTitle: {
+      color: colors.text,
+      fontSize: 20,
+      fontWeight: "800",
+      marginBottom: 12,
+    },
+    searchBox: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: "#F5F6F8",
+      borderRadius: 14,
+      paddingHorizontal: 12,
+      height: 48,
+      marginBottom: 12,
+    },
+    searchInput: { flex: 1, marginLeft: 8, fontSize: 16, color: colors.text },
+    tabs: { flexDirection: "row", gap: 12, marginBottom: 10 },
+    tab: {
+      flex: 1,
+      height: 44,
+      borderRadius: 14,
+      backgroundColor: "#F5F6F8",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    tabActive: { backgroundColor: "#F0F1F3" },
+    tabText: { color: SUB, fontSize: 16, fontWeight: "700" },
+    tabTextActive: { color: TEXT },
+    item: { flexDirection: "row", alignItems: "center", paddingVertical: 7 },
+    pin: {
+      marginRight: 10,
+    },
+    itemTitle: { color: TEXT, fontSize: 18, fontWeight: "800" },
+    itemAddress: { color: SUB, marginTop: 4 },
+    itemDistance: { color: "#9CA3AF", fontSize: 13, marginTop: 2 },
+    sep: { height: 1, backgroundColor: BORDER },
+    header: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
+    title: { fontSize: 20, fontWeight: "800", color: colors.text },
+    address: { color: SUB, marginTop: 4 },
+    contactRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      marginTop: 6,
+    },
+    workLabel: { color: SUB, fontSize: 14, marginTop: 12, marginBottom: 4 },
+    contactText: { color: colors.text, fontSize: 16 },
+    cta: {
+      marginTop: 20,
+      backgroundColor: ORANGE,
+      borderRadius: 12,
+      height: 48,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    ctaText: { color: "#fff", fontWeight: "700", fontSize: 16 },
+    galleryRow: { flexDirection: "row", gap: 8, marginVertical: 12 },
+    galleryImage: {
+      width: 120,
+      height: 80,
+      borderRadius: 8,
+      marginRight: 8,
+    },
+    workNow: { fontSize: 16, fontWeight: "700", marginBottom: 6 },
+    scheduleRow: { flexDirection: "row", justifyContent: "space-between" },
+    day: { fontWeight: "700", color: TEXT },
+    hours: { color: TEXT },
+    row: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
+    itemTime: { color: SUB },
+    shareRow: {
+      flexDirection: "row",
+      alignSelf: "center",
+      alignItems: "center",
+      gap: 8,
+      marginTop: 24,
+    },
+    shareText: { color: "#6B7280", fontSize: 14, fontWeight: "700" },
+  });

@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
+import { useTheme } from "../../hooks/useTheme";
 
 interface Props {
   schedule: Record<string, string>;
@@ -8,7 +9,8 @@ interface Props {
 
 export default function BranchScheduleBlock({ schedule }: Props) {
   const { t } = useTranslation();
-
+  const { colors, theme } = useTheme();
+  const s = makeStyles(colors);
   // ✅ Берем сокращения дней недели из i18n
   const daysShort = t("datepicker.days", { returnObjects: true }) as string[];
 
@@ -62,9 +64,9 @@ export default function BranchScheduleBlock({ schedule }: Props) {
             : shortDay(g.days[0]);
 
         return (
-          <View style={styles.row} key={idx}>
-            <Text style={styles.day}>{range}</Text>
-            <Text style={styles.hours}>{g.hours}</Text>
+          <View style={s.row} key={idx}>
+            <Text style={s.day}>{range}</Text>
+            <Text style={s.hours}>{g.hours}</Text>
           </View>
         );
       })}
@@ -72,7 +74,7 @@ export default function BranchScheduleBlock({ schedule }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: any) => StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -80,9 +82,9 @@ const styles = StyleSheet.create({
   },
   day: {
     fontWeight: "700",
-    color: "#111827",
+    color: colors.text,
   },
   hours: {
-    color: "#111827",
+    color: colors.text,
   },
 });
