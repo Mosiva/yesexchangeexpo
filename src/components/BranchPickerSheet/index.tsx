@@ -19,6 +19,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTheme } from "../../hooks/useTheme";
 import BranchScheduleBlock from "../BranchScheduleBlock";
 
 const ORANGE = "#F58220";
@@ -66,6 +67,8 @@ export default function BranchPickerSheet({
   isNearbyScreen = false,
 }: Props) {
   const { t } = useTranslation();
+  const { colors, theme } = useTheme();
+  const s = makeStyles(colors);
   const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["35%", "85%"], []);
   const [query, setQuery] = useState("");
@@ -159,7 +162,7 @@ export default function BranchPickerSheet({
 
     return (
       <Pressable
-        style={styles.item}
+        style={s.item}
         onPress={() =>
           onSelectBranch({
             ...item,
@@ -170,7 +173,7 @@ export default function BranchPickerSheet({
           })
         }
       >
-        <View style={styles.pin}>
+        <View style={s.pin}>
           <Image
             source={require("../../../assets/icons/LocationIcon.png")}
             style={{ width: 28, height: 28 }}
@@ -178,24 +181,24 @@ export default function BranchPickerSheet({
         </View>
 
         <View style={{ flex: 1 }}>
-          <Text style={styles.itemTitle}>
+          <Text style={s.itemTitle}>
             {safeDecode(
               item.city ??
                 item.title ??
                 t("branchPickerSheet.noName", "Без названия")
             )}
           </Text>
-          <Text style={styles.itemAddress} numberOfLines={1}>
+          <Text style={s.itemAddress} numberOfLines={1}>
             {safeDecode(item.address)}
           </Text>
 
-          <View style={styles.row}>
+          <View style={s.row}>
             <Ionicons name="time-outline" size={14} color={SUB} />
-            <Text style={styles.itemTime}>{shortSchedule}</Text>
+            <Text style={s.itemTime}>{shortSchedule}</Text>
           </View>
 
           {item.distanceKm != null && (
-            <Text style={styles.itemDistance}>
+            <Text style={s.itemDistance}>
               {item.distanceKm.toFixed(1)}{" "}
               {t("branchPickerSheet.kmFromYou", "км от вас")}
             </Text>
@@ -295,18 +298,18 @@ export default function BranchPickerSheet({
       index={1}
       snapPoints={snapPoints}
       enablePanDownToClose={false}
-      handleIndicatorStyle={styles.handle}
-      backgroundStyle={styles.sheetBg}
+      handleIndicatorStyle={s.handle}
+      backgroundStyle={s.sheetBg}
     >
-      <BottomSheetView style={styles.content}>
+      <BottomSheetView style={s.content}>
         {!selectedBranch ? (
           <>
-            <Text style={styles.sheetTitle}>
+            <Text style={s.sheetTitle}>
               {t("branchPickerSheet.selectOffice", "Выберите офис обмена")}
             </Text>
 
             {/* Поиск */}
-            <View style={styles.searchBox}>
+            <View style={s.searchBox}>
               <Ionicons name="search" size={18} color="#9CA3AF" />
               <TextInput
                 value={query}
@@ -315,21 +318,21 @@ export default function BranchPickerSheet({
                   "branchPickerSheet.searchByAddress",
                   "Поиск по адресу"
                 )}
-                style={styles.searchInput}
+                style={s.searchInput}
                 returnKeyType="search"
               />
             </View>
 
             {/* Вкладки */}
-            <View style={styles.tabs}>
+            <View style={s.tabs}>
               <Pressable
                 onPress={() => setTab("nearby")}
-                style={[styles.tab, tab === "nearby" && styles.tabActive]}
+                style={[s.tab, tab === "nearby" && s.tabActive]}
               >
                 <Text
                   style={[
-                    styles.tabText,
-                    tab === "nearby" && styles.tabTextActive,
+                    s.tabText,
+                    tab === "nearby" && s.tabTextActive,
                   ]}
                 >
                   {t("branchPickerSheet.nearby", "Рядом")}
@@ -338,12 +341,12 @@ export default function BranchPickerSheet({
 
               <Pressable
                 onPress={() => setTab("all")}
-                style={[styles.tab, tab === "all" && styles.tabActive]}
+                style={[s.tab, tab === "all" && s.tabActive]}
               >
                 <Text
                   style={[
-                    styles.tabText,
-                    tab === "all" && styles.tabTextActive,
+                    s.tabText,
+                    tab === "all" && s.tabTextActive,
                   ]}
                 >
                   {t("branchPickerSheet.allBranches", "Все филиалы")}
@@ -393,7 +396,7 @@ export default function BranchPickerSheet({
                 data={dataToShow}
                 keyExtractor={(b) => String(b.id)}
                 renderItem={renderBranchItem}
-                ItemSeparatorComponent={() => <View style={styles.sep} />}
+                ItemSeparatorComponent={() => <View style={s.sep} />}
                 contentContainerStyle={{ paddingBottom: 170 }}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
@@ -403,16 +406,16 @@ export default function BranchPickerSheet({
         ) : (
           <View style={{ flex: 1, marginBottom: 30 }}>
             {/* --- ДЕТАЛИ ФИЛИАЛА --- */}
-            <View style={styles.header}>
+            <View style={s.header}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.title}>
+                <Text style={s.title}>
                   {safeDecode(
                     selectedBranch.city ??
                       selectedBranch.title ??
                       t("branchPickerSheet.branch", "Филиал")
                   )}
                 </Text>
-                <Text style={styles.address}>
+                <Text style={s.address}>
                   {safeDecode(selectedBranch.address)}
                 </Text>
               </View>
@@ -425,25 +428,25 @@ export default function BranchPickerSheet({
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              style={styles.galleryRow}
+              style={s.galleryRow}
             >
               {(selectedBranch.photos ?? []).map((url, idx) => (
                 <Image
                   key={idx}
                   source={{ uri: url }}
-                  style={styles.galleryImage}
+                  style={s.galleryImage}
                   resizeMode="cover"
                 />
               ))}
             </ScrollView>
 
             {/* Время работы */}
-            <Text style={styles.workLabel}>
+            <Text style={s.workLabel}>
               {t("branchPickerSheet.workTimeToday", "Время работы сегодня")}
             </Text>
             <Text
               style={[
-                styles.workNow,
+                s.workNow,
                 { color: getBranchStatusColor(selectedBranch.schedule) },
               ]}
             >
@@ -451,7 +454,7 @@ export default function BranchPickerSheet({
             </Text>
 
             {/* График */}
-            <Text style={styles.workLabel}>
+            <Text style={s.workLabel}>
               {t("branchPickerSheet.schedule", "График")}
             </Text>
 
@@ -462,36 +465,36 @@ export default function BranchPickerSheet({
             {/* Контакты */}
             {selectedBranch.contactPhone && (
               <>
-                <Text style={styles.workLabel}>
+                <Text style={s.workLabel}>
                   {t("branchPickerSheet.contacts", "Контакты")}
                 </Text>
-                <View style={styles.contactRow}>
+                <View style={s.contactRow}>
                   <Ionicons name="call" size={18} color={ORANGE} />
-                  <Text style={styles.contactText}>
+                  <Text style={s.contactText}>
                     {selectedBranch.contactPhone}
                   </Text>
                 </View>
-                <View style={styles.contactRow}>
+                <View style={s.contactRow}>
                   <Ionicons name="mail" size={18} color={ORANGE} />
-                  <Text style={styles.contactText}>{selectedBranch.email}</Text>
+                  <Text style={s.contactText}>{selectedBranch.email}</Text>
                 </View>
               </>
             )}
 
             {isNearbyScreen ? (
-              <TouchableOpacity style={styles.shareRow} onPress={onShare}>
+              <TouchableOpacity style={s.shareRow} onPress={onShare}>
                 <Ionicons
                   name="share-social-outline"
                   size={22}
                   color="#9CA3AF"
                 />
-                <Text style={styles.shareText}>
+                <Text style={s.shareText}>
                   {t("branchPickerSheet.share", "Поделиться")}
                 </Text>
               </TouchableOpacity>
             ) : (
               <Pressable
-                style={styles.cta}
+                style={s.cta}
                 onPress={() =>
                   router.push({
                     pathname: isRateLocked
@@ -505,7 +508,7 @@ export default function BranchPickerSheet({
                   })
                 }
               >
-                <Text style={styles.ctaText}>
+                <Text style={s.ctaText}>
                   {isRateLocked
                     ? t(
                         "branchPickerSheet.bookByRate",
@@ -523,16 +526,16 @@ export default function BranchPickerSheet({
 }
 
 /* 💅 Стили */
-const styles = StyleSheet.create({
+const makeStyles = (colors: any) => StyleSheet.create({
   sheetBg: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.background,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
   handle: { width: 60, height: 4, backgroundColor: "#E9ECEF", borderRadius: 2 },
   content: { flex: 1, padding: 16 },
   sheetTitle: {
-    color: TEXT,
+    color: colors.text,
     fontSize: 20,
     fontWeight: "800",
     marginBottom: 12,
@@ -546,7 +549,7 @@ const styles = StyleSheet.create({
     height: 48,
     marginBottom: 12,
   },
-  searchInput: { flex: 1, marginLeft: 8, fontSize: 16, color: TEXT },
+  searchInput: { flex: 1, marginLeft: 8, fontSize: 16, color: colors.text },
   tabs: { flexDirection: "row", gap: 12, marginBottom: 10 },
   tab: {
     flex: 1,

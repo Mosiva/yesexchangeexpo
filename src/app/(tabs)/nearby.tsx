@@ -21,19 +21,21 @@ import {
   View,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
+
 import BranchPickerSheet from "../../components/BranchPickerSheet";
+import { useTheme } from "../../hooks/useTheme";
 import { useUserLocation } from "../../hooks/useUserLocation";
+
 import {
   useBranchesQuery,
   useNearestBranchesQuery,
 } from "../../services/yesExchange";
 
-const ORANGE = "#F58220";
-const TEXT = "#111827";
-const SUB = "#6B7280";
-
 export default function NearbyScreen() {
   const { t } = useTranslation();
+  const { colors, theme } = useTheme();
+  const s = makeStyles(colors);
+
   const p = useLocalSearchParams();
   const isRateLocked = p.isRateLocked === "true";
 
@@ -41,7 +43,7 @@ export default function NearbyScreen() {
   const [branchesWithDistance, setBranchesWithDistance] = useState<any[]>([]);
   const mapRef = useRef<MapView | null>(null);
 
-  /** 🧭 Геолокация через кастомный хук */
+  /** 🧭 Геолокация */
   const {
     location,
     address,
@@ -50,10 +52,7 @@ export default function NearbyScreen() {
     requestLocation,
   } = useUserLocation();
 
-  console.log("📍 Локация:", location);
-  console.log("🏠 Адрес:", address);
-
-  /** 🔗 API запросы */
+  /** 🔗 API */
   const { data: rawBranches, refetch: refetchBranches } = useBranchesQuery();
   const { refetch: refetchNearestBranches } = useNearestBranchesQuery({
     lng: location?.coords.longitude ?? 0,
@@ -65,7 +64,7 @@ export default function NearbyScreen() {
     [rawBranches]
   );
 
-  /** 🔄 Обновление данных при фокусе */
+  /** 🔄 Рефетч при фокусе */
   const refetchAllData = useCallback(async () => {
     await Promise.all([refetchBranches(), refetchNearestBranches()]);
   }, [refetchBranches, refetchNearestBranches]);
@@ -76,12 +75,14 @@ export default function NearbyScreen() {
     }, [refetchAllData])
   );
 
-  /** 📏 Расчёт расстояний от пользователя */
+  /** 📏 Расстояния */
   const computeDistances = useCallback(() => {
     if (!location || !branches.length) return;
+
     const computed = branches.map((branch) => {
       const lat = Number(branch.lat);
       const lng = Number(branch.lng);
+
       if (isNaN(lat) || isNaN(lng)) return { ...branch, distanceKm: null };
 
       const distanceMeters = getDistance(
@@ -91,12 +92,14 @@ export default function NearbyScreen() {
         },
         { latitude: lat, longitude: lng }
       );
+
       return { ...branch, distanceKm: distanceMeters / 1000 };
     });
 
     const sorted = computed.sort(
       (a, b) => (a.distanceKm ?? 99999) - (b.distanceKm ?? 99999)
     );
+
     setBranchesWithDistance(sorted);
   }, [branches, location]);
 
@@ -104,7 +107,7 @@ export default function NearbyScreen() {
     computeDistances();
   }, [branches, location]);
 
-  /** 🚩 Список филиалов рядом (≤15 км) */
+  /** 30 км зона */
   const nearbyBranches = useMemo(
     () =>
       branchesWithDistance.filter(
@@ -113,7 +116,7 @@ export default function NearbyScreen() {
     [branchesWithDistance]
   );
 
-  /** 🎯 Анимация маркера */
+  /** 🎯 Анимация */
   const markerScale = useRef(new Animated.Value(1)).current;
 
   const triggerBounce = () => {
@@ -137,6 +140,7 @@ export default function NearbyScreen() {
   const handleSelectBranch = (branch: any) => {
     setSelectedBranch(branch);
     triggerBounce();
+
     if (branch.lat && branch.lng && mapRef.current) {
       mapRef.current.animateToRegion(
         {
@@ -145,42 +149,44 @@ export default function NearbyScreen() {
           latitudeDelta: 0.03,
           longitudeDelta: 0.03,
         },
-        600
+        500
       );
     }
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <StatusBar barStyle="dark-content" />
+    <View style={s.container}>
+      <StatusBar
+        barStyle={theme === "dark" ? "light-content" : "dark-content"}
+      />
 
-      {/* Верхняя панель */}
-      <View style={styles.topBarWrapper}>
-        <View style={styles.topBar}>
-          <View style={styles.addressRow}>
-            <Ionicons name="location" size={20} color={ORANGE} />
+      {/* ==== TOP BAR ==== */}
+      <View style={s.topBarWrapper}>
+        <View style={s.topBar}>
+          <View style={s.addressRow}>
+            <Ionicons name="location" size={20} color={colors.primary} />
             <View style={{ marginLeft: 8 }}>
-              <Text style={styles.myAddrLabel}>{t("nearby.myAddress", "Мой адрес")}</Text>
-              <Text style={styles.myAddrValue}>
+              <Text style={s.myAddrLabel}>
+                {t("nearby.myAddress", "Мой адрес")}
+              </Text>
+
+              <Text style={s.myAddrValue}>
                 {loadingLocation
                   ? t("nearby.loading", "Определяем...")
                   : permissionDenied
                   ? t("nearby.permissionDenied", "Доступ запрещён")
-                  : address}
+                  : address || t("nearby.noAddress", "Адрес не определён")}
               </Text>
             </View>
           </View>
 
-          <Pressable
-            style={styles.refreshBtn}
-            onPress={() => requestLocation()}
-          >
-            <Text style={styles.refreshText}>{t("nearby.refresh", "Обновить")}</Text>
+          <Pressable style={s.refreshBtn} onPress={requestLocation}>
+            <Text style={s.refreshText}>{t("nearby.refresh", "Обновить")}</Text>
           </Pressable>
         </View>
       </View>
 
-      {/* Карта */}
+      {/* ==== MAP ==== */}
       <MapView
         ref={mapRef}
         style={{ flex: 1 }}
@@ -190,21 +196,12 @@ export default function NearbyScreen() {
           latitudeDelta: 0.2,
           longitudeDelta: 0.2,
         }}
-        region={
-          location
-            ? {
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-                latitudeDelta: 0.2,
-                longitudeDelta: 0.2,
-              }
-            : undefined
-        }
         showsUserLocation
         showsMyLocationButton
       >
         {branchesWithDistance.map((branch) => {
           const isSelected = selectedBranch?.id === branch.id;
+
           if (isNaN(Number(branch.lat)) || isNaN(Number(branch.lng)))
             return null;
 
@@ -222,16 +219,13 @@ export default function NearbyScreen() {
               <Animated.View
                 style={{
                   transform: [{ scale: isSelected ? markerScale : 1 }],
-                  alignItems: "center",
-                  justifyContent: "center",
                 }}
               >
                 <View
                   style={{
                     width: isSelected ? 28 : 22,
                     height: isSelected ? 28 : 22,
-                    backgroundColor: isSelected ? "transparent" : "#fff",
-                    borderRadius: 14,
+                    backgroundColor: "transparent",
                     alignItems: "center",
                     justifyContent: "center",
                   }}
@@ -247,7 +241,7 @@ export default function NearbyScreen() {
         })}
       </MapView>
 
-      {/* Шторка с филиалами */}
+      {/* ==== SHEET ==== */}
       <BranchPickerSheet
         selectedBranch={selectedBranch}
         onSelectBranch={handleSelectBranch}
@@ -259,16 +253,29 @@ export default function NearbyScreen() {
         isNearbyScreen={true}
       />
 
-      {/* Если доступ к геолокации запрещён */}
+      {/* ==== PERMISSION OVERLAY ==== */}
       {permissionDenied && (
-        <View style={styles.permissionOverlay}>
-          <Ionicons name="alert-circle-outline" size={48} color={ORANGE} />
-          <Text style={styles.permissionTitle}>{t("nearby.locationDisabled", "Геолокация отключена")}</Text>
-          <Text style={styles.permissionDesc}>
-            {t("nearby.locationPermissionDescription", "Чтобы показать ближайшие филиалы, разрешите доступ к местоположению")}
+        <View style={s.permissionOverlay}>
+          <Ionicons
+            name="alert-circle-outline"
+            size={48}
+            color={colors.primary}
+          />
+          <Text style={s.permissionTitle}>
+            {t("nearby.locationDisabled", "Геолокация отключена")}
           </Text>
-          <Pressable style={styles.retryBtn} onPress={() => requestLocation()}>
-            <Text style={styles.retryText}>{t("nearby.tryAgain", "Попробовать снова")}</Text>
+
+          <Text style={s.permissionDesc}>
+            {t(
+              "nearby.locationPermissionDescription",
+              "Разрешите доступ к геолокации, чтобы увидеть ближайшие филиалы"
+            )}
+          </Text>
+
+          <Pressable style={s.retryBtn} onPress={requestLocation}>
+            <Text style={s.retryText}>
+              {t("nearby.tryAgain", "Попробовать снова")}
+            </Text>
           </Pressable>
         </View>
       )}
@@ -276,71 +283,90 @@ export default function NearbyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  topBarWrapper: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 20,
-    backgroundColor: "#fff",
-  },
-  topBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 60,
-    paddingBottom: 6,
-    justifyContent: "space-between",
-  },
-  addressRow: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    marginLeft: 8,
-  },
-  myAddrLabel: { color: SUB, fontSize: 12, marginBottom: 2 },
-  myAddrValue: { color: TEXT, fontSize: 16, fontWeight: "700" },
-  refreshBtn: {
-    backgroundColor: "#2B2B2B",
-    paddingHorizontal: 14,
-    height: 36,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  refreshText: { color: "#fff", fontWeight: "700" },
-  permissionOverlay: {
-    position: "absolute",
-    top: "30%",
-    left: 20,
-    right: 20,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 24,
-    alignItems: "center",
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-  },
-  permissionTitle: {
-    marginTop: 12,
-    fontSize: 18,
-    fontWeight: "700",
-    color: TEXT,
-  },
-  permissionDesc: {
-    marginTop: 8,
-    color: SUB,
-    textAlign: "center",
-  },
-  retryBtn: {
-    marginTop: 16,
-    backgroundColor: ORANGE,
-    borderRadius: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  retryText: { color: "#fff", fontWeight: "700" },
-});
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+
+    /* ===== TOP BAR ===== */
+    topBarWrapper: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 20,
+      backgroundColor: colors.background,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.subtext + "33",
+    },
+    topBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 16,
+      paddingTop: 60,
+      paddingBottom: 6,
+      justifyContent: "space-between",
+    },
+    addressRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      flex: 1,
+    },
+    myAddrLabel: {
+      color: colors.subtext,
+      fontSize: 12,
+    },
+    myAddrValue: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: "700",
+    },
+    refreshBtn: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 14,
+      height: 36,
+      borderRadius: 10,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    refreshText: {
+      color: "#fff",
+      fontWeight: "700",
+    },
+
+    /* ===== PERMISSION OVERLAY ===== */
+    permissionOverlay: {
+      position: "absolute",
+      top: "28%",
+      left: 20,
+      right: 20,
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 24,
+      alignItems: "center",
+    },
+    permissionTitle: {
+      marginTop: 12,
+      fontSize: 18,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    permissionDesc: {
+      marginTop: 8,
+      color: colors.subtext,
+      textAlign: "center",
+    },
+    retryBtn: {
+      marginTop: 16,
+      backgroundColor: colors.primary,
+      borderRadius: 10,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+    },
+    retryText: {
+      color: "#fff",
+      fontWeight: "700",
+    },
+  });
