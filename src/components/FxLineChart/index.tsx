@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
+import { useTheme } from "../../hooks/useTheme";
 import {
   DateRangePickerModal,
   DateRangePickerModalRef,
@@ -47,6 +48,8 @@ export default function FxLineChart({
   source,
   onChangePeriod,
 }: Props) {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const { t } = useTranslation();
   const [period, setPeriod] = useState<"day" | "week" | "month">("day");
   const [selectedPoint, setSelectedPoint] = useState<{
@@ -196,7 +199,7 @@ export default function FxLineChart({
                 );
               }}
             >
-              <Ionicons name="calendar-outline" size={22} color={COLORS.text} />
+              <Ionicons name="calendar-outline" size={22} color={colors.text} />
             </Pressable>
           </>
         ) : (
@@ -223,7 +226,7 @@ export default function FxLineChart({
               style={styles.calendarBtn}
               onPress={() => setCalendarVisible(true)}
             >
-              <Ionicons name="calendar-outline" size={22} color={COLORS.text} />
+              <Ionicons name="calendar-outline" size={22} color={colors.text} />
             </Pressable>
           </>
         )}
@@ -241,13 +244,13 @@ export default function FxLineChart({
             width={screenWidth - 32}
             height={250}
             chartConfig={{
-              backgroundColor: "#fff",
-              backgroundGradientFrom: "#fff",
-              backgroundGradientTo: "#fff",
+              backgroundColor: colors.background,
+              backgroundGradientFrom: colors.background,
+              backgroundGradientTo: colors.background,
               decimalPlaces: 2,
-              color: (opacity = 1) => `rgba(17, 24, 39, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(107, 114, 128, ${opacity})`,
-              propsForDots: { r: "4", strokeWidth: "1", stroke: "#fff" },
+              color: () => colors.chartLineCell,
+              labelColor: () =>  colors.subtext,
+              propsForDots: { r: "4", strokeWidth: "1", stroke: colors.text },
             }}
             bezier
             style={styles.chart}
@@ -262,7 +265,7 @@ export default function FxLineChart({
           />
         ) : (
           <View style={{ paddingVertical: 40, alignItems: "center" }}>
-            <Text style={{ color: COLORS.sub, fontSize: 15 }}>
+            <Text style={{ color: colors.subtext, fontSize: 15 }}>
               Нет данных для отображения
             </Text>
           </View>
@@ -304,18 +307,20 @@ function Segment({
   active: boolean;
   onPress: () => void;
 }) {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   return (
     <Pressable
       onPress={onPress}
       style={[
         styles.segment,
-        active && { backgroundColor: COLORS.pillActiveBg },
+        active && { backgroundColor: colors.tabActive },
       ]}
     >
       <Text
         style={[
           styles.segmentText,
-          active && { color: COLORS.pillActiveText, fontWeight: "800" },
+          active && { color: colors.text, fontWeight: "800" },
         ]}
       >
         {label}
@@ -324,7 +329,7 @@ function Segment({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: any) => StyleSheet.create({
   rangeTextInline: { fontSize: 15, fontWeight: "700", color: COLORS.text },
   resetText: { color: COLORS.orange, fontSize: 14, fontWeight: "700" },
   chart: { marginHorizontal: 16, marginTop: 8, borderRadius: 12 },
@@ -337,7 +342,7 @@ const styles = StyleSheet.create({
     zIndex: 999,
   },
   tooltipText: {
-    color: "#fff",
+    color: colors.text,
     fontSize: 12,
     fontWeight: "600",
     textAlign: "center",
@@ -347,7 +352,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 5,
     marginBottom: 8,
-    backgroundColor: COLORS.pillBg,
+    backgroundColor: colors.background,
     borderRadius: 16,
     marginHorizontal: 12,
     paddingHorizontal: 6,
@@ -366,14 +371,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: COLORS.pillBg,
+    backgroundColor: colors.background,
   },
-  segmentText: { color: COLORS.text, fontSize: 16, fontWeight: "700" },
+  segmentText: { color: colors.text, fontSize: 16, fontWeight: "700" },
   calendarBtn: {
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: COLORS.pillBg,
+    backgroundColor: colors.background,
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 6,

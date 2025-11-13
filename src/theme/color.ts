@@ -13,6 +13,7 @@ export const LightColors = {
   tabActive: "#F9F9F9",
   promoCard: "#2B2B2B",
   promoCardText: "#FFFFFF",
+  chartLineCell: "#c0c4c4",
 };
 
 export const DarkColors = {
@@ -30,4 +31,5 @@ export const DarkColors = {
   tabActive: "#414142",
   promoCard: "#FFFFFF",
   promoCardText: "#2B2B2B",
+  chartLineCell: "#FFFFFF",
 };
