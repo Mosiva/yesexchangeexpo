@@ -8,6 +8,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import { useTheme } from "../../hooks/useTheme";
 
 const ORANGE = "#F58220";
 const TEXT = "#2E2E2E";
@@ -20,6 +21,8 @@ export default function LoginDiscountBanner({
   style?: ViewStyle;
 }) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   return (
     <View style={[styles.wrap, style]}>
       <Text style={styles.title}>
@@ -38,12 +41,12 @@ export default function LoginDiscountBanner({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: any) => StyleSheet.create({
   wrap: {
     paddingTop: 8,
   },
   title: {
-    color: TEXT,
+    color: colors.text,
     fontSize: 16,
     lineHeight: 30,
     textAlign: "center",
