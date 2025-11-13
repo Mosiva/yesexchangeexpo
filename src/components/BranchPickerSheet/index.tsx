@@ -23,9 +23,6 @@ import { useTheme } from "../../hooks/useTheme";
 import BranchScheduleBlock from "../BranchScheduleBlock";
 
 const ORANGE = "#F58220";
-const TEXT = "#111827";
-const SUB = "#6B7280";
-const BORDER = "#ECECEC";
 
 /** Тип филиала */
 export type Branch = {
@@ -193,7 +190,7 @@ export default function BranchPickerSheet({
           </Text>
 
           <View style={s.row}>
-            <Ionicons name="time-outline" size={14} color={SUB} />
+            <Ionicons name="time-outline" size={14} color={colors.subtext} />
             <Text style={s.itemTime}>{shortSchedule}</Text>
           </View>
 
@@ -348,7 +345,7 @@ export default function BranchPickerSheet({
             {tab === "nearby" && loadingLocation ? (
               <View style={{ paddingVertical: 32, alignItems: "center" }}>
                 <ActivityIndicator size="small" color={ORANGE} />
-                <Text style={{ marginTop: 8, color: SUB }}>
+                <Text style={{ marginTop: 8, color: colors.subtext }}>
                   {t(
                     "branchPickerSheet.determiningLocation",
                     "Определяем местоположение..."
@@ -364,7 +361,7 @@ export default function BranchPickerSheet({
                 <Text
                   style={{
                     marginTop: 12,
-                    color: SUB,
+                    color: colors.subtext,
                     fontSize: 15,
                     textAlign: "center",
                     fontWeight: "500",
@@ -410,7 +407,7 @@ export default function BranchPickerSheet({
                 </Text>
               </View>
               <Pressable onPress={onCloseDetails}>
-                <Ionicons name="close" size={22} color={TEXT} />
+                <Ionicons name="close" size={22} color={colors.text} />
               </Pressable>
             </View>
 
@@ -551,31 +548,36 @@ const makeStyles = (colors: any) =>
       flex: 1,
       height: 44,
       borderRadius: 14,
-      backgroundColor: "#F5F6F8",
+      backgroundColor: colors.background,
       alignItems: "center",
       justifyContent: "center",
     },
-    tabActive: { backgroundColor: "#F0F1F3" },
-    tabText: { color: SUB, fontSize: 16, fontWeight: "700" },
-    tabTextActive: { color: TEXT },
+    tabActive: { backgroundColor: colors.active },
+    tabText: { color: colors.subtext, fontSize: 16, fontWeight: "700" },
+    tabTextActive: { color: colors.text },
     item: { flexDirection: "row", alignItems: "center", paddingVertical: 7 },
     pin: {
       marginRight: 10,
     },
-    itemTitle: { color: TEXT, fontSize: 18, fontWeight: "800" },
-    itemAddress: { color: SUB, marginTop: 4 },
-    itemDistance: { color: "#9CA3AF", fontSize: 13, marginTop: 2 },
-    sep: { height: 1, backgroundColor: BORDER },
+    itemTitle: { color: colors.text, fontSize: 18, fontWeight: "800" },
+    itemAddress: { color: colors.subtext, marginTop: 4 },
+    itemDistance: { color: colors.subtext, fontSize: 13, marginTop: 2 },
+    sep: { height: 1, backgroundColor: colors.border },
     header: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
     title: { fontSize: 20, fontWeight: "800", color: colors.text },
-    address: { color: SUB, marginTop: 4 },
+    address: { color: colors.subtext, marginTop: 4 },
     contactRow: {
       flexDirection: "row",
       alignItems: "center",
       gap: 8,
       marginTop: 6,
     },
-    workLabel: { color: SUB, fontSize: 14, marginTop: 12, marginBottom: 4 },
+    workLabel: {
+      color: colors.subtext,
+      fontSize: 14,
+      marginTop: 12,
+      marginBottom: 4,
+    },
     contactText: { color: colors.text, fontSize: 16 },
     cta: {
       marginTop: 20,
@@ -595,10 +597,10 @@ const makeStyles = (colors: any) =>
     },
     workNow: { fontSize: 16, fontWeight: "700", marginBottom: 6 },
     scheduleRow: { flexDirection: "row", justifyContent: "space-between" },
-    day: { fontWeight: "700", color: TEXT },
-    hours: { color: TEXT },
+    day: { fontWeight: "700", color: colors.text },
+    hours: { color: colors.text },
     row: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
-    itemTime: { color: SUB },
+    itemTime: { color: colors.subtext },
     shareRow: {
       flexDirection: "row",
       alignSelf: "center",
@@ -606,5 +608,5 @@ const makeStyles = (colors: any) =>
       gap: 8,
       marginTop: 24,
     },
-    shareText: { color: "#6B7280", fontSize: 14, fontWeight: "700" },
+    shareText: { color: colors.subtext, fontSize: 14, fontWeight: "700" },
   });

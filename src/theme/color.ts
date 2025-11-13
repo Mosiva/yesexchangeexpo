@@ -4,6 +4,8 @@ export const LightColors = {
   subtext: "#6B7280",
   card: "#F3F4F6",
   primary: "#F79633",
+  border: "#ECECEC",
+  active: "#F0F1F3",
 };
 
 export const DarkColors = {
@@ -12,4 +14,6 @@ export const DarkColors = {
   subtext: "#AAAAAA",
   card: "#1C1C1E",
   primary: "#F79633",
+  border: "#414142",
+  active: "#353535",
 };
