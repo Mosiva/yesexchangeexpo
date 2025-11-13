@@ -5,15 +5,16 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Modal from "react-native-modal";
+import { useTheme } from "../../hooks/useTheme";
 import { STORE_LANGUAGE_KEY } from "../../local/i18n";
 
 type LangCode = "kz" | "ru" | "en";
 
 interface Props {
   visible: boolean;
-  value?: LangCode; // текущий язык
+  value?: LangCode;
   onClose: () => void;
-  onConfirm?: (next: LangCode) => void; // колбэк для родителя
+  onConfirm?: (next: LangCode) => void;
 }
 
 export default function LanguageChooseModal({
@@ -23,21 +24,20 @@ export default function LanguageChooseModal({
   onConfirm,
 }: Props) {
   const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
   const { changeLanguage, language: lng } = useAuth();
 
   const [choice, setChoice] = useState<LangCode>(value);
 
-  // синхронизация при открытии
   useEffect(() => {
     if (visible) setChoice(value);
   }, [visible, value]);
 
-  // синхронизация с i18n при изменении в провайдере
   useEffect(() => {
     if (lng && i18n) i18n.changeLanguage(lng);
   }, [lng, i18n]);
 
-  const options: { code: LangCode; label: string; icon: any }[] = [
+  const options = [
     {
       code: "kz",
       label: t("common.kz", "Казахский"),
@@ -71,49 +71,80 @@ export default function LanguageChooseModal({
       style={styles.modal}
       animationIn="slideInUp"
       animationOut="slideOutDown"
-      animationInTiming={250}
-      animationOutTiming={250}
+      backdropOpacity={0.55}
     >
-      <View style={styles.overlay}>
-        <View style={styles.content}>
-          {/* Шторка */}
-          <View style={styles.handle} />
+      <View style={[styles.overlay, { backgroundColor: "rgba(0,0,0,0.5)" }]}>
+        <View
+          style={[
+            styles.content,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          {/* Handle */}
+          <View style={[styles.handle, { backgroundColor: colors.border }]} />
 
-          {/* Заголовок + крестик */}
+          {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>
+            <Text style={[styles.title, { color: colors.text }]}>
               {t("chooseLang.desc", "Язык приложения")}
             </Text>
             <TouchableOpacity onPress={onClose} hitSlop={8}>
-              <Ionicons name="close" size={22} color="#111827" />
+              <Ionicons name="close" size={22} color={colors.text} />
             </TouchableOpacity>
           </View>
 
-          {/* Options */}
+          {/* Items */}
           <View style={{ gap: 8 }}>
             {options.map((opt) => {
               const active = choice === opt.code;
               return (
                 <TouchableOpacity
                   key={opt.code}
-                  style={[styles.row, active && styles.rowActive]}
-                  onPress={() => setChoice(opt.code)}
+                  style={[
+                    styles.row,
+                    {
+                      backgroundColor: active ? colors.active : "transparent",
+                    },
+                  ]}
+                  onPress={() => setChoice(opt.code as LangCode)}
                   activeOpacity={0.8}
                 >
-                  <View style={[styles.radio, active && styles.radioActive]}>
-                    {active && <View style={styles.radioDot} />}
+                  {/* Radio */}
+                  <View
+                    style={[
+                      styles.radio,
+                      {
+                        borderColor: active ? colors.primary : colors.border,
+                      },
+                    ]}
+                  >
+                    {active && (
+                      <View
+                        style={[
+                          styles.radioDot,
+                          { backgroundColor: colors.primary },
+                        ]}
+                      />
+                    )}
                   </View>
 
                   <Image source={opt.icon} style={styles.flag} />
-                  <Text style={styles.rowLabel}>{opt.label}</Text>
+                  <Text style={[styles.rowLabel, { color: colors.text }]}>
+                    {opt.label}
+                  </Text>
                 </TouchableOpacity>
               );
             })}
           </View>
 
           {/* Save */}
-          <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-            <Text style={styles.saveText}>{t("common.save", "Сохранить")}</Text>
+          <TouchableOpacity
+            style={[styles.saveBtn, { backgroundColor: colors.primary }]}
+            onPress={handleSave}
+          >
+            <Text style={[styles.saveText, { color: colors.text }]}>
+              {t("common.save", "Сохранить")}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -121,36 +152,33 @@ export default function LanguageChooseModal({
   );
 }
 
-const ORANGE = "#F58220";
-
 const styles = StyleSheet.create({
   modal: { justifyContent: "flex-end", margin: 0 },
-  overlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.4)",
-  },
+  overlay: { flex: 1, justifyContent: "flex-end" },
+
   content: {
-    backgroundColor: "#fff",
     padding: 16,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    borderWidth: 1,
   },
+
   handle: {
     width: 90,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#E9ECEF",
     alignSelf: "center",
     marginBottom: 12,
   },
+
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
   },
-  title: { fontSize: 18, fontWeight: "700", color: "#111827" },
+
+  title: { fontSize: 18, fontWeight: "700" },
 
   row: {
     flexDirection: "row",
@@ -159,10 +187,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 12,
   },
-  rowActive: { backgroundColor: "#F5F6F8" },
+
   rowLabel: {
     fontSize: 16,
-    color: "#111827",
     marginLeft: 10,
     fontWeight: "600",
   },
@@ -172,18 +199,20 @@ const styles = StyleSheet.create({
     height: 18,
     borderRadius: 9,
     borderWidth: 2,
-    borderColor: "#C9CDD3",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
   },
-  radioActive: { borderColor: ORANGE },
-  radioDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: ORANGE },
+
+  radioDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
 
   flag: { width: 22, height: 22, borderRadius: 3 },
 
   saveBtn: {
-    backgroundColor: ORANGE,
     height: 50,
     borderRadius: 12,
     alignItems: "center",
@@ -191,5 +220,6 @@ const styles = StyleSheet.create({
     marginTop: 14,
     marginBottom: 14,
   },
-  saveText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+
+  saveText: { fontSize: 16, fontWeight: "700" },
 });

@@ -79,7 +79,10 @@
     "indevelopment": "Still in development, coming soon )",
     "smile": "Smile",
     "itok": "Everything will be fine, since you clicked",
-    "tap": "Tap if you're interested"
+    "tap": "Tap if you're interested",
+    "rates": "Exchange rates",
+    "finance": "Financial news",
+    "yesNews": "YesNews"
   },
 
   "datepicker": {

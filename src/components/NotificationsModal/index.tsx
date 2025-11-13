@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Pressable,
   StyleSheet,
@@ -9,21 +10,20 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTheme } from "../../hooks/useTheme";
 
 type NotifPrefs = {
-  rates: boolean; // Курсы валют
-  finance: boolean; // Финансовые новости
-  yesNews: boolean; // YesNews
+  rates: boolean;
+  finance: boolean;
+  yesNews: boolean;
 };
 
 interface Props {
   visible: boolean;
-  value?: NotifPrefs; // preselected values
+  value?: NotifPrefs;
   onClose: () => void;
-  onConfirm: (next: NotifPrefs) => void; // called on save
+  onConfirm: (next: NotifPrefs) => void;
 }
-
-const ORANGE = "#F58220";
 
 export default function NotificationsModal({
   visible,
@@ -31,9 +31,11 @@ export default function NotificationsModal({
   onClose,
   onConfirm,
 }: Props) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const [prefs, setPrefs] = useState<NotifPrefs>(value);
+  const { colors } = useTheme();
 
+  const [prefs, setPrefs] = useState<NotifPrefs>(value);
   useEffect(() => {
     if (visible) setPrefs(value);
   }, [visible, value]);
@@ -55,44 +57,59 @@ export default function NotificationsModal({
       animationInTiming={250}
       animationOutTiming={250}
     >
-      <View style={styles.overlay}>
-        <View style={styles.sheet}>
+      <View style={[styles.overlay, { backgroundColor: "rgba(0,0,0,0.4)" }]}>
+        <View
+          style={[
+            styles.sheet,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
           {/* Handle */}
-          <View style={styles.handle} />
+          <View style={[styles.handle, { backgroundColor: colors.border }]} />
 
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Уведомления</Text>
+            <Text style={[styles.title, { color: colors.text }]}>
+              {t("notifications.title", "Уведомления")}
+            </Text>
             <TouchableOpacity onPress={onClose} hitSlop={8}>
-              <Ionicons name="close" size={22} color="#111827" />
+              <Ionicons name="close" size={22} color={colors.text} />
             </TouchableOpacity>
           </View>
 
           {/* Rows */}
           <Row
-            label="Курсы валют"
+            label={t("notifications.rates", "Курсы валют")}
             value={prefs.rates}
             onToggle={() => toggle("rates")}
+            colors={colors}
           />
-          <Separator />
+          <Separator colors={colors} />
+
           <Row
-            label="Финансовые новости"
+            label={t("notifications.finance", "Финансовые новости")}
             value={prefs.finance}
             onToggle={() => toggle("finance")}
+            colors={colors}
           />
-          <Separator />
+          <Separator colors={colors} />
+
           <Row
             label="YesNews"
             value={prefs.yesNews}
             onToggle={() => toggle("yesNews")}
+            colors={colors}
           />
 
-          {/* Sticky Save */}
+          {/* Save Button */}
           <View
             style={[styles.bottomBar, { paddingBottom: insets.bottom + 8 }]}
           >
-            <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-              <Text style={styles.saveText}>Сохранить</Text>
+            <TouchableOpacity
+              style={[styles.saveBtn, { backgroundColor: colors.primary }]}
+              onPress={handleSave}
+            >
+              <Text style={styles.saveText}>{t("common.save", "Сохранить")}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -101,33 +118,40 @@ export default function NotificationsModal({
   );
 }
 
-/** One setting row */
+/* ----- Row Component ----- */
 function Row({
   label,
   value,
   onToggle,
+  colors,
 }: {
   label: string;
   value: boolean;
   onToggle: () => void;
+  colors: any;
 }) {
   return (
     <View style={rowStyles.wrap}>
-      <Text style={rowStyles.label}>{label}</Text>
+      <Text style={[rowStyles.label, { color: colors.text }]}>{label}</Text>
 
-      {/* Custom pill switch */}
+      {/* Custom Switch */}
       <Pressable
         onPress={onToggle}
         hitSlop={10}
         style={[
           rowStyles.track,
-          value ? rowStyles.trackOn : rowStyles.trackOff,
+          {
+            backgroundColor: value ? colors.primary : colors.border,
+          },
         ]}
       >
         <View
           style={[
             rowStyles.thumb,
-            value ? rowStyles.thumbOn : rowStyles.thumbOff,
+            {
+              backgroundColor: colors.text,
+              alignSelf: value ? "flex-end" : "flex-start",
+            },
           ]}
         />
       </Pressable>
@@ -135,58 +159,65 @@ function Row({
   );
 }
 
-function Separator() {
-  return <View style={styles.sep} />;
+function Separator({ colors }: { colors: any }) {
+  return <View style={[styles.sep, { backgroundColor: colors.border }]} />;
 }
 
+/* ----- Styles ----- */
 const styles = StyleSheet.create({
   modal: { justifyContent: "flex-end", margin: 0 },
+
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.4)",
   },
+
   sheet: {
-    backgroundColor: "#fff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingHorizontal: 16,
     paddingTop: 8,
     maxHeight: "90%",
+    borderWidth: 1,
   },
+
   handle: {
     width: 44,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#E9ECEF",
     alignSelf: "center",
     marginBottom: 12,
   },
+
   header: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
-  title: { fontSize: 20, fontWeight: "700", color: "#111827" },
 
-  sep: { height: 1, backgroundColor: "#ECECEC", marginLeft: 0, marginRight: 0 },
+  title: { fontSize: 20, fontWeight: "700" },
 
-  bottomBar: {
-    marginTop: 16,
-    bottom: 0,
+  sep: {
+    height: 1,
+    marginLeft: 0,
+    marginRight: 0,
   },
+
+  bottomBar: { marginTop: 16 },
+
   saveBtn: {
-    backgroundColor: ORANGE,
     height: 56,
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 8,
   },
+
   saveText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 });
 
+/* ----- Row styles ----- */
 const rowStyles = StyleSheet.create({
   wrap: {
     flexDirection: "row",
@@ -194,9 +225,10 @@ const rowStyles = StyleSheet.create({
     paddingVertical: 18,
     justifyContent: "space-between",
   },
-  label: { fontSize: 16, fontWeight: "700", color: "#111827" },
-
-  // switch styles
+  label: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
   track: {
     width: 36,
     height: 20,
@@ -204,14 +236,9 @@ const rowStyles = StyleSheet.create({
     padding: 3,
     justifyContent: "center",
   },
-  trackOn: { backgroundColor: ORANGE },
-  trackOff: { backgroundColor: "#6B6B6B" },
   thumb: {
     width: 16,
     height: 16,
     borderRadius: 13,
-    backgroundColor: "#fff",
   },
-  thumbOn: { alignSelf: "flex-end" },
-  thumbOff: { alignSelf: "flex-start" },
 });
