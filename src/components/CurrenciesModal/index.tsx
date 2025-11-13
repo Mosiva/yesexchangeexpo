@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTheme } from "../../hooks/useTheme";
 import { CurrencyCode, CurrencyDto } from "../../types/api";
 import CurrencyFlag from "../CurrencyFlag";
 
@@ -37,7 +38,8 @@ export default function CurrenciesModal({
   items,
 }: Props) {
   const insets = useSafeAreaInsets();
-
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set(value));
 
@@ -150,7 +152,7 @@ export default function CurrenciesModal({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: any) => StyleSheet.create({
   modal: { justifyContent: "flex-end", margin: 0 },
   overlay: {
     flex: 1,
@@ -158,7 +160,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.4)",
   },
   sheet: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.background,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingHorizontal: 16,
@@ -179,7 +181,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 12,
   },
-  title: { fontSize: 20, fontWeight: "700", color: "#111827" },
+  title: { fontSize: 20, fontWeight: "700", color: colors.text },
 
   searchWrap: {
     flexDirection: "row",
@@ -198,10 +200,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   flag: { fontSize: 24, marginRight: 10 },
-  code: { fontSize: 16, fontWeight: "700", color: "#111827" },
-  name: { fontSize: 12, color: "#6B7280", marginTop: 2, fontWeight: "400" },
+  code: { fontSize: 16, fontWeight: "700", color: colors.text },
+  name: { fontSize: 12, color: colors.subtext, marginTop: 2, fontWeight: "400" },
 
-  sep: { height: 1, backgroundColor: "#ECECEC" },
+  sep: { height: 1, backgroundColor: colors.border },
 
   // Custom switch
   switchTrack: {
