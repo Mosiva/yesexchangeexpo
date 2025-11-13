@@ -9,6 +9,9 @@ import {
   Text,
   View,
 } from "react-native";
+import {
+  useCurrenciesQuery,
+} from "../../../../services/yesExchange";
 
 import CurrenciesModal from "../../../../components/CurrenciesModal";
 import LanguageChooseModal from "../../../../components/LanguageModal";
@@ -18,12 +21,16 @@ import { useTheme } from "../../../../hooks/useTheme";
 import { useAuth } from "../../../../providers/Auth";
 import { ThemeContext } from "../../../../providers/ThemeProvider";
 
+
 const ORANGE = "#F58220";
 
 export default function AppSetScreen() {
   const { t } = useTranslation();
   const { theme, colors } = useTheme();
   const { setMode } = useContext(ThemeContext);
+ // ✅ список валют
+ const { data: rawCurrencies } = useCurrenciesQuery();
+ const currencies = Array.isArray(rawCurrencies) ? rawCurrencies : [];
 
   const { isGuest, language } = useAuth();
 
@@ -126,6 +133,7 @@ export default function AppSetScreen() {
       />
 
       <CurrenciesModal
+        items={currencies}
         visible={currencyModalVisible}
         value={selectedCurrencies}
         onClose={() => setCurrencyModalVisible(false)}

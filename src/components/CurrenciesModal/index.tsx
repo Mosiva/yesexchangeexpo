@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FlatList,
   Pressable,
@@ -11,8 +11,10 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { CurrencyCode, CurrencyDto } from "../../types/api";
+import CurrencyFlag from "../CurrencyFlag";
 
-type Currency = { code: string; name: string; flag: string };
+type Currency = CurrencyDto & { flag?: string };
 
 interface Props {
   visible: boolean;
@@ -27,21 +29,12 @@ interface Props {
 
 const ORANGE = "#F58220";
 
-const DEFAULT_ITEMS: Currency[] = [
-  { code: "USD", name: "Доллар США", flag: "🇺🇸" },
-  { code: "RUB", name: "Российский рубль", flag: "🇷🇺" },
-  { code: "EUR", name: "Евро", flag: "🇪🇺" },
-  { code: "GBP", name: "Фунт стерлингов", flag: "🇬🇧" },
-  { code: "CNY", name: "Китайский юань", flag: "🇨🇳" },
-  { code: "KZT", name: "Казахстанский тенге", flag: "🇰🇿" },
-];
-
 export default function CurrenciesModal({
   visible,
   onClose,
   onConfirm,
   value = ["USD", "RUB", "EUR"],
-  items = DEFAULT_ITEMS,
+  items,
 }: Props) {
   const insets = useSafeAreaInsets();
 
@@ -51,15 +44,6 @@ export default function CurrenciesModal({
   useEffect(() => {
     if (visible) setSelected(new Set(value));
   }, [visible, value]);
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter(
-      (i) =>
-        i.code.toLowerCase().includes(q) || i.name.toLowerCase().includes(q)
-    );
-  }, [items, query]);
 
   const toggle = (code: string) => {
     setSelected((prev) => {
@@ -76,13 +60,15 @@ export default function CurrenciesModal({
     const on = selected.has(item.code);
     return (
       <View style={styles.row}>
-        <Text style={styles.flag}>{item.flag}</Text>
+        <View style={{ marginRight: 10 }}>
+          <CurrencyFlag code={item.code as CurrencyCode} size={24} />
+        </View>
+
         <View style={{ flex: 1 }}>
           <Text style={styles.code}>{item.code}</Text>
           <Text style={styles.name}>{item.name}</Text>
         </View>
 
-        {/* Custom orange switch */}
         <Pressable
           onPress={() => toggle(item.code)}
           hitSlop={10}
@@ -142,7 +128,7 @@ export default function CurrenciesModal({
 
           {/* List */}
           <FlatList
-            data={filtered}
+            data={items ?? []}
             keyExtractor={(i) => i.code}
             renderItem={renderItem}
             ItemSeparatorComponent={() => <View style={styles.sep} />}

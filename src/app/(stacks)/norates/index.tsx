@@ -38,10 +38,7 @@ import { getCurrencySymbol } from "../../../utils/currency";
 import { formatCurrencyDisplay } from "../../../utils/formatCurrencyDisplay";
 
 const ORANGE = "#F58220";
-const TEXT = "#111827";
-const SUB = "#6B7280";
 const BORDER = "#ECECEC";
-const CARD = "#F7F7F9";
 
 const fmt = (n: number) =>
   isFinite(n)
@@ -234,7 +231,12 @@ export default function ReserveNoRateScreen() {
   /** ====== Сабмит брони ====== */
   const handleCreateBooking = async () => {
     if (!branchIdParam || !to?.id) {
-      Alert.alert(t("norates.errorDeterminingCurrencyOrBranch", "Не удалось определить валюту или филиал."));
+      Alert.alert(
+        t(
+          "norates.errorDeterminingCurrencyOrBranch",
+          "Не удалось определить валюту или филиал."
+        )
+      );
       return;
     }
     // Проверка телефона, если гость
@@ -242,7 +244,10 @@ export default function ReserveNoRateScreen() {
       if (!isValid) {
         Alert.alert(
           t("norates.error", "Ошибка"),
-          t("norates.enterValidPhone", "Введите корректный номер телефона Казахстана (+7 7XX XXX-XX-XX).")
+          t(
+            "norates.enterValidPhone",
+            "Введите корректный номер телефона Казахстана (+7 7XX XXX-XX-XX)."
+          )
         );
         return;
       }
@@ -250,7 +255,10 @@ export default function ReserveNoRateScreen() {
     // ✅ Найдём курс тенге (KZT)
     const kztRate = currencies.find((c) => c.code === "KZT");
     if (!kztRate) {
-      Alert.alert(t("norates.error", "Ошибка"), t("norates.kztRateNotFound", "Не найден курс KZT."));
+      Alert.alert(
+        t("norates.error", "Ошибка"),
+        t("norates.kztRateNotFound", "Не найден курс KZT.")
+      );
       return;
     }
 
@@ -294,7 +302,10 @@ export default function ReserveNoRateScreen() {
       const msg =
         err?.data?.message ||
         err?.error ||
-        t("norates.errorCreatingBooking", "Не удалось создать бронь. Попробуйте ещё раз.");
+        t(
+          "norates.errorCreatingBooking",
+          "Не удалось создать бронь. Попробуйте ещё раз."
+        );
       Alert.alert(t("norates.error", "Ошибка"), msg);
     }
   };
@@ -305,14 +316,17 @@ export default function ReserveNoRateScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={{ flex: 1, backgroundColor: "#fff" }}
     >
-       <StatusBar barStyle={isLight ? "dark-content" : "light-content"} />
+      <StatusBar barStyle={isLight ? "dark-content" : "light-content"} />
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: 210 }}
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.subtitle}>
-          {t("norates.noRateExplanation", "Данный вид брони не подразумевает сохранения курса")}
+          {t(
+            "norates.noRateExplanation",
+            "Данный вид брони не подразумевает сохранения курса"
+          )}
         </Text>
 
         {/* Segmented control */}
@@ -411,7 +425,10 @@ export default function ReserveNoRateScreen() {
           >
             <View style={{ marginTop: 20 }}>
               <Text style={styles.subtitle}>
-                {t("norates.leavePhone", "Оставьте номер телефона, на который хотите оформить бронь")}
+                {t(
+                  "norates.leavePhone",
+                  "Оставьте номер телефона, на который хотите оформить бронь"
+                )}
               </Text>
               <MaskInput
                 style={styles.input}
@@ -455,7 +472,10 @@ export default function ReserveNoRateScreen() {
         {/* Ошибка при неверном коде */}
         {digits.length >= 3 && !validPrefixes.includes(prefix) && (
           <Text style={styles.error}>
-            {t("norates.onlyValidPhonePrefixes", "Доступны только коды операторов Казахстана")}
+            {t(
+              "norates.onlyValidPhonePrefixes",
+              "Доступны только коды операторов Казахстана"
+            )}
           </Text>
         )}
       </ScrollView>
@@ -464,7 +484,9 @@ export default function ReserveNoRateScreen() {
       <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
         <Text style={styles.footerTitle}>{t("norates.total", "Итого")}</Text>
         <View style={styles.footerRow}>
-          <Text style={styles.footerLabel}>{t("norates.yourAmount", "Ваша сумма")}</Text>
+          <Text style={styles.footerLabel}>
+            {t("norates.yourAmount", "Ваша сумма")}
+          </Text>
           <Text
             style={[
               styles.footerValue,
@@ -489,7 +511,9 @@ export default function ReserveNoRateScreen() {
           onPress={handleCreateBooking}
         >
           <Text style={styles.ctaText}>
-            {isCreating || isCreatingGuest ? t("norates.sending", "Отправка...") : t("norates.book", "Забронировать")}
+            {isCreating || isCreatingGuest
+              ? t("norates.sending", "Отправка...")
+              : t("norates.book", "Забронировать")}
           </Text>
         </Pressable>
       </View>
@@ -598,123 +622,138 @@ const COLORS = {
 };
 
 /** ====== styles ====== */
-const makeStyles = (colors: any) => StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, paddingHorizontal: 16 },
-  subtitle: {
-    color: colors.text,
-    fontSize: 16,
-    lineHeight: 22,
-    marginBottom: 14,
-    fontWeight: "400",
-  },
-  segmentWrap: { flexDirection: "row", gap: 10, marginBottom: 12 },
-  segment: {
-    flex: 1,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: colors.periodsSegment,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  segmentActive: { backgroundColor: colors.periodsSegmentActive },
-  segmentText: { fontSize: 16, fontWeight: "400", color: colors.text },
-  segmentTextActive: { color: colors.periodsSegmentText },
-  fxRow: {
-    flexDirection: "row",
-    gap: 10,
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  currencyCard: {
-    flex: 1,
-    backgroundColor: colors.cardBackground,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  flagWrap: {
-    width: 24,
-    height: 24,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 10,
-  },
-  code: { fontSize: 16, fontWeight: "700", color: colors.text },
-  name: { fontSize: 11, color: colors.subtext, marginTop: 2, fontWeight: "400" },
-  amountWrap: {
-    width: 200,
-    height: 64,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: colors.border,
-    paddingHorizontal: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.background,
-  },
-  amountInput: { flex: 1, fontSize: 16, fontWeight: "700", color: colors.text },
-  suffix: {
-    borderLeftWidth: 1,
-    borderLeftColor: colors.border,
-    paddingLeft: 10,
-    height: "100%",
-    justifyContent: "center",
-  },
-  suffixText: { fontSize: 18, fontWeight: "800", color: colors.text },
-  rateRow: { flexDirection: "row", alignItems: "center", marginTop: 12 },
-  rateText: { color: colors.text, fontSize: 14, fontWeight: "400" },
-  delta: { marginLeft: 10, fontWeight: "400", fontSize: 14 },
-  footer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    backgroundColor: colors.background,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  footerTitle: {
-    fontSize: 18,
-    fontWeight: "400",
-    color: colors.text,
-    marginBottom: 8,
-  },
-  footerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-  footerLabel: { color: colors.subtext, fontSize: 14, fontWeight: "400" },
-  footerValue: { color: colors.text, fontSize: 18, fontWeight: "400" },
-  cta: {
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: ORANGE,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  ctaText: { color: colors.text, fontSize: 17, fontWeight: "600" },
-  // Guest form styles
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 14,
-    fontSize: 16,
-    color: colors.text,
-  },
-  error: {
-    color: COLORS.error,
-    marginTop: 6,
-    fontSize: 13,
-  },
-});
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      paddingHorizontal: 16,
+    },
+    subtitle: {
+      color: colors.text,
+      fontSize: 16,
+      lineHeight: 22,
+      marginBottom: 14,
+      fontWeight: "400",
+    },
+    segmentWrap: { flexDirection: "row", gap: 10, marginBottom: 12 },
+    segment: {
+      flex: 1,
+      height: 56,
+      borderRadius: 16,
+      backgroundColor: colors.periodsSegment,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    segmentActive: { backgroundColor: colors.periodsSegmentActive },
+    segmentText: { fontSize: 16, fontWeight: "400", color: colors.text },
+    segmentTextActive: { color: colors.periodsSegmentText },
+    fxRow: {
+      flexDirection: "row",
+      gap: 10,
+      alignItems: "center",
+      marginBottom: 10,
+    },
+    currencyCard: {
+      flex: 1,
+      backgroundColor: colors.cardBackground,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingHorizontal: 12,
+      paddingVertical: 12,
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    flagWrap: {
+      width: 24,
+      height: 24,
+      borderRadius: 18,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 10,
+    },
+    code: { fontSize: 16, fontWeight: "700", color: colors.text },
+    name: {
+      fontSize: 11,
+      color: colors.subtext,
+      marginTop: 2,
+      fontWeight: "400",
+    },
+    amountWrap: {
+      width: 200,
+      height: 64,
+      borderRadius: 16,
+      borderWidth: 2,
+      borderColor: colors.border,
+      paddingHorizontal: 12,
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.background,
+    },
+    amountInput: {
+      flex: 1,
+      fontSize: 16,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    suffix: {
+      borderLeftWidth: 1,
+      borderLeftColor: colors.border,
+      paddingLeft: 10,
+      height: "100%",
+      justifyContent: "center",
+    },
+    suffixText: { fontSize: 18, fontWeight: "800", color: colors.text },
+    rateRow: { flexDirection: "row", alignItems: "center", marginTop: 12 },
+    rateText: { color: colors.text, fontSize: 14, fontWeight: "400" },
+    delta: { marginLeft: 10, fontWeight: "400", fontSize: 14 },
+    footer: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      bottom: 0,
+      paddingHorizontal: 16,
+      paddingTop: 12,
+      backgroundColor: colors.background,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    footerTitle: {
+      fontSize: 18,
+      fontWeight: "400",
+      color: colors.text,
+      marginBottom: 8,
+    },
+    footerRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 12,
+    },
+    footerLabel: { color: colors.subtext, fontSize: 14, fontWeight: "400" },
+    footerValue: { color: colors.text, fontSize: 18, fontWeight: "400" },
+    cta: {
+      height: 56,
+      borderRadius: 16,
+      backgroundColor: ORANGE,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    ctaText: { color: colors.text, fontSize: 17, fontWeight: "600" },
+    // Guest form styles
+    input: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.background,
+      borderRadius: 12,
+      paddingVertical: 16,
+      paddingHorizontal: 14,
+      fontSize: 16,
+      color: colors.text,
+    },
+    error: {
+      color: COLORS.error,
+      marginTop: 6,
+      fontSize: 13,
+    },
+  });
