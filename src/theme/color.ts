@@ -6,6 +6,8 @@ export const LightColors = {
   primary: "#F79633",
   border: "#ECECEC",
   active: "#F0F1F3",
+  cardMainCurrencyModal: "#F3F4F6",
+  cardSecondaryCurrencyModal: "#FFFFFF",
 };
 
 export const DarkColors = {
@@ -16,4 +18,6 @@ export const DarkColors = {
   primary: "#F79633",
   border: "#414142",
   active: "#353535",
+  cardMainCurrencyModal: "#414142",
+  cardSecondaryCurrencyModal: "#1C1C1E",
 };

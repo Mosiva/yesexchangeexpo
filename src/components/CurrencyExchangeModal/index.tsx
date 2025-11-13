@@ -12,6 +12,8 @@ import {
   View,
 } from "react-native";
 import Modal from "react-native-modal";
+
+import { useTheme } from "../../hooks/useTheme";
 import { CurrencyCode } from "../../types/api";
 import { getCurrencySymbol } from "../../utils/currency";
 import CurrencyFlag from "../CurrencyFlag";
@@ -29,7 +31,7 @@ interface Props {
   rate?: number;
   fromSymbol?: string;
   toSymbol?: string;
-  /** 👇 добавляем */
+
   branchId?: number;
   address?: string;
 }
@@ -47,6 +49,7 @@ export default function CurrencyExchangeModal({
   branchId,
   address,
 }: Props) {
+  const { colors } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
 
@@ -60,9 +63,21 @@ export default function CurrencyExchangeModal({
   const receiveText = useMemo(() => formatNum(receive), [receive]);
   const canConfirm = isFinite(sell) && sell > 0;
 
-  const title = mode === "sell" ? t("currencyExchangeModal.sell", "Продажа") : t("currencyExchangeModal.buy", "Покупка");
-  const inputLabel = mode === "sell" ? t("currencyExchangeModal.sellInput", "Продать") : t("currencyExchangeModal.buyInput", "Купить");
-  const outputLabel = mode === "sell" ? t("currencyExchangeModal.sellOutput", "Получить") : t("currencyExchangeModal.buyOutput", "Отдать");
+  const title =
+    mode === "sell"
+      ? t("currencyExchangeModal.sell", "Продажа")
+      : t("currencyExchangeModal.buy", "Покупка");
+
+  const inputLabel =
+    mode === "sell"
+      ? t("currencyExchangeModal.sellInput", "Продать")
+      : t("currencyExchangeModal.buyInput", "Купить");
+
+  const outputLabel =
+    mode === "sell"
+      ? t("currencyExchangeModal.sellOutput", "Получить")
+      : t("currencyExchangeModal.buyOutput", "Отдать");
+
   const ctaLabel = t("currencyExchangeModal.ctaText", "Забронировать");
 
   const fromCurrSymbol = getCurrencySymbol(fromCode as CurrencyCode);
@@ -70,7 +85,6 @@ export default function CurrencyExchangeModal({
   const handleConfirm = () => {
     const payload = { sell, receive };
 
-    // 👇 Исправляем передачу параметров в зависимости от режима
     const sellAmount =
       mode === "sell" ? String(payload.receive) : String(payload.sell);
     const receiveAmount =
@@ -93,6 +107,7 @@ export default function CurrencyExchangeModal({
       },
     });
   };
+
   return (
     <Modal
       isVisible={visible}
@@ -106,76 +121,133 @@ export default function CurrencyExchangeModal({
       animationOutTiming={250}
       avoidKeyboard
       useNativeDriver={false}
-      backdropColor="rgba(0,0,0,0.4)"
-      backdropTransitionInTiming={0}
-      backdropTransitionOutTiming={0}
-      propagateSwipe
+      backdropColor="rgba(0,0,0,0.45)"
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={styles.overlay}
+        style={[styles.overlay]}
       >
-        <View style={styles.content}>
-          <View style={styles.handle} />
+        <View style={[styles.content, { backgroundColor: colors.background}]}>
+          <View
+            style={[styles.handle, { backgroundColor: colors.border }]}
+          />
+
           <View style={styles.header}>
-            <Text style={styles.title}>{title}</Text>
+            <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+
             <TouchableOpacity onPress={onClose} hitSlop={8}>
-              <Ionicons name="close" size={22} color="#111827" />
+              <Ionicons name="close" size={22} color={colors.text} />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.cardRow}>
+          <View
+            style={[
+              styles.cardRow,
+              {
+                backgroundColor: colors.cardMainCurrencyModal,
+                borderColor: colors.border,
+              },
+            ]}
+          >
             <View style={styles.left}>
               <CurrencyFlag code={fromCode as CurrencyCode} size={28} />
               <View>
-                <Text style={styles.codeText}>{fromCode}</Text>
-                <Text style={styles.nameText}>{fromName}</Text>
+                <Text style={[styles.codeText, { color: colors.text }]}>
+                  {fromCode}
+                </Text>
+                <Text style={[styles.nameText, { color: colors.subtext }]}>
+                  {fromName}
+                </Text>
               </View>
             </View>
+
             <View style={styles.right}>
-              <Text style={styles.rateText}>{formatNum(rate)}</Text>
-              <Text style={styles.rateHint}>{t("currencyExchangeModal.rateHint", "По курсу")}</Text>
+              <Text style={[styles.rateText, { color: colors.text }]}>
+                {formatNum(rate)}
+              </Text>
+              <Text style={[styles.rateHint, { color: colors.subtext }]}>
+                {t("currencyExchangeModal.rateHint", "По курсу")}
+              </Text>
             </View>
           </View>
 
           <View style={styles.inputsRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.label}>{inputLabel}</Text>
-              <View style={styles.inputWrap}>
+              <Text style={[styles.label, { color: colors.text }]}>
+                {inputLabel}
+              </Text>
+
+              <View
+                style={[
+                  styles.inputWrap,
+                  {
+                    borderColor: colors.border,
+                    backgroundColor: colors.cardSecondaryCurrencyModal,
+                  },
+                ]}
+              >
                 <TextInput
                   value={sellText}
                   onChangeText={(t) => setSellText(t.replace(/[^\d.,]/g, ""))}
                   keyboardType="decimal-pad"
-                  style={styles.input}
+                  style={[styles.input, { color: colors.text }]}
                   placeholder="0"
+                  placeholderTextColor={colors.subtext}
                 />
-                <View style={styles.suffix}>
-                  <Text style={styles.suffixText}>{fromCurrSymbol}</Text>
+
+                <View
+                  style={[styles.suffix, { borderLeftColor: colors.border }]}
+                >
+                  <Text style={[styles.suffixText, { color: colors.text }]}>
+                    {fromCurrSymbol}
+                  </Text>
                 </View>
               </View>
             </View>
+
             <View style={{ width: 12 }} />
+
             <View style={{ flex: 1 }}>
-              <Text style={styles.label}>{outputLabel}</Text>
-              <View style={[styles.inputWrap, { opacity: 0.9 }]}>
+              <Text style={[styles.label, { color: colors.text }]}>
+                {outputLabel}
+              </Text>
+
+              <View
+                style={[
+                  styles.inputWrap,
+                  {
+                    borderColor: colors.border,
+                    backgroundColor: colors.cardSecondaryCurrencyModal,
+                  },
+                ]}
+              >
                 <TextInput
                   editable={false}
                   value={receiveText}
-                  style={styles.input}
+                  style={[styles.input, { color: colors.text }]}
                 />
-                <View style={styles.suffix}>
-                  <Text style={styles.suffixText}>{toSymbol}</Text>
+
+                <View
+                  style={[styles.suffix, { borderLeftColor: colors.border }]}
+                >
+                  <Text style={[styles.suffixText, { color: colors.text }]}>
+                    {toSymbol}
+                  </Text>
                 </View>
               </View>
             </View>
           </View>
 
           <TouchableOpacity
-            style={[styles.cta, !canConfirm && styles.ctaDisabled]}
+            style={[
+              styles.cta,
+              { backgroundColor: colors.primary },
+              !canConfirm && { opacity: 0.5 },
+            ]}
             disabled={!canConfirm}
             onPress={handleConfirm}
           >
-            <Text style={styles.ctaText}>{ctaLabel}</Text>
+            <Text style={[styles.ctaText]}>{ctaLabel}</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -192,74 +264,87 @@ function formatNum(n: number) {
 
 const styles = StyleSheet.create({
   modal: { justifyContent: "flex-end", margin: 0 },
+
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.4)",
   },
+
   content: {
-    backgroundColor: "#fff",
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
+
   handle: {
     width: 48,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#E9ECEF",
     alignSelf: "center",
     marginBottom: 12,
   },
+
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  title: { fontSize: 20, fontWeight: "700", color: "#111827" },
+
+  title: { fontSize: 20, fontWeight: "700" },
+
   cardRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#F5F6F8",
     borderRadius: 14,
+    borderWidth: 1,
     padding: 16,
     marginVertical: 16,
   },
+
   left: { flexDirection: "row", alignItems: "center", gap: 12 },
-  codeText: { fontSize: 16, fontWeight: "400", color: "#111827" },
-  nameText: { fontSize: 12, color: "#6B7280" },
+
+  codeText: { fontSize: 16 },
+  nameText: { fontSize: 12 },
+
   right: { alignItems: "flex-end" },
-  rateText: { fontSize: 16, fontWeight: "700", color: "#111827" },
-  rateHint: { fontSize: 12, color: "#6B7280" },
+  rateText: { fontSize: 16, fontWeight: "700" },
+  rateHint: { fontSize: 12 },
+
   inputsRow: { flexDirection: "row", marginBottom: 16 },
-  label: { fontSize: 14, color: "#111827", marginBottom: 8 },
+
+  label: { fontSize: 14, marginBottom: 8 },
+
   inputWrap: {
     borderWidth: 1,
-    borderColor: "#E5E7EB",
     borderRadius: 12,
     height: 56,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 12,
   },
-  input: { flex: 1, fontSize: 18, color: "#111827" },
+
+  input: {
+    flex: 1,
+    fontSize: 18,
+  },
+
   suffix: {
     flexDirection: "row",
     alignItems: "center",
     paddingLeft: 12,
     borderLeftWidth: 1,
-    borderLeftColor: "#E5E7EB",
     height: "100%",
   },
-  suffixText: { fontSize: 18, fontWeight: "700", color: "#111827" },
+
+  suffixText: { fontSize: 18, fontWeight: "700" },
+
   cta: {
-    backgroundColor: "#F58220",
     borderRadius: 14,
     height: 56,
     alignItems: "center",
     justifyContent: "center",
   },
-  ctaDisabled: { opacity: 0.5 },
+
   ctaText: { color: "#fff", fontSize: 18, fontWeight: "800" },
 });
