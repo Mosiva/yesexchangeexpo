@@ -320,12 +320,12 @@ function Segment({
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.segment, active && { backgroundColor: colors.tabActive }]}
+      style={[styles.segment, active && { backgroundColor: colors.periodsSegmentActive }]}
     >
       <Text
         style={[
           styles.segmentText,
-          active && { color: colors.text, fontWeight: "800" },
+          active && { color: colors.periodsSegmentText, fontWeight: "800" },
         ]}
       >
         {label}
@@ -360,7 +360,7 @@ const makeStyles = (colors: any) =>
       alignItems: "center",
       marginTop: 5,
       marginBottom: 8,
-      backgroundColor: colors.background,
+      backgroundColor: colors.periodsSegment,
       borderRadius: 16,
       marginHorizontal: 12,
       paddingHorizontal: 6,
@@ -379,14 +379,12 @@ const makeStyles = (colors: any) =>
       borderRadius: 12,
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: colors.background,
     },
     segmentText: { color: colors.text, fontSize: 16, fontWeight: "700" },
     calendarBtn: {
       width: 44,
       height: 44,
       borderRadius: 12,
-      backgroundColor: colors.background,
       alignItems: "center",
       justifyContent: "center",
       marginLeft: 6,

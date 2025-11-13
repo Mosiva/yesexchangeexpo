@@ -14,6 +14,9 @@ export const LightColors = {
   promoCard: "#2B2B2B",
   promoCardText: "#FFFFFF",
   chartLineCell: "#c0c4c4",
+  periodsSegment: "#F9F9F9",
+  periodsSegmentText: "#FFFFFF",
+  periodsSegmentActive: "#353535",
 };
 
 export const DarkColors = {
@@ -32,4 +35,7 @@ export const DarkColors = {
   promoCard: "#FFFFFF",
   promoCardText: "#2B2B2B",
   chartLineCell: "#FFFFFF",
+  periodsSegment: "#414142",
+  periodsSegmentText: "#353535",
+  periodsSegmentActive: "#FFFFFF",
 };
