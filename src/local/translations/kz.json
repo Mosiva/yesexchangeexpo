@@ -469,5 +469,10 @@
     "sendingCode": "Жіберілуде...",
     "sendCode": "Кодды жіберу",
     "sendCodeAgainIn": "Кодды қайта жіберу"
+  },
+  "currenciesModal": {
+    "title": "Валюта басты бетінде",
+    "searchPlaceholder": "Валюта аты бойынша іздеу",
+    "saveButton": "Сақтау"
   }
 }

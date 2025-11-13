@@ -467,5 +467,10 @@
     "sendingCode": "Отправляем...",
     "sendCode": "Отправить код",
     "sendCodeAgainIn": "Отправить код через"
+  },
+  "currenciesModal": {
+    "title": "Валюта на главном табло",
+    "searchPlaceholder": "Поиск по названию валюты",
+    "saveButton": "Сохранить"
   }
 }

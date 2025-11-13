@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FlatList,
   Pressable,
@@ -37,6 +38,7 @@ export default function CurrenciesModal({
   value = ["USD", "RUB", "EUR"],
   items,
 }: Props) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const styles = makeStyles(colors);
@@ -103,9 +105,9 @@ export default function CurrenciesModal({
 
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Валюта на главном табло</Text>
+            <Text style={styles.title}>{t("currenciesModal.title", "Валюта на главном табло")}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={8}>
-              <Ionicons name="close" size={22} color="#111827" />
+              <Ionicons name="close" size={22} color={colors.text} />
             </TouchableOpacity>
           </View>
 
@@ -119,7 +121,7 @@ export default function CurrenciesModal({
             />
             <TextInput
               style={styles.searchInput}
-              placeholder="Поиск по названию валюты"
+              placeholder={t("currenciesModal.searchPlaceholder", "Поиск по названию валюты")}
               value={query}
               onChangeText={setQuery}
               autoCorrect={false}
@@ -143,7 +145,7 @@ export default function CurrenciesModal({
             style={[styles.bottomBar, { paddingBottom: insets.bottom + 8 }]}
           >
             <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-              <Text style={styles.saveText}>Сохранить</Text>
+              <Text style={styles.saveText}>{t("currenciesModal.saveButton", "Сохранить")}</Text>
             </TouchableOpacity>
           </View>
         </View>

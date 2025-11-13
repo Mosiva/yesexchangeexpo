@@ -468,5 +468,10 @@
     "sendingCode": "Sending...",
     "sendCode": "Send code",
     "sendCodeAgainIn": "Send code again in"
+  },
+  "currenciesModal": {
+    "title": "Currency on the main screen",
+    "searchPlaceholder": "Search by currency name",
+    "saveButton": "Save"
   }
 }
