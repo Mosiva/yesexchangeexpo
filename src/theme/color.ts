@@ -11,6 +11,8 @@ export const LightColors = {
   cardShadow: "rgba(0,0,0,0.06)",
   cardBackground: "#FFFFFF",
   tabActive: "#F9F9F9",
+  promoCard: "#2B2B2B",
+  promoCardText: "#FFFFFF",
 };
 
 export const DarkColors = {
@@ -26,4 +28,6 @@ export const DarkColors = {
   cardShadow: "#393b3b",
   cardBackground: "#414142",
   tabActive: "#414142",
+  promoCard: "#FFFFFF",
+  promoCardText: "#2B2B2B",
 };

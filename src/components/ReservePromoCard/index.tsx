@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTheme } from "../../hooks/useTheme";
 
 type Props = {
   onPress: () => void;
@@ -29,7 +30,8 @@ export default function ReservePromoCard({
   const LEFT_PCT = Platform.select({ ios: "50%", android: "50%" })!;
   // Diagonal thickness
   const TRI_W = 34;
-
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   return (
     <View style={styles.card}>
       {/* Right image */}
@@ -76,7 +78,7 @@ const R = 10;
 const DARK = "#2B2B2B";
 const ORANGE = "#F58220";
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: any) => StyleSheet.create({
   card: {
     height: CARD_H,
     borderRadius: R,
@@ -98,7 +100,7 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     bottom: 0,
-    backgroundColor: DARK,
+    backgroundColor: colors.promoCard,
   },
 
   // CSS-triangle diagonal (Android-friendly)
@@ -107,7 +109,7 @@ const styles = StyleSheet.create({
     top: 0,
     width: 0,
     height: 0,
-    borderLeftColor: DARK, // visible wedge color
+    borderLeftColor: colors.promoCard, // visible wedge color
     // was: borderTopColor: "transparent",
     borderBottomColor: "transparent", // ⟵ use bottom instead of top
   },
@@ -120,7 +122,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   title: {
-    color: "#FFFFFF",
+    color: colors.promoCardText,
     fontSize: 18,
     fontWeight: "400",
     lineHeight: 34,
