@@ -173,7 +173,10 @@ export default function FxLineChart({
           },
         ];
 
-  const legend = source === "nbrk" ? [t("archive.nbkRate", "Курс НБРК")] : [t("archive.purchase", "Покупка"), t("archive.sale", "Продажа")];
+  const legend =
+    source === "nbrk"
+      ? [t("archive.nbkRate", "Курс НБРК")]
+      : [t("archive.purchase", "Покупка"), t("archive.sale", "Продажа")];
 
   return (
     <View>
@@ -187,14 +190,19 @@ export default function FxLineChart({
               </Text>
             </View>
             <Pressable onPress={handleResetRange}>
-              <Text style={styles.resetText}>{t("archive.reset", "Сбросить")}</Text>
+              <Text style={styles.resetText}>
+                {t("archive.reset", "Сбросить")}
+              </Text>
             </Pressable>
             <Pressable
               style={styles.calendarBtn}
               onPress={() => {
                 Alert.alert(
                   t("archive.rangeAlreadySelected", "Диапазон уже выбран"),
-                  t("archive.toSelectNewDates", "Чтобы выбрать новые даты, сначала сбросьте текущий период."),
+                  t(
+                    "archive.toSelectNewDates",
+                    "Чтобы выбрать новые даты, сначала сбросьте текущий период."
+                  ),
                   [{ text: t("archive.return", "Вернуться"), style: "cancel" }]
                 );
               }}
@@ -249,7 +257,7 @@ export default function FxLineChart({
               backgroundGradientTo: colors.background,
               decimalPlaces: 2,
               color: () => colors.chartLineCell,
-              labelColor: () =>  colors.subtext,
+              labelColor: () => colors.subtext,
               propsForDots: { r: "4", strokeWidth: "1", stroke: colors.text },
             }}
             bezier
@@ -312,10 +320,7 @@ function Segment({
   return (
     <Pressable
       onPress={onPress}
-      style={[
-        styles.segment,
-        active && { backgroundColor: colors.tabActive },
-      ]}
+      style={[styles.segment, active && { backgroundColor: colors.tabActive }]}
     >
       <Text
         style={[
@@ -329,58 +334,61 @@ function Segment({
   );
 }
 
-const makeStyles = (colors: any) => StyleSheet.create({
-  rangeTextInline: { fontSize: 15, fontWeight: "700", color: COLORS.text },
-  resetText: { color: COLORS.orange, fontSize: 14, fontWeight: "700" },
-  chart: { marginHorizontal: 16, marginTop: 8, borderRadius: 12 },
-  tooltip: {
-    position: "absolute",
-    backgroundColor: "#111827",
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    zIndex: 999,
-  },
-  tooltipText: {
-    color: colors.text,
-    fontSize: 12,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  segmentRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 5,
-    marginBottom: 8,
-    backgroundColor: colors.background,
-    borderRadius: 16,
-    marginHorizontal: 12,
-    paddingHorizontal: 6,
-    paddingVertical: 4,
-  },
-  segmentGroup: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  segment: {
-    flex: 1,
-    height: 44,
-    marginHorizontal: 3,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.background,
-  },
-  segmentText: { color: colors.text, fontSize: 16, fontWeight: "700" },
-  calendarBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: colors.background,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: 6,
-  },
-});
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    rangeTextInline: { fontSize: 15, fontWeight: "700", color: COLORS.text },
+    resetText: { color: COLORS.orange, fontSize: 14, fontWeight: "700" },
+    chart: { marginHorizontal: 16, marginTop: 8, borderRadius: 12 },
+    tooltip: {
+      position: "absolute",
+      backgroundColor: colors.background,
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      borderRadius: 8,
+      zIndex: 999,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    tooltipText: {
+      color: colors.text,
+      fontSize: 12,
+      fontWeight: "600",
+      textAlign: "center",
+    },
+    segmentRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginTop: 5,
+      marginBottom: 8,
+      backgroundColor: colors.background,
+      borderRadius: 16,
+      marginHorizontal: 12,
+      paddingHorizontal: 6,
+      paddingVertical: 4,
+    },
+    segmentGroup: {
+      flex: 1,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    segment: {
+      flex: 1,
+      height: 44,
+      marginHorizontal: 3,
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.background,
+    },
+    segmentText: { color: colors.text, fontSize: 16, fontWeight: "700" },
+    calendarBtn: {
+      width: 44,
+      height: 44,
+      borderRadius: 12,
+      backgroundColor: colors.background,
+      alignItems: "center",
+      justifyContent: "center",
+      marginLeft: 6,
+    },
+  });
