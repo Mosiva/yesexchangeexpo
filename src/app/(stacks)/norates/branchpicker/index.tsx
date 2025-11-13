@@ -22,26 +22,26 @@ import {
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import BranchPickerSheet from "../../../../components/BranchPickerSheet";
+import { useTheme } from "../../../../hooks/useTheme";
 import { useUserLocation } from "../../../../hooks/useUserLocation";
 import {
   useBranchesQuery,
   useNearestBranchesQuery,
 } from "../../../../services/yesExchange";
 
-const ORANGE = "#F58220";
-const TEXT = "#111827";
-const SUB = "#6B7280";
-
 export default function BranchPickerScreen() {
   const { t } = useTranslation();
   const p = useLocalSearchParams();
-  const isRateLocked = p.isRateLocked === 'true';
+  const { colors, theme } = useTheme();
+  const s = makeStyles(colors);
+
+  const isRateLocked = p.isRateLocked === "true";
 
   const [selectedBranch, setSelectedBranch] = useState<any>(null);
   const [branchesWithDistance, setBranchesWithDistance] = useState<any[]>([]);
   const mapRef = useRef<MapView | null>(null);
 
-  /** 🧭 Геолокация через кастомный хук */
+  /** 🧭 Геолокация */
   const {
     location,
     address,
@@ -50,10 +50,7 @@ export default function BranchPickerScreen() {
     requestLocation,
   } = useUserLocation();
 
-  console.log("📍 Локация:", location);
-  console.log("🏠 Адрес:", address);
-
-  /** 🔗 API запросы */
+  /** 🔗 API */
   const { data: rawBranches, refetch: refetchBranches } = useBranchesQuery();
   const { refetch: refetchNearestBranches } = useNearestBranchesQuery({
     lng: location?.coords.longitude ?? 0,
@@ -65,7 +62,7 @@ export default function BranchPickerScreen() {
     [rawBranches]
   );
 
-  /** 🔄 Обновление данных при фокусе */
+  /** 🔄 Рефетч */
   const refetchAllData = useCallback(async () => {
     await Promise.all([refetchBranches(), refetchNearestBranches()]);
   }, [refetchBranches, refetchNearestBranches]);
@@ -76,7 +73,7 @@ export default function BranchPickerScreen() {
     }, [refetchAllData])
   );
 
-  /** 📏 Расчёт расстояний от пользователя */
+  /** 📏 Расстояние */
   const computeDistances = useCallback(() => {
     if (!location || !branches.length) return;
     const computed = branches.map((branch) => {
@@ -104,7 +101,6 @@ export default function BranchPickerScreen() {
     computeDistances();
   }, [branches, location]);
 
-  /** 🚩 Список филиалов рядом (≤15 км) */
   const nearbyBranches = useMemo(
     () =>
       branchesWithDistance.filter(
@@ -113,7 +109,7 @@ export default function BranchPickerScreen() {
     [branchesWithDistance]
   );
 
-  /** 🎯 Анимация маркера */
+  /** 🎯 UI анимация */
   const markerScale = useRef(new Animated.Value(1)).current;
 
   const triggerBounce = () => {
@@ -137,6 +133,7 @@ export default function BranchPickerScreen() {
   const handleSelectBranch = (branch: any) => {
     setSelectedBranch(branch);
     triggerBounce();
+
     if (branch.lat && branch.lng && mapRef.current) {
       mapRef.current.animateToRegion(
         {
@@ -151,21 +148,25 @@ export default function BranchPickerScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <StatusBar barStyle="dark-content" />
+    <View style={[s.container]}>
+      <StatusBar
+        barStyle={theme === "dark" ? "light-content" : "dark-content"}
+      />
 
-      {/* Верхняя панель */}
-      <View style={styles.topBarWrapper}>
-        <View style={styles.topBar}>
+      {/* Топ бар */}
+      <View style={s.topBarWrapper}>
+        <View style={s.topBar}>
           <Pressable onPress={() => router.replace("/(tabs)/reserve")}>
-            <Ionicons name="arrow-back" size={24} color={TEXT} />
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
           </Pressable>
 
-          <View style={styles.addressRow}>
-            <Ionicons name="location" size={20} color={ORANGE} />
+          <View style={s.addressRow}>
+            <Ionicons name="location" size={20} color={colors.primary} />
             <View style={{ marginLeft: 8 }}>
-              <Text style={styles.myAddrLabel}>{t("nearby.myAddress", "Моё местоположение")}</Text>
-              <Text style={styles.myAddrValue}>
+              <Text style={s.myAddrLabel}>
+                {t("nearby.myAddress", "Моё местоположение")}
+              </Text>
+              <Text style={s.myAddrValue}>
                 {loadingLocation
                   ? t("nearby.loading", "Определяем...")
                   : permissionDenied
@@ -175,11 +176,8 @@ export default function BranchPickerScreen() {
             </View>
           </View>
 
-          <Pressable
-            style={styles.refreshBtn}
-            onPress={() => requestLocation()}
-          >
-            <Text style={styles.refreshText}>{t("nearby.refresh", "Обновить")}</Text>
+          <Pressable style={s.refreshBtn} onPress={() => requestLocation()}>
+            <Text style={s.refreshText}>{t("nearby.refresh", "Обновить")}</Text>
           </Pressable>
         </View>
       </View>
@@ -234,7 +232,7 @@ export default function BranchPickerScreen() {
                   style={{
                     width: isSelected ? 28 : 22,
                     height: isSelected ? 28 : 22,
-                    backgroundColor: isSelected ? "transparent" : "#fff",
+                    backgroundColor: isSelected ? "transparent" : colors.card,
                     borderRadius: 14,
                     alignItems: "center",
                     justifyContent: "center",
@@ -251,7 +249,7 @@ export default function BranchPickerScreen() {
         })}
       </MapView>
 
-      {/* Шторка с филиалами */}
+      {/* Шторка */}
       <BranchPickerSheet
         selectedBranch={selectedBranch}
         onSelectBranch={handleSelectBranch}
@@ -262,16 +260,28 @@ export default function BranchPickerScreen() {
         isRateLocked={isRateLocked}
       />
 
-      {/* Если доступ к геолокации запрещён */}
+      {/* Permission denied */}
       {permissionDenied && (
-        <View style={styles.permissionOverlay}>
-          <Ionicons name="alert-circle-outline" size={48} color={ORANGE} />
-          <Text style={styles.permissionTitle}>{t("nearby.locationDisabled", "Геолокация отключена")}</Text>
-          <Text style={styles.permissionDesc}>
-            {t("nearby.locationPermissionDescription", "Чтобы показать ближайшие филиалы, разрешите доступ к местоположению")}
+        <View style={s.permissionOverlay}>
+          <Ionicons
+            name="alert-circle-outline"
+            size={48}
+            color={colors.primary}
+          />
+          <Text style={s.permissionTitle}>
+            {t("nearby.locationDisabled", "Геолокация отключена")}
           </Text>
-          <Pressable style={styles.retryBtn} onPress={() => requestLocation()}>
-            <Text style={styles.retryText}>{t("nearby.tryAgain", "Попробовать снова")}</Text>
+          <Text style={s.permissionDesc}>
+            {t(
+              "nearby.locationPermissionDescription",
+              "Чтобы показать ближайшие филиалы, разрешите доступ к местоположению"
+            )}
+          </Text>
+
+          <Pressable style={s.retryBtn} onPress={() => requestLocation()}>
+            <Text style={s.retryText}>
+              {t("nearby.tryAgain", "Попробовать снова")}
+            </Text>
           </Pressable>
         </View>
       )}
@@ -279,71 +289,92 @@ export default function BranchPickerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  topBarWrapper: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 20,
-    backgroundColor: "#fff",
-  },
-  topBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 60,
-    paddingBottom: 6,
-    justifyContent: "space-between",
-  },
-  addressRow: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    marginLeft: 8,
-  },
-  myAddrLabel: { color: SUB, fontSize: 12, marginBottom: 2 },
-  myAddrValue: { color: TEXT, fontSize: 16, fontWeight: "700" },
-  refreshBtn: {
-    backgroundColor: "#2B2B2B",
-    paddingHorizontal: 14,
-    height: 36,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  refreshText: { color: "#fff", fontWeight: "700" },
-  permissionOverlay: {
-    position: "absolute",
-    top: "30%",
-    left: 20,
-    right: 20,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 24,
-    alignItems: "center",
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-  },
-  permissionTitle: {
-    marginTop: 12,
-    fontSize: 18,
-    fontWeight: "700",
-    color: TEXT,
-  },
-  permissionDesc: {
-    marginTop: 8,
-    color: SUB,
-    textAlign: "center",
-  },
-  retryBtn: {
-    marginTop: 16,
-    backgroundColor: ORANGE,
-    borderRadius: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  retryText: { color: "#fff", fontWeight: "700" },
-});
+/* ----------------------------- THEME STYLES ----------------------------- */
+
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    topBarWrapper: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 20,
+      backgroundColor: colors.card,
+    },
+    topBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 16,
+      paddingTop: 60,
+      paddingBottom: 6,
+      justifyContent: "space-between",
+    },
+    addressRow: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      marginLeft: 8,
+    },
+    myAddrLabel: {
+      color: colors.subtext,
+      fontSize: 12,
+      marginBottom: 2,
+    },
+    myAddrValue: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: "700",
+    },
+    refreshBtn: {
+      backgroundColor: colors.buttonDark,
+      paddingHorizontal: 14,
+      height: 36,
+      borderRadius: 10,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    refreshText: {
+      color: "#fff",
+      fontWeight: "700",
+    },
+    permissionOverlay: {
+      position: "absolute",
+      top: "30%",
+      left: 20,
+      right: 20,
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 24,
+      alignItems: "center",
+      elevation: 6,
+      shadowColor: "#000",
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+    },
+    permissionTitle: {
+      marginTop: 12,
+      fontSize: 18,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    permissionDesc: {
+      marginTop: 8,
+      color: colors.subtext,
+      textAlign: "center",
+    },
+    retryBtn: {
+      marginTop: 16,
+      backgroundColor: colors.primary,
+      borderRadius: 10,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+    },
+    retryText: {
+      color: "#fff",
+      fontWeight: "700",
+    },
+  });
