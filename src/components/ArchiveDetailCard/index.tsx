@@ -3,6 +3,7 @@ import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { useTheme } from "../../hooks/useTheme";
 import CurrencyFlag from "../CurrencyFlag";
 
 import FxLineChart from "../FxLineChart";
@@ -31,11 +32,6 @@ type Props = {
 };
 
 const COLORS = {
-  bg: "#FFFFFF",
-  card: "#F7F7F9",
-  text: "#111827",
-  sub: "#6B7280",
-  border: "#ECECEC",
   orangeDot: "#F59E0B",
   blueDot: "#2563EB",
   green: "#16A34A",
@@ -56,6 +52,8 @@ export default function ArchiveDetailCard({
   onChangePeriod,
 }: Props) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const data = rows ?? [];
 
   const [source, setSource] = useState<"yes" | "nbrk">("nbrk");
@@ -121,7 +119,7 @@ export default function ArchiveDetailCard({
             <Text style={styles.fxTitle}>{code}</Text>
             <Text style={styles.fxSubtitle}>{name}</Text>
           </View>
-          <Ionicons name="chevron-down" size={22} color="#111827" />
+          <Ionicons name="chevron-down" size={22} color={colors.text} />
         </View>
         {/* значения */}
         {source === "yes" ? (
@@ -160,13 +158,15 @@ export default function ArchiveDetailCard({
                       </Text>
                     )}
                   {latest?.change?.buy === 0 && (
-                    <Text style={[styles.delta, { color: COLORS.sub }]}>
+                    <Text style={[styles.delta, { color: colors.subtext }]}>
                       {" "}
                       {latest.change.buy.toFixed(1)} ＝
                     </Text>
                   )}
                 </View>
-                <Text style={styles.caption}>{t("archive.purchase", "Покупка")}</Text>
+                <Text style={styles.caption}>
+                  {t("archive.purchase", "Покупка")}
+                </Text>
               </View>
             </View>
 
@@ -203,12 +203,14 @@ export default function ArchiveDetailCard({
                       </Text>
                     )}
                   {latest?.change?.sell === 0 && (
-                    <Text style={[styles.delta, { color: COLORS.sub }]}>
+                    <Text style={[styles.delta, { color: colors.subtext }]}>
                       {latest.change.sell.toFixed(1)} ＝
                     </Text>
                   )}
                 </View>
-                <Text style={styles.caption}>{t("archive.sale", "Продажа")}</Text>
+                <Text style={styles.caption}>
+                  {t("archive.sale", "Продажа")}
+                </Text>
               </View>
             </View>
           </View>
@@ -245,12 +247,14 @@ export default function ArchiveDetailCard({
                       </Text>
                     )}
                   {latestNbkRates?.changePercent === 0 && (
-                    <Text style={[styles.delta, { color: COLORS.sub }]}>
+                    <Text style={[styles.delta, { color: colors.subtext }]}>
                       {latestNbkRates.changePercent} ＝
                     </Text>
                   )}
                 </View>
-                <Text style={styles.caption}>{t("archive.nbkRate", "Курс НБРК")}</Text>
+                <Text style={styles.caption}>
+                  {t("archive.nbkRate", "Курс НБРК")}
+                </Text>
               </View>
             </View>
           </View>
@@ -277,9 +281,15 @@ export default function ArchiveDetailCard({
       {source === "yes" ? (
         <>
           <View style={styles.tableHeader}>
-            <Text style={[styles.th, { flex: 1.4 }]}>{t("archive.date", "Дата")}</Text>
-            <Text style={[styles.th, { flex: 1 }]}>{t("archive.purchase", "Покупка")}</Text>
-            <Text style={[styles.th, { flex: 1 }]}>{t("archive.sale", "Продажа")}</Text>
+            <Text style={[styles.th, { flex: 1.4 }]}>
+              {t("archive.date", "Дата")}
+            </Text>
+            <Text style={[styles.th, { flex: 1 }]}>
+              {t("archive.purchase", "Покупка")}
+            </Text>
+            <Text style={[styles.th, { flex: 1 }]}>
+              {t("archive.sale", "Продажа")}
+            </Text>
           </View>
 
           {normalizedRows.map((r, i) => {
@@ -297,8 +307,12 @@ export default function ArchiveDetailCard({
       ) : (
         <>
           <View style={styles.tableHeader}>
-            <Text style={[styles.th, { flex: 1.4 }]}>{t("archive.date", "Дата")}</Text>
-            <Text style={[styles.th, { flex: 1 }]}>{t("archive.nbkRate", "Курс НБКР")}</Text>
+            <Text style={[styles.th, { flex: 1.4 }]}>
+              {t("archive.date", "Дата")}
+            </Text>
+            <Text style={[styles.th, { flex: 1 }]}>
+              {t("archive.nbkRate", "Курс НБКР")}
+            </Text>
           </View>
 
           {nbkRows?.map((r, i) => {
@@ -331,15 +345,17 @@ function Pill({
   active: boolean;
   onPress: () => void;
 }) {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.pill, active && { backgroundColor: COLORS.pillActiveBg }]}
+      style={[styles.pill, active && { backgroundColor: colors.tabActive }]}
     >
       <Text
         style={[
           styles.pillText,
-          active && { color: COLORS.pillActiveText, fontWeight: "800" },
+          active && { color: colors.text, fontWeight: "800" },
         ]}
       >
         {label}
@@ -350,101 +366,102 @@ function Pill({
 
 /* ---------- styles ---------- */
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg },
-  tabsRow: {
-    flexDirection: "row",
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 12,
-  },
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    tabsRow: {
+      flexDirection: "row",
+      paddingHorizontal: 16,
+      paddingTop: 8,
+      paddingBottom: 12,
+    },
 
-  pill: {
-    flex: 1,
-    paddingHorizontal: 16,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: COLORS.pillBg,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  pillText: { color: COLORS.text, fontSize: 16, fontWeight: "700" },
+    pill: {
+      flex: 1,
+      paddingHorizontal: 16,
+      height: 44,
+      borderRadius: 12,
+      backgroundColor: COLORS.pillBg,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    pillText: { color: colors.text, fontSize: 16, fontWeight: "700" },
 
-  fxCard: {
-    marginHorizontal: 16,
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  fxHead: { flexDirection: "row", alignItems: "center" },
-  flagWrap: {},
-  fxTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: COLORS.text,
-    lineHeight: 26,
-  },
-  fxSubtitle: { fontSize: 14, color: COLORS.sub, marginTop: 2 },
+    fxCard: {
+      marginHorizontal: 16,
+      backgroundColor: colors.cardBackground,
+      borderRadius: 16,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    fxHead: { flexDirection: "row", alignItems: "center" },
+    flagWrap: {},
+    fxTitle: {
+      fontSize: 22,
+      fontWeight: "800",
+      color: colors.text,
+      lineHeight: 26,
+    },
+    fxSubtitle: { fontSize: 14, color: colors.subtext, marginTop: 2 },
 
-  dot: { width: 10, height: 10, borderRadius: 5, marginBottom: 6 },
+    dot: { width: 10, height: 10, borderRadius: 5, marginBottom: 6 },
 
-  tableTitle: {
-    marginTop: 18,
-    marginHorizontal: 16,
-    fontSize: 20,
-    fontWeight: "800",
-    color: COLORS.text,
-  },
-  tableHeader: {
-    flexDirection: "row",
-    marginTop: 10,
-    marginHorizontal: 16,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  th: { color: COLORS.sub, fontWeight: "700", fontSize: 14 },
-  tr: {
-    flexDirection: "row",
-    marginHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  td: { color: COLORS.text, fontSize: 16 },
-  fxRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 14,
-    paddingHorizontal: 4,
-  },
+    tableTitle: {
+      marginTop: 18,
+      marginHorizontal: 16,
+      fontSize: 20,
+      fontWeight: "800",
+      color: colors.text,
+    },
+    tableHeader: {
+      flexDirection: "row",
+      marginTop: 10,
+      marginHorizontal: 16,
+      paddingBottom: 8,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    th: { color: colors.subtext, fontWeight: "700", fontSize: 14 },
+    tr: {
+      flexDirection: "row",
+      marginHorizontal: 16,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    td: { color: colors.text, fontSize: 16 },
+    fxRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: 14,
+      paddingHorizontal: 4,
+    },
 
-  sideBlock: {
-    width: "48%",
-    flexDirection: "column",
-    alignItems: "flex-start",
-  },
+    sideBlock: {
+      width: "48%",
+      flexDirection: "column",
+      alignItems: "flex-start",
+    },
 
-  fxValue: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: COLORS.text,
-  },
+    fxValue: {
+      fontSize: 22,
+      fontWeight: "800",
+      color: colors.text,
+    },
 
-  delta: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginLeft: 4,
-  },
+    delta: {
+      fontSize: 14,
+      fontWeight: "600",
+      marginLeft: 4,
+    },
 
-  deltaUp: { color: COLORS.green },
-  deltaDown: { color: COLORS.red },
+    deltaUp: { color: COLORS.green },
+    deltaDown: { color: COLORS.red },
 
-  caption: {
-    marginTop: 4,
-    color: COLORS.sub,
-    fontSize: 14,
-  },
-});
+    caption: {
+      marginTop: 4,
+      color: colors.subtext,
+      fontSize: 14,
+    },
+  });

@@ -5,6 +5,7 @@ import { StatusBar, Text, View } from "react-native";
 import { Loader } from "../../../components";
 import ArchiveDetailCard from "../../../components/ArchiveDetailCard";
 import CurrenciesListModalArchive from "../../../components/CurrenciesListModalArchive";
+import { useTheme } from "../../../hooks/useTheme";
 import {
   useCurrenciesQuery,
   useExchangeRatesChangesQuery,
@@ -13,6 +14,9 @@ import {
 import { ymdLocal } from "../../../utils/nbkDateUtils";
 
 export default function ArchiveDetailScreen() {
+  const { theme, colors } = useTheme();
+  const isLight = theme === "light";
+
   const router = useRouter();
   const { t } = useTranslation();
   const { id, branchId } = useLocalSearchParams<{
@@ -156,9 +160,10 @@ export default function ArchiveDetailScreen() {
           justifyContent: "center",
           alignItems: "center",
           paddingHorizontal: 24,
+          backgroundColor: colors.background,
         }}
       >
-        <Text style={{ fontSize: 16, color: "#6B7280", textAlign: "center" }}>
+        <Text style={{ fontSize: 16, color: colors.subtext, textAlign: "center" }}>
           {t(
             "archives.errorLoadingNbkRates",
             "Не удалось загрузить данные курса. Попробуйте позже."
@@ -171,7 +176,7 @@ export default function ArchiveDetailScreen() {
   // === Основное содержимое ===
   return (
     <>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isLight ? "dark-content" : "light-content"} />
 
       <ArchiveDetailCard
         code={currentCode}
