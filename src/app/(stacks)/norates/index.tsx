@@ -26,6 +26,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CurrenciesListModalArchive from "../../../components/CurrenciesListModalArchive";
 import CurrencyFlag from "../../../components/CurrencyFlag";
 import RateAlert from "../../../components/RateAlert";
+import { useTheme } from "../../../hooks/useTheme";
 import { useAuth } from "../../../providers/Auth";
 import {
   useCreateBookingMutation,
@@ -57,6 +58,9 @@ const parse = (s: string) =>
   );
 
 export default function ReserveNoRateScreen() {
+  const { colors, theme } = useTheme();
+  const isLight = theme === "light";
+  const styles = makeStyles(colors);
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -301,7 +305,7 @@ export default function ReserveNoRateScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={{ flex: 1, backgroundColor: "#fff" }}
     >
-      <StatusBar barStyle="dark-content" />
+       <StatusBar barStyle={isLight ? "dark-content" : "light-content"} />
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: 210 }}
@@ -534,12 +538,14 @@ function FXRow({
   mutedCard?: boolean;
   onPressSelect?: () => void;
 }) {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   return (
     <View style={styles.fxRow}>
       <Pressable
         style={[
           styles.currencyCard,
-          mutedCard && { backgroundColor: "#F2F4F7" },
+          mutedCard && { backgroundColor: colors.cardBackground },
         ]}
         onPress={onPressSelect}
       >
@@ -592,10 +598,10 @@ const COLORS = {
 };
 
 /** ====== styles ====== */
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 16 },
+const makeStyles = (colors: any) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background, paddingHorizontal: 16 },
   subtitle: {
-    color: SUB,
+    color: colors.text,
     fontSize: 16,
     lineHeight: 22,
     marginBottom: 14,
@@ -606,13 +612,13 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 56,
     borderRadius: 16,
-    backgroundColor: "#F2F4F6",
+    backgroundColor: colors.periodsSegment,
     alignItems: "center",
     justifyContent: "center",
   },
-  segmentActive: { backgroundColor: "#2B2B2B" },
-  segmentText: { fontSize: 16, fontWeight: "400", color: "#8C8C8C" },
-  segmentTextActive: { color: "#fff" },
+  segmentActive: { backgroundColor: colors.periodsSegmentActive },
+  segmentText: { fontSize: 16, fontWeight: "400", color: colors.text },
+  segmentTextActive: { color: colors.periodsSegmentText },
   fxRow: {
     flexDirection: "row",
     gap: 10,
@@ -621,10 +627,10 @@ const styles = StyleSheet.create({
   },
   currencyCard: {
     flex: 1,
-    backgroundColor: CARD,
+    backgroundColor: colors.cardBackground,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: colors.border,
     paddingHorizontal: 12,
     paddingVertical: 12,
     flexDirection: "row",
@@ -638,30 +644,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 10,
   },
-  code: { fontSize: 16, fontWeight: "700", color: TEXT },
-  name: { fontSize: 11, color: SUB, marginTop: 2, fontWeight: "400" },
+  code: { fontSize: 16, fontWeight: "700", color: colors.text },
+  name: { fontSize: 11, color: colors.subtext, marginTop: 2, fontWeight: "400" },
   amountWrap: {
     width: 200,
     height: 64,
     borderRadius: 16,
     borderWidth: 2,
-    borderColor: BORDER,
+    borderColor: colors.border,
     paddingHorizontal: 12,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: colors.background,
   },
-  amountInput: { flex: 1, fontSize: 16, fontWeight: "700", color: TEXT },
+  amountInput: { flex: 1, fontSize: 16, fontWeight: "700", color: colors.text },
   suffix: {
     borderLeftWidth: 1,
-    borderLeftColor: BORDER,
+    borderLeftColor: colors.border,
     paddingLeft: 10,
     height: "100%",
     justifyContent: "center",
   },
-  suffixText: { fontSize: 18, fontWeight: "800", color: TEXT },
+  suffixText: { fontSize: 18, fontWeight: "800", color: colors.text },
   rateRow: { flexDirection: "row", alignItems: "center", marginTop: 12 },
-  rateText: { color: TEXT, fontSize: 14, fontWeight: "400" },
+  rateText: { color: colors.text, fontSize: 14, fontWeight: "400" },
   delta: { marginLeft: 10, fontWeight: "400", fontSize: 14 },
   footer: {
     position: "absolute",
@@ -670,14 +676,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: 16,
     paddingTop: 12,
-    backgroundColor: "#fff",
+    backgroundColor: colors.background,
     borderTopWidth: 1,
-    borderTopColor: "#EFEFEF",
+    borderTopColor: colors.border,
   },
   footerTitle: {
     fontSize: 18,
     fontWeight: "400",
-    color: TEXT,
+    color: colors.text,
     marginBottom: 8,
   },
   footerRow: {
@@ -685,8 +691,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 12,
   },
-  footerLabel: { color: SUB, fontSize: 14, fontWeight: "400" },
-  footerValue: { color: TEXT, fontSize: 18, fontWeight: "400" },
+  footerLabel: { color: colors.subtext, fontSize: 14, fontWeight: "400" },
+  footerValue: { color: colors.text, fontSize: 18, fontWeight: "400" },
   cta: {
     height: 56,
     borderRadius: 16,
@@ -694,12 +700,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  ctaText: { color: "#fff", fontSize: 17, fontWeight: "600" },
+  ctaText: { color: colors.text, fontSize: 17, fontWeight: "600" },
   // Guest form styles
   input: {
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.bg,
+    borderColor: colors.border,
+    backgroundColor: colors.background,
     borderRadius: 12,
     paddingVertical: 16,
     paddingHorizontal: 14,
