@@ -857,6 +857,7 @@ const makeStyles = (colors: any) => StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 14,
     fontSize: 16,
+    color: colors.text,
   },
   error: { color: "#DC2626", marginTop: 6, fontSize: 13 },
   discountRow: {

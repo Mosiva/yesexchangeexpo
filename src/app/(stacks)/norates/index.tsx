@@ -710,6 +710,7 @@ const makeStyles = (colors: any) => StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 14,
     fontSize: 16,
+    color: colors.text,
   },
   error: {
     color: COLORS.error,

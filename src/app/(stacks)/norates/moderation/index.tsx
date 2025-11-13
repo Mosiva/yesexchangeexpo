@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CancelReservationModal from "../../../../components/CancelReservationModal";
+import { useTheme } from "../../../../hooks/useTheme";
 import { useAuth } from "../../../../providers/Auth";
 import { useCancelBookingMutation } from "../../../../services/yesExchange";
 
@@ -38,6 +39,9 @@ const COLORS = {
 };
 
 export default function ModerationScreen() {
+  const { colors, theme } = useTheme();
+  const isLight = theme === "light";
+  const styles = makeStyles(colors);
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -81,7 +85,7 @@ export default function ModerationScreen() {
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isLight ? "dark-content" : "light-content"} />
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: insets.bottom + 88 }}
@@ -165,6 +169,8 @@ function Row({
   big?: boolean;
   children?: React.ReactNode;
 }) {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   return (
     <View
       style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap" }}
@@ -190,28 +196,28 @@ function Row({
 }
 
 /* ——— Styles ——— */
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.bg },
+const makeStyles = (colors: any) => StyleSheet.create({
+  screen: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1, paddingHorizontal: 16 },
   lead: {
     fontSize: 16,
     lineHeight: 28,
-    color: COLORS.text,
+    color: colors.text,
     marginTop: 8,
     marginBottom: 16,
     fontWeight: "400",
   },
   card: {
-    backgroundColor: COLORS.card,
+    backgroundColor: colors.cardBackground,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     padding: 16,
   },
-  cardTitle: { fontSize: 17, fontWeight: "700", color: COLORS.text },
-  cardSub: { marginTop: 6, color: COLORS.sub, fontSize: 12 },
-  rowLabel: { color: COLORS.sub, fontSize: 12 },
-  rowValue: { color: COLORS.text, fontSize: 12, fontWeight: "700" },
+  cardTitle: { fontSize: 17, fontWeight: "700", color: colors.text },
+  cardSub: { marginTop: 6, color: colors.subtext, fontSize: 12 },
+  rowLabel: { color: colors.subtext, fontSize: 12 },
+  rowValue: { color: colors.text, fontSize: 12, fontWeight: "700" },
   rowValueBig: { fontSize: 12, fontWeight: "700" },
   dangerBtn: {
     marginTop: 16,
@@ -221,7 +227,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  dangerText: { color: "#fff", fontSize: 14, fontWeight: "700" },
+  dangerText: { color: colors.text, fontSize: 14, fontWeight: "700" },
   bottomBar: {
     position: "absolute",
     left: 16,
@@ -235,7 +241,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  primaryText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  primaryText: { color: colors.text, fontSize: 16, fontWeight: "700" },
 
   // tooltip bubble
   tooltip: {
@@ -248,5 +254,5 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     zIndex: 5,
   },
-  tooltipText: { color: "#fff", fontSize: 14, fontWeight: "700" },
+  tooltipText: { color: colors.text, fontSize: 14, fontWeight: "700" },
 });
