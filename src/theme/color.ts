@@ -17,6 +17,7 @@ export const LightColors = {
   periodsSegment: "#F9F9F9",
   periodsSegmentText: "#FFFFFF",
   periodsSegmentActive: "#353535",
+  discountRow: "#F9FAFB",
 };
 
 export const DarkColors = {
@@ -38,4 +39,5 @@ export const DarkColors = {
   periodsSegment: "#414142",
   periodsSegmentText: "#353535",
   periodsSegmentActive: "#FFFFFF",
+  discountRow: "#414142",
 };
