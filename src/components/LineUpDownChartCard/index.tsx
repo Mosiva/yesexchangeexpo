@@ -189,7 +189,7 @@ const makeStyles = (colors: any) =>
     card: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: colors.background,
+      backgroundColor: colors.cardBackground,
       marginHorizontal: 12,
       borderRadius: 16,
       padding: 14,

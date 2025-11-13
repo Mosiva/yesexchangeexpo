@@ -22,6 +22,7 @@ import LineUpDownChartCard from "../../../components/LineUpDownChartCard";
 import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
 import ReservePromoCard from "../../../components/ReservePromoCard";
 import { Skeleton } from "../../../components/skeleton";
+import { useTheme } from "../../../hooks/useTheme";
 import { useUserLocation } from "../../../hooks/useUserLocation";
 import { useAuth } from "../../../providers/Auth";
 import {
@@ -59,6 +60,9 @@ const getTodayDate = () => {
 // Текущее локальное время
 const LocalTime = () => {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+
+  const styles = makeStyles(colors);
   const [now, setNow] = useState(new Date());
 
   React.useEffect(() => {
@@ -95,7 +99,9 @@ const LocalTime = () => {
 export default function MainScreen() {
   const { location, loading, permissionDenied } = useUserLocation();
   const [refreshing, setRefreshing] = useState(false);
-
+  const { colors, theme } = useTheme();
+  const isLight = theme === "light";
+  const styles = makeStyles(colors);
   const { isGuest } = useAuth();
   // usePushNotifications(isGuest);
 
@@ -318,7 +324,7 @@ export default function MainScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle={isLight ? "dark-content" : "light-content"} />
       <View style={styles.headerContainer}>
         <View style={styles.header}>
           <Image
@@ -326,11 +332,7 @@ export default function MainScreen() {
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <Pressable
-            hitSlop={12}
-
-            onPress={handlePressSettings}
-          >
+          <Pressable hitSlop={12} onPress={handlePressSettings}>
             <Ionicons name="settings" size={22} color="#fff" />
           </Pressable>
         </View>
@@ -655,147 +657,149 @@ export default function MainScreen() {
 }
 
 // === Стили ===
-const styles = StyleSheet.create({
-  headerContainer: {
-    backgroundColor: "#F79633",
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    overflow: "hidden",
-  },
-  container: { flex: 1, backgroundColor: "#fff" },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#F79633",
-    paddingTop: 56,
-    paddingBottom: 14,
-    paddingHorizontal: 20,
-  },
-  headerLogo: { height: 60, width: 101 },
-  addressCard: {
-    marginTop: 12,
-    marginHorizontal: 16,
-    borderRadius: 18,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F7AC61",
-    marginBottom: 12,
-  },
-  addrIcon: { marginRight: 12 },
-  addrLabel: { color: "#fff", fontSize: 14, opacity: 0.95, marginBottom: 4 },
-  addrValue: { color: "#fff", fontSize: 14 },
-  localtime: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "700",
-    marginBottom: 12,
-    textAlign: "center",
-  },
-  tabsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 24,
-    paddingHorizontal: 16,
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  tab: {
-    flex: 1,
-    height: 56,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  tabActive: { backgroundColor: "#F9F9F9" },
-  tabText: { fontSize: 16, fontWeight: "700" },
-  tabTextActive: { color: "#2F2F2F" },
-  tabTextMuted: { color: "#8E8E93" },
-  dropdownIcon: { marginLeft: 8 },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  dropdownContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    margin: 20,
-    maxHeight: "70%",
-    minWidth: "80%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  dropdownTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#111827",
-    padding: 20,
-    paddingBottom: 10,
-    textAlign: "center",
-  },
-  dropdownItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-  },
-  dropdownItemSelected: { backgroundColor: "#FEF3E7" },
-  dropdownItemContent: { flex: 1 },
-  dropdownItemCity: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#111827",
-    marginBottom: 2,
-  },
-  dropdownItemAddress: {
-    fontSize: 14,
-    color: "#6B7280",
-    marginBottom: 2,
-  },
-  dropdownItemPhone: { fontSize: 12, color: "#9CA3AF" },
-  skeletonContainer: { paddingHorizontal: 16, gap: 12 },
-  skeletonItem: { borderRadius: 12, marginBottom: 8 },
-  errorContainer: {
-    padding: 20,
-    alignItems: "center",
-    backgroundColor: "#FEF2F2",
-    marginHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#FECACA",
-  },
-  errorText: {
-    color: "#DC2626",
-    fontSize: 14,
-    fontWeight: "500",
-    marginBottom: 12,
-    textAlign: "center",
-  },
-  retryButton: {
-    backgroundColor: "#DC2626",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  retryButtonText: { color: "#fff", fontSize: 14, fontWeight: "600" },
-  retryButtonSmall: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    padding: 8,
-    borderRadius: 6,
-    marginLeft: 8,
-  },
-  addrHint: {
-    color: "rgba(255,255,255,0.9)",
-    fontSize: 12,
-    marginTop: 2,
-    opacity: 0.8,
-  },
-});
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    headerContainer: {
+      backgroundColor: "#F79633",
+      borderBottomLeftRadius: 20,
+      borderBottomRightRadius: 20,
+      overflow: "hidden",
+    },
+    container: { flex: 1, backgroundColor: colors.background },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      backgroundColor: "#F79633",
+      paddingTop: 56,
+      paddingBottom: 14,
+      paddingHorizontal: 20,
+    },
+    headerLogo: { height: 60, width: 101 },
+    addressCard: {
+      marginTop: 12,
+      marginHorizontal: 16,
+      borderRadius: 18,
+      paddingVertical: 16,
+      paddingHorizontal: 16,
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: "#F7AC61",
+      marginBottom: 12,
+    },
+    addrIcon: { marginRight: 12 },
+    addrLabel: { color: "#fff", fontSize: 14, opacity: 0.95, marginBottom: 4 },
+    addrValue: { color: "#fff", fontSize: 14 },
+    localtime: {
+      color: "#fff",
+      fontSize: 14,
+      fontWeight: "700",
+      marginBottom: 12,
+      textAlign: "center",
+    },
+    tabsRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      gap: 24,
+      paddingHorizontal: 16,
+      marginTop: 8,
+      marginBottom: 16,
+    },
+    tab: {
+      flex: 1,
+      height: 56,
+      borderRadius: 20,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.background,
+    },
+    tabActive: { backgroundColor: colors.tabActive },
+    tabText: { color: colors.subtext, fontSize: 16, fontWeight: "700" },
+    tabTextActive: { color: colors.text },
+    tabTextMuted: { color: colors.subtext },
+    dropdownIcon: { marginLeft: 8 },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    dropdownContainer: {
+      backgroundColor: "#fff",
+      borderRadius: 16,
+      margin: 20,
+      maxHeight: "70%",
+      minWidth: "80%",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 8,
+      elevation: 5,
+    },
+    dropdownTitle: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: "#111827",
+      padding: 20,
+      paddingBottom: 10,
+      textAlign: "center",
+    },
+    dropdownItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: "#F3F4F6",
+    },
+    dropdownItemSelected: { backgroundColor: "#FEF3E7" },
+    dropdownItemContent: { flex: 1 },
+    dropdownItemCity: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: "#111827",
+      marginBottom: 2,
+    },
+    dropdownItemAddress: {
+      fontSize: 14,
+      color: "#6B7280",
+      marginBottom: 2,
+    },
+    dropdownItemPhone: { fontSize: 12, color: "#9CA3AF" },
+    skeletonContainer: { paddingHorizontal: 16, gap: 12 },
+    skeletonItem: { borderRadius: 12, marginBottom: 8 },
+    errorContainer: {
+      padding: 20,
+      alignItems: "center",
+      backgroundColor: "#FEF2F2",
+      marginHorizontal: 16,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: "#FECACA",
+    },
+    errorText: {
+      color: "#DC2626",
+      fontSize: 14,
+      fontWeight: "500",
+      marginBottom: 12,
+      textAlign: "center",
+    },
+    retryButton: {
+      backgroundColor: "#DC2626",
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 8,
+    },
+    retryButtonText: { color: "#fff", fontSize: 14, fontWeight: "600" },
+    retryButtonSmall: {
+      backgroundColor: "rgba(255, 255, 255, 0.2)",
+      padding: 8,
+      borderRadius: 6,
+      marginLeft: 8,
+    },
+    addrHint: {
+      color: "rgba(255,255,255,0.9)",
+      fontSize: 12,
+      marginTop: 2,
+      opacity: 0.8,
+    },
+  });

@@ -9,6 +9,8 @@ export const LightColors = {
   cardMainCurrencyModal: "#F3F4F6",
   cardSecondaryCurrencyModal: "#FFFFFF",
   cardShadow: "rgba(0,0,0,0.06)",
+  cardBackground: "#FFFFFF",
+  tabActive: "#F9F9F9",
 };
 
 export const DarkColors = {
@@ -22,4 +24,6 @@ export const DarkColors = {
   cardMainCurrencyModal: "#414142",
   cardSecondaryCurrencyModal: "#1C1C1E",
   cardShadow: "#393b3b",
+  cardBackground: "#414142",
+  tabActive: "#414142",
 };
