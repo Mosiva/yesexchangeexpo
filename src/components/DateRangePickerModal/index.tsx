@@ -16,6 +16,7 @@ import {
   View,
 } from "react-native";
 import CalendarPicker from "react-native-calendar-picker";
+import { useTheme } from "../../hooks/useTheme";
 
 export interface DateRangePickerModalRef {
   reset: () => void;
@@ -35,6 +36,8 @@ interface Props {
 
 export const DateRangePickerModal = forwardRef<DateRangePickerModalRef, Props>(
   ({ isVisible, onClose, onConfirm, allowPastDates = false }, ref) => {
+    const { colors } = useTheme();
+    const styles = makeStyles(colors);
     const { t } = useTranslation();
     const months = t("datepicker.months", { returnObjects: true }) as string[];
     const days = t("datepicker.days", { returnObjects: true }) as string[];
@@ -96,7 +99,10 @@ export const DateRangePickerModal = forwardRef<DateRangePickerModalRef, Props>(
         if (diffDays > 31) {
           Alert.alert(
             t("archive.limit", "Ограничение"),
-            t("archive.youCanSelectPeriodNotMoreThan1Month", "Вы можете выбрать период не более 1 месяца")
+            t(
+              "archive.youCanSelectPeriodNotMoreThan1Month",
+              "Вы можете выбрать период не более 1 месяца"
+            )
           );
           setFromDate(null);
           setToDate(null);
@@ -149,10 +155,14 @@ export const DateRangePickerModal = forwardRef<DateRangePickerModalRef, Props>(
           >
             {/* --- Заголовок --- */}
             <View style={styles.headerRow}>
-              <Text style={styles.modalTitle}>{t("archive.selectPeriod", "Выберите период")}</Text>
+              <Text style={styles.modalTitle}>
+                {t("archive.selectPeriod", "Выберите период")}
+              </Text>
               {(fromDate || toDate) && (
                 <TouchableOpacity onPress={handleReset}>
-                  <Text style={styles.resetText}>{t("archive.reset", "Сбросить")}</Text>
+                  <Text style={styles.resetText}>
+                    {t("archive.reset", "Сбросить")}
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -173,6 +183,17 @@ export const DateRangePickerModal = forwardRef<DateRangePickerModalRef, Props>(
               selectedRangeStartStyle={{ backgroundColor: "#F58220" }}
               selectedRangeEndStyle={{ backgroundColor: "#F58220" }}
               selectedRangeStyle={{ backgroundColor: "#FBD38D" }}
+              textStyle={{
+                color: colors.text,
+              }}
+              monthTitleStyle={{
+                color: colors.text,
+              }}
+              yearTitleStyle={{
+                color: colors.text,
+              }}
+              previousTitleStyle={{ color: ORANGE }}
+              nextTitleStyle={{ color: ORANGE }}
               {...(allowPastDates
                 ? {
                     // ✅ можно выбирать прошлое и сегодня, но "сегодня" нельзя как начало диапазона
@@ -258,64 +279,65 @@ export const DateRangePickerModal = forwardRef<DateRangePickerModalRef, Props>(
 
 const ORANGE = "#F58220";
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.4)",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#111827",
-  },
-  resetText: {
-    color: ORANGE,
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  button: {
-    backgroundColor: ORANGE,
-    borderRadius: 12,
-    height: 48,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 16,
-  },
-  cancelButton: {
-    backgroundColor: "#F3F4F6",
-    flex: 1,
-  },
-  cancelButtonText: {
-    color: "#111827",
-  },
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    overlay: {
+      flex: 1,
+      justifyContent: "flex-end",
+      backgroundColor: "rgba(0,0,0,0.4)",
+    },
+    modalContent: {
+      backgroundColor: colors.background,
+      padding: 20,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+    },
+    headerRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    resetText: {
+      color: ORANGE,
+      fontSize: 15,
+      fontWeight: "700",
+    },
+    button: {
+      backgroundColor: ORANGE,
+      borderRadius: 12,
+      height: 48,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    buttonText: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: "700",
+    },
+    buttonContainer: {
+      flexDirection: "row",
+      gap: 10,
+      marginTop: 16,
+    },
+    cancelButton: {
+      backgroundColor: colors.periodsSegment,
+      flex: 1,
+    },
+    cancelButtonText: {
+      color: colors.text,
+    },
 
-  buttonDisabled: {
-    backgroundColor: "#E5E7EB", // светло-серый
-  },
-  buttonTextDisabled: {
-    color: "#9CA3AF", // серый текст
-  },
-});
+    buttonDisabled: {
+      backgroundColor: "#E5E7EB", // светло-серый
+    },
+    buttonTextDisabled: {
+      color: "#9CA3AF", // серый текст
+    },
+  });
 DateRangePickerModal.displayName = "DateRangePickerModal";

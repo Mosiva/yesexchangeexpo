@@ -31,8 +31,6 @@ type Props = {
 };
 
 const COLORS = {
-  text: "#111827",
-  sub: "#6B7280",
   pillBg: "#F3F4F6",
   pillActiveBg: "#111827",
   pillActiveText: "#FFFFFF",
@@ -320,7 +318,10 @@ function Segment({
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.segment, active && { backgroundColor: colors.periodsSegmentActive }]}
+      style={[
+        styles.segment,
+        active && { backgroundColor: colors.periodsSegmentActive },
+      ]}
     >
       <Text
         style={[
@@ -336,7 +337,7 @@ function Segment({
 
 const makeStyles = (colors: any) =>
   StyleSheet.create({
-    rangeTextInline: { fontSize: 15, fontWeight: "700", color: COLORS.text },
+    rangeTextInline: { fontSize: 15, fontWeight: "700", color: colors.text },
     resetText: { color: COLORS.orange, fontSize: 14, fontWeight: "700" },
     chart: { marginHorizontal: 16, marginTop: 8, borderRadius: 12 },
     tooltip: {
