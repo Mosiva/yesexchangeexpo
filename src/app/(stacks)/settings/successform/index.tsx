@@ -10,8 +10,12 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTheme } from "../../../../hooks/useTheme";
 
 export default function SuccessFormScreen() {
+  const { colors, theme } = useTheme();
+  const isLight = theme === "light";
+  const styles = makeStyles(colors);
   const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -20,7 +24,7 @@ export default function SuccessFormScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isLight ? "dark-content" : "light-content"} />
 
       {/* Центр контента */}
       <View style={styles.content}>
@@ -63,10 +67,10 @@ const COLORS = {
   bg: "#FFFFFF",
 };
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.bg,
+    backgroundColor: colors.background,
     justifyContent: "space-between",
   },
   content: {
@@ -88,11 +92,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 24,
     textAlign: "center",
-    color: COLORS.text,
+    color: colors.text,
     fontWeight: "700",
   },
   bottomBar: {
-    backgroundColor: COLORS.bg,
+    backgroundColor: colors.background,
     paddingHorizontal: 16,
     paddingTop: 8,
   },
