@@ -9,6 +9,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useTheme } from "../../hooks/useTheme";
 import CurrencyFlag from "../CurrencyFlag";
 
 /* ================== Types ================== */
@@ -43,6 +44,8 @@ export default function LineUpDownChartCard({
   branchId,
 }: Props) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const router = useRouter();
   const [expanded, setExpanded] = useState(initialExpanded);
   const visible = expanded ? items : items.slice(0, initial);
@@ -78,6 +81,8 @@ function RateCard({ item, branchId }: { item: Item; branchId?: string }) {
     item.delta === 0 ? "same" : item.delta > 0 ? "up" : "down";
   const router = useRouter();
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   return (
     <Pressable
       style={({ pressed }) => [
@@ -140,6 +145,8 @@ function Sparkline({
   trend: "up" | "down" | "same";
   chartSource?: ImageSourcePropType;
 }) {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const src =
     chartSource ??
     (trend === "up"
@@ -176,73 +183,72 @@ function formatNum(n: number | string) {
 }
 
 /* ------------------------------- styles ------------------------------- */
-const CARD_BG = "#FFFFFF";
+
 const CARD_SHADOW = "rgba(0,0,0,0.06)";
-const TEXT_MAIN = "#111827";
-const TEXT_MUTED = "#6B7280";
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: CARD_BG,
-    marginHorizontal: 12,
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 12,
-    shadowColor: CARD_SHADOW,
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
-  },
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    card: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.background,
+      marginHorizontal: 12,
+      borderRadius: 16,
+      padding: 14,
+      marginBottom: 12,
+      shadowColor: CARD_SHADOW,
+      shadowOpacity: 1,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 3,
+    },
 
-  leftCol: { flexDirection: "row", alignItems: "center", flex: 1 },
-  flagWrap: {},
-  flagImg: { width: 40, height: 40, borderRadius: 20 },
-  flagEmoji: { fontSize: 28 },
+    leftCol: { flexDirection: "row", alignItems: "center", flex: 1 },
+    flagWrap: {},
+    flagImg: { width: 40, height: 40, borderRadius: 20 },
+    flagEmoji: { fontSize: 28 },
 
-  label: { color: TEXT_MUTED, fontSize: 12, fontWeight: "400" },
-  row: { flexDirection: "row", alignItems: "center", marginTop: 6 },
+    label: { color: colors.subtext, fontSize: 12, fontWeight: "400" },
+    row: { flexDirection: "row", alignItems: "center", marginTop: 6 },
 
-  code: {
-    color: TEXT_MUTED,
-    fontSize: 14,
-    fontWeight: "400",
-    marginRight: 10,
-  },
-  value: { color: TEXT_MAIN, fontSize: 18, fontWeight: "400" },
-  delta: { marginLeft: 10, fontSize: 11, fontWeight: "400" },
-  deltaUp: { color: "#16A34A" },
-  deltaDown: { color: "#DC2626" },
-  deltaSame: { color: "#6B7280" },
+    code: {
+      color: colors.text,
+      fontSize: 14,
+      fontWeight: "400",
+      marginRight: 10,
+    },
+    value: { color: colors.text, fontSize: 18, fontWeight: "400" },
+    delta: { marginLeft: 10, fontSize: 11, fontWeight: "400" },
+    deltaUp: { color: "#16A34A" },
+    deltaDown: { color: "#DC2626" },
+    deltaSame: { color: "#6B7280" },
 
-  /* sparkline image container */
-  sparkWrap: {
-    width: 150,
-    height: 66,
-    borderRadius: 12,
-    overflow: "hidden",
-    justifyContent: "center",
-  },
-  chartImg: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-  },
-  sparkDot: {
-    position: "absolute",
-    right: 6,
-    top: 6,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
+    /* sparkline image container */
+    sparkWrap: {
+      width: 150,
+      height: 66,
+      borderRadius: 12,
+      overflow: "hidden",
+      justifyContent: "center",
+    },
+    chartImg: {
+      position: "absolute",
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+    },
+    sparkDot: {
+      position: "absolute",
+      right: 6,
+      top: 6,
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+    },
 
-  moreBtn: { alignItems: "center", paddingVertical: 16 },
-  moreText: { color: "#374151", fontSize: 14, fontWeight: "700" },
-});
+    moreBtn: { alignItems: "center", paddingVertical: 16 },
+    moreText: { color: colors.subtext, fontSize: 14, fontWeight: "700" },
+  });
