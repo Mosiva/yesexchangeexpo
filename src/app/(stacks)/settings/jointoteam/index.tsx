@@ -81,12 +81,12 @@ export default function JoinToTeamScreen() {
 
   const onSubmit = async (values: FormValues) => {
     if (isLoading || isSubmitting) return;
-    const e164 = `+7${values.digits}`;
+
     try {
       const form = new FormData();
       form.append("fullName", values.fullName.trim());
       form.append("email", values.email.trim());
-      form.append("phone", e164);
+      form.append("phone", `+7${values.digits}`);
       form.append("coverLetter", values.coverLetter.trim());
 
       if (resume) {
@@ -96,17 +96,27 @@ export default function JoinToTeamScreen() {
           type: resume.type,
         } as any);
       }
+      console.log("form", JSON.stringify(form));
 
-      await submitJobApplication(form).unwrap();
-
+      const response = await submitJobApplication(form).unwrap();
+      console.log("✅ SERVER RESPONSE:", response);
+      console.log("form", JSON.stringify(form));
       router.push({
         pathname: "/(stacks)/settings/successform",
         params: { isJointTeam: "true" },
       });
     } catch (err: any) {
+      console.log("❌ ERROR SUBMITTING FORM:", err);
+
+      const serverMessage =
+        err?.data?.message ??
+        err?.error ??
+        err?.data?.error ??
+        "Не удалось отправить заявку";
+
       Alert.alert(
-        t("Ошибка"),
-        err?.data?.message || "Не удалось отправить заявку"
+        "Ошибка",
+        Array.isArray(serverMessage) ? serverMessage.join("\n") : serverMessage
       );
     }
   };
