@@ -419,7 +419,8 @@
     "searchByCurrencyName": "Поиск: USD / Доллар",
     "errorLoadingNbkRates": "Ошибка загрузки курсов НБК",
     "retry": "Повторить",
-    "nothingFound": "Ничего не найдено по запросу"
+    "nothingFound": "Ничего не найдено по запросу",
+    "showMore": "Показать больше"
   },
   "archive": {
     "date": "Дата",

@@ -439,7 +439,8 @@
     "cancel": "Cancel",
     "apply": "Apply",
     "limit": "Limit",
-    "youCanSelectPeriodNotMoreThan1Month": "You can select a period no more than 1 month"
+    "youCanSelectPeriodNotMoreThan1Month": "You can select a period no more than 1 month",
+    "showMore": "Show more"
   },
   "register": {
     "title": "Registration",

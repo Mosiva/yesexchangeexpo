@@ -421,7 +421,8 @@
     "searchByCurrencyName": "Валюта бойынша іздеу",
     "errorLoadingNbkRates": "ҰБ бағамдарын жүктеу қатесі",
     "retry": "Қайталау",
-    "nothingFound": "Мұрағат табылмады"
+    "nothingFound": "Мұрағат табылмады",
+    "showMore": "Көбірек көрсету"
   },
   "archive": {
     "date": "Күні",
