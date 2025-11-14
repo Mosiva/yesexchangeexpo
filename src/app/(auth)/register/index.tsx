@@ -8,7 +8,6 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -85,7 +84,7 @@ export default function RegisterScreen() {
       firstName: "",
       lastName: "",
       digits: "",
-      residentRK: false,
+      residentRK: true,
     },
   });
 
@@ -122,9 +121,7 @@ export default function RegisterScreen() {
       router.push({ pathname: "/(auth)/sendcode", params: { phone: e164 } });
     } catch (err: any) {
       const msg =
-        err?.data?.message ||
-        err?.error ||
-        t("register.errorInRegister");
+        err?.data?.message || err?.error || t("register.errorInRegister");
       Alert.alert(t("common.error"), String(msg));
     }
   };
@@ -152,10 +149,16 @@ export default function RegisterScreen() {
             resizeMode="contain"
           />
 
-          <Text style={s.title}>{t("register.welcome", "Добро пожаловать")}{"\n"}{t("register.welcomeMessage", "в Yes Exchange!")}</Text>
+          <Text style={s.title}>
+            {t("register.welcome", "Добро пожаловать")}
+            {"\n"}
+            {t("register.welcomeMessage", "в Yes Exchange!")}
+          </Text>
           <Text style={s.subtitle}>
             {t("register.createAccount", "Создайте свой аккаунт и получите")}{" "}
-            <Text style={s.discount}>{t("register.discount", "скидку 5%")}</Text>
+            <Text style={s.discount}>
+              {t("register.discount", "скидку 5%")}
+            </Text>
           </Text>
 
           {/* Имя */}
@@ -251,14 +254,17 @@ export default function RegisterScreen() {
                 )}
                 {digits.length >= 3 && !isPrefixValid && (
                   <Text style={s.error}>
-                    {t("register.onlyKazakhstanOperators", "Доступны только коды операторов Казахстана")}
+                    {t(
+                      "register.onlyKazakhstanOperators",
+                      "Доступны только коды операторов Казахстана"
+                    )}
                   </Text>
                 )}
               </>
             )}
           />
 
-          {/* Резидент */}
+          {/* Резидент
           <Controller
             control={control}
             name="residentRK"
@@ -284,7 +290,7 @@ export default function RegisterScreen() {
                 )}
               </>
             )}
-          />
+          /> */}
 
           <TouchableOpacity
             style={[s.cta, disabled && s.ctaDisabled]}
@@ -292,7 +298,9 @@ export default function RegisterScreen() {
             onPress={handleSubmit(onSubmit)}
           >
             <Text style={s.ctaText}>
-              {isLoading || isSubmitting ? t("register.sending", "Отправка...") : t("register.register", "Зарегистрироваться")}
+              {isLoading || isSubmitting
+                ? t("register.sending", "Отправка...")
+                : t("register.register", "Зарегистрироваться")}
             </Text>
           </TouchableOpacity>
         </ScrollView>

@@ -229,7 +229,8 @@
     "received": "Алынған",
     "syncFailed": "Синхронизация қатесі",
     "externalDeleted": "Жойылған",
-    "unknown": "Белгісіз"
+    "unknown": "Белгісіз",
+    "noRateSub": "Брондау 1 сағатқа дейін"
   },
 
   "cancelReservationModal": {
@@ -337,7 +338,7 @@
     "purchase": "Сатып алу",
     "sale": "Сату",
     "hide": "Жасыру",
-    "showMore": "Көбірек көрсету"
+    "showMore": "Көбірек валюта көрсету"
   },
   "reservePromoCard": {
     "title": "Брондау\nкурс/сома",

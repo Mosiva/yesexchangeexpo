@@ -230,7 +230,8 @@
     "received": "Получено",
     "syncFailed": "Ошибка синхронизации",
     "externalDeleted": "Удалена внешне",
-    "unknown": "Неизвестно"
+    "unknown": "Неизвестно",
+    "noRateSub": "Бронь до 1 часа"
   },
   "cancelReservationModal": {
     "title": "Отмена брони",
@@ -335,7 +336,7 @@
     "purchase": "Покупка",
     "sale": "Продажа",
     "hide": "Скрыть",
-    "showMore": "Показать больше"
+    "showMore": "Показать больше валют"
   },
   "reservePromoCard": {
     "title": "Бронирование\nкурса/суммы",

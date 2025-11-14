@@ -52,6 +52,7 @@ export default function ReserveScreen() {
       <View style={s.tilesRow}>
         <Tile
           title={t("reserve.noRate", "Без привязки\nк курсу")}
+          sub={t("reserve.noRateSub", "Бронь до 1 часа")}
           Icon={
             <FontAwesome6 name="money-bills" size={24} color={colors.primary} />
           }

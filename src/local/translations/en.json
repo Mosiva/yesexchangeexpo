@@ -229,7 +229,8 @@
     "received": "Received",
     "syncFailed": "Sync failed",
     "externalDeleted": "External deleted",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "noRateSub": "Reservation up to 1 hour"
   },
 
   "cancelReservationModal": {
@@ -337,7 +338,7 @@
     "purchase": "Buy",
     "sale": "Sell",
     "hide": "Hide",
-    "showMore": "Show more"
+    "showMore": "Show more currencies"
   },
   "reservePromoCard": {
     "title": "Reservation\ncourse/amount",
