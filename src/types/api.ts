@@ -322,6 +322,7 @@ export type CreateJobApplicationDto = {
   email: string;
   phone: string;
   coverLetter: string;
+  resume?: File;
 };
 
 export type CreateFeedbackDto = {

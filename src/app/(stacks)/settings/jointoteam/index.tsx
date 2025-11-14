@@ -1,16 +1,14 @@
-import { Ionicons } from "@expo/vector-icons";
+// screens/JoinToTeamScreen.tsx
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as DocumentPicker from "expo-document-picker";
+
 import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -20,17 +18,13 @@ import {
 import MaskInput from "react-native-mask-input";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { z } from "zod";
+import UploadResume from "../../../../components/UploadFile";
 import { useTheme } from "../../../../hooks/useTheme";
 import { useSubmitJobApplicationMutation } from "../../../../services/yesExchange";
 
-// --- Validation schema ---
 const schema = z.object({
   fullName: z.string().trim().min(1, "Введите ваше ФИО"),
-  email: z
-    .string()
-    .trim()
-    .email("Введите корректный Email")
-    .min(1, "Укажите Email"),
+  email: z.string().trim().email("Введите корректный Email"),
   digits: z.string().regex(/^\d{10}$/, "Введите номер из 10 цифр"),
   coverLetter: z.string().trim().min(1, "Введите сопроводительное письмо"),
 });
@@ -39,45 +33,18 @@ type FormValues = z.infer<typeof schema>;
 
 export default function JoinToTeamScreen() {
   const { t } = useTranslation();
-  const { colors, theme } = useTheme();
-  const isLight = theme === "light";
+  const { colors } = useTheme();
+
   const s = makeStyles(colors);
-  const [submitJobApplication, { isLoading }] =
-    useSubmitJobApplicationMutation();
   const insets = useSafeAreaInsets();
 
-  const ATTACH_DISABLED = true;
+  const [resume, setResume] = useState<any | null>(null);
+
+  const [submitJobApplication, { isLoading }] =
+    useSubmitJobApplicationMutation();
 
   const emailRef = useRef<TextInput>(null);
   const phoneRef = useRef<TextInput>(null);
-
-  const [maskedPhone, setMaskedPhone] = useState("+7");
-  const [digits, setDigits] = useState("");
-
-  const validPrefixes = [
-    "700",
-    "701",
-    "702",
-    "703",
-    "704",
-    "705",
-    "706",
-    "707",
-    "708",
-    "709",
-    "747",
-    "771",
-    "775",
-    "776",
-    "777",
-    "778",
-  ];
-  const prefix = digits.slice(0, 3);
-  const isPrefixValid =
-    digits.length >= 3 ? validPrefixes.includes(prefix) : true;
-
-  const [resume, setResume] =
-    useState<DocumentPicker.DocumentPickerAsset | null>(null);
 
   const {
     control,
@@ -86,80 +53,49 @@ export default function JoinToTeamScreen() {
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     mode: "onChange",
-    defaultValues: {
-      fullName: "",
-      email: "",
-      digits: "",
-      coverLetter: "",
-    },
   });
 
-  // --- Pick resume ---
-  const pickResume = async () => {
-    const res = await DocumentPicker.getDocumentAsync({
-      multiple: false,
-      copyToCacheDirectory: true,
-      type: [
-        "application/pdf",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      ],
-    });
-    if (res.assets?.[0]) setResume(res.assets[0]);
-    else
-      Alert.alert(
-        t("jointoteam.error", "Ошибка"),
-        t("jointoteam.errorMessage", "Не удалось выбрать файл.")
-      );
-  };
-
-  // --- Submit ---
   const onSubmit = async (values: FormValues) => {
-    if (isSubmitting || isLoading) return;
+    if (isLoading || isSubmitting) return;
 
-    const e164 = `+7${values.digits}`;
     try {
-      await submitJobApplication({
-        fullName: values.fullName.trim(),
-        email: values.email.trim(),
-        phone: e164,
-        coverLetter: values.coverLetter.trim(),
-      }).unwrap();
+      const form = new FormData();
+      form.append("fullName", values.fullName.trim());
+      form.append("email", values.email.trim());
+      form.append("phone", `+7${values.digits}`);
+      form.append("coverLetter", values.coverLetter.trim());
+
+      if (resume) {
+        form.append("resume", {
+          uri: resume.uri,
+          name: resume.name,
+          type: resume.type,
+        } as any);
+      }
+
+      await submitJobApplication(form).unwrap();
 
       router.push({
         pathname: "/(stacks)/settings/successform",
         params: { isJointTeam: "true" },
       });
     } catch (err: any) {
-      console.error("❌ Ошибка при отправке заявки:", err);
-      const message =
-        err?.data?.message ||
-        err?.error ||
-        err?.message ||
-        t(
-          "jointoteam.errorMessage",
-          "Не удалось отправить заявку. Попробуйте позже."
-        );
-      Alert.alert(t("jointoteam.error", "Ошибка"), String(message));
+      Alert.alert(
+        t("Ошибка"),
+        err?.data?.message || "Не удалось отправить заявку"
+      );
     }
   };
 
   return (
     <View style={s.root}>
-      <StatusBar
-        barStyle={isLight ? "dark-content" : "light-content"}
-        backgroundColor={colors.background}
-      />
       <ScrollView
         style={s.scroll}
-        contentContainerStyle={[s.container, { paddingBottom: 120 }]}
-        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 120 }}
       >
+        {/* === введение === */}
         <Text style={s.subtitle}>
-          {t(
-            "jointoteam.subtitle",
-            "Заполните форму, чтобы оставить свой отклик"
-          )}
+          {t("jointoteam.subtitle", "Заполните форму")}
         </Text>
 
         {/* ФИО */}
@@ -174,8 +110,6 @@ export default function JoinToTeamScreen() {
                 placeholderTextColor={colors.subtext}
                 value={value}
                 onChangeText={onChange}
-                returnKeyType="next"
-                onSubmitEditing={() => emailRef.current?.focus()}
               />
               {errors.fullName && (
                 <Text style={s.error}>{errors.fullName.message}</Text>
@@ -191,17 +125,14 @@ export default function JoinToTeamScreen() {
           render={({ field: { onChange, value } }) => (
             <>
               <TextInput
-                ref={emailRef}
                 style={s.input}
+                ref={emailRef}
                 placeholder="Email*"
                 placeholderTextColor={colors.subtext}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                autoCorrect={false}
                 value={value}
                 onChangeText={onChange}
-                returnKeyType="next"
-                onSubmitEditing={() => phoneRef.current?.focus()}
               />
               {errors.email && (
                 <Text style={s.error}>{errors.email.message}</Text>
@@ -210,31 +141,26 @@ export default function JoinToTeamScreen() {
           )}
         />
 
-        {/* Phone */}
+        {/* Телефон */}
         <Controller
           control={control}
           name="digits"
           render={({ field: { onChange } }) => (
             <>
               <MaskInput
-                ref={phoneRef}
                 style={s.input}
-                placeholder="+7 (___) ___-__-__*"
+                ref={phoneRef}
+                placeholder="+7 (___) ___-__-__"
                 placeholderTextColor={colors.subtext}
                 keyboardType="number-pad"
-                inputMode="numeric"
-                autoCorrect={false}
-                autoCapitalize="none"
                 mask={[
                   "+",
                   "7",
-                  " ",
-                  "(",
+                  " (",
                   /\d/,
                   /\d/,
                   /\d/,
-                  ")",
-                  " ",
+                  ") ",
                   /\d/,
                   /\d/,
                   /\d/,
@@ -245,47 +171,21 @@ export default function JoinToTeamScreen() {
                   /\d/,
                   /\d/,
                 ]}
-                value={maskedPhone}
-                onChangeText={(masked, unmasked) => {
-                  const digitsOnly = (unmasked || "")
-                    .replace(/\D/g, "")
-                    .slice(0, 10);
-                  onChange(digitsOnly);
-                  setDigits(digitsOnly);
-                  setMaskedPhone(masked);
-                }}
-                maxLength={19}
+                onChangeText={(masked, unmasked) =>
+                  onChange(unmasked.replace(/\D/g, "").slice(0, 10))
+                }
               />
               {errors.digits && (
                 <Text style={s.error}>{errors.digits.message}</Text>
-              )}
-              {digits.length >= 3 && !isPrefixValid && (
-                <Text style={s.error}>
-                  {t(
-                    "jointoteam.onlyKazakhstanOperators",
-                    "Доступны только коды операторов Казахстана"
-                  )}
-                </Text>
               )}
             </>
           )}
         />
 
-        {/* Resume */}
-        <TouchableOpacity
-          style={[s.attach, ATTACH_DISABLED && s.disabled]}
-          onPress={pickResume}
-          disabled={ATTACH_DISABLED}
-        >
-          <Ionicons name="attach-outline" size={22} color={colors.text} />
-          <Text style={s.attachText}>
-            {resume?.name
-              ? `Файл: ${resume.name}`
-              : t("jointoteam.attachResume", "Прикрепить резюме")}
-          </Text>
-        </TouchableOpacity>
+        {/* Резюме */}
+        <UploadResume value={resume} onChange={setResume} />
 
-        {/* About */}
+        {/* Письмо */}
         <Controller
           control={control}
           name="coverLetter"
@@ -293,15 +193,11 @@ export default function JoinToTeamScreen() {
             <>
               <TextInput
                 style={[s.input, s.textarea]}
-                placeholder={t(
-                  "jointoteam.coverLetter",
-                  "Расскажите немного о себе*"
-                )}
+                multiline
+                placeholder={t("jointoteam.coverLetter", "О себе*")}
                 placeholderTextColor={colors.subtext}
                 value={value}
                 onChangeText={onChange}
-                multiline
-                textAlignVertical="top"
               />
               {errors.coverLetter && (
                 <Text style={s.error}>{errors.coverLetter.message}</Text>
@@ -311,28 +207,21 @@ export default function JoinToTeamScreen() {
         />
       </ScrollView>
 
-      {/* Bottom button */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={0}
-      >
-        <View style={[s.bottomBar, { paddingBottom: insets.bottom + 8 }]}>
-          <TouchableOpacity
-            style={[
-              s.submit,
-              (!isValid || isSubmitting || isLoading) && s.submitDisabled,
-            ]}
-            onPress={handleSubmit(onSubmit)}
-            disabled={!isValid || isSubmitting || isLoading}
-          >
-            <Text style={s.submitText}>
-              {isSubmitting || isLoading
-                ? t("jointoteam.sending", "Отправляем...")
-                : t("jointoteam.send", "Отправить")}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+      {/* кнопка снизу */}
+      <View style={[s.bottomBar, { paddingBottom: insets.bottom + 8 }]}>
+        <TouchableOpacity
+          style={[
+            s.submit,
+            (!isValid || isSubmitting || isLoading) && s.submitDisabled,
+          ]}
+          onPress={handleSubmit(onSubmit)}
+          disabled={!isValid || isSubmitting || isLoading}
+        >
+          <Text style={s.submitText}>
+            {isLoading ? "Отправляем..." : "Отправить"}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -340,49 +229,26 @@ export default function JoinToTeamScreen() {
 const makeStyles = (colors: any) =>
   StyleSheet.create({
     root: { flex: 1, backgroundColor: colors.background },
-    scroll: { flex: 1 },
-    container: { paddingHorizontal: 16, paddingTop: 8 },
-
+    scroll: { flex: 1, paddingHorizontal: 16 },
     subtitle: {
-      fontSize: 14,
       color: colors.subtext,
       marginTop: 8,
       marginBottom: 12,
-      fontWeight: "400",
+      fontSize: 14,
     },
-
     input: {
       backgroundColor: colors.card,
       borderColor: colors.subtext + "33",
       borderWidth: 1,
       borderRadius: 14,
-      fontSize: 16,
-      paddingVertical: 14,
-      paddingHorizontal: 14,
+      padding: 14,
       color: colors.text,
       marginTop: 12,
-      fontWeight: "400",
     },
-    textarea: { height: 140 },
-
-    attach: {
-      marginTop: 12,
-      backgroundColor: colors.card,
-      borderColor: colors.subtext + "33",
-      borderWidth: 1,
-      borderRadius: 14,
-      paddingVertical: 16,
-      paddingHorizontal: 14,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 10,
+    textarea: {
+      height: 140,
+      textAlignVertical: "top",
     },
-    attachText: {
-      fontSize: 16,
-      color: colors.text,
-      fontWeight: "600",
-    },
-
     bottomBar: {
       position: "absolute",
       left: 0,
@@ -390,21 +256,15 @@ const makeStyles = (colors: any) =>
       bottom: 0,
       backgroundColor: colors.background,
       paddingHorizontal: 16,
-      paddingTop: 8,
     },
     submit: {
       backgroundColor: colors.primary,
-      height: 56,
       borderRadius: 16,
+      height: 56,
       alignItems: "center",
       justifyContent: "center",
     },
     submitDisabled: { opacity: 0.5 },
     submitText: { color: "#fff", fontSize: 16, fontWeight: "700" },
-    error: {
-      color: "#DC2626",
-      marginTop: 4,
-      fontSize: 13,
-    },
-    disabled: { opacity: 0.5 },
+    error: { color: "#DC2626", marginTop: 4 },
   });
