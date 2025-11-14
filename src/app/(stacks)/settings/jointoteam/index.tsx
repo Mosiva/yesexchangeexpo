@@ -45,6 +45,30 @@ export default function JoinToTeamScreen() {
 
   const emailRef = useRef<TextInput>(null);
   const phoneRef = useRef<TextInput>(null);
+  const [maskedPhone, setMaskedPhone] = useState("+7");
+  const [digits, setDigits] = useState("");
+
+  const validPrefixes = [
+    "700",
+    "701",
+    "702",
+    "703",
+    "704",
+    "705",
+    "706",
+    "707",
+    "708",
+    "709",
+    "747",
+    "771",
+    "775",
+    "776",
+    "777",
+    "778",
+  ];
+  const prefix = digits.slice(0, 3);
+  const isPrefixValid =
+    digits.length >= 3 ? validPrefixes.includes(prefix) : true;
 
   const {
     control,
@@ -57,12 +81,12 @@ export default function JoinToTeamScreen() {
 
   const onSubmit = async (values: FormValues) => {
     if (isLoading || isSubmitting) return;
-
+    const e164 = `+7${values.digits}`;
     try {
       const form = new FormData();
       form.append("fullName", values.fullName.trim());
       form.append("email", values.email.trim());
-      form.append("phone", `+7${values.digits}`);
+      form.append("phone", e164);
       form.append("coverLetter", values.coverLetter.trim());
 
       if (resume) {
@@ -141,26 +165,31 @@ export default function JoinToTeamScreen() {
           )}
         />
 
-        {/* Телефон */}
+        {/* Phone */}
         <Controller
           control={control}
           name="digits"
           render={({ field: { onChange } }) => (
             <>
               <MaskInput
-                style={s.input}
                 ref={phoneRef}
-                placeholder="+7 (___) ___-__-__"
+                style={s.input}
+                placeholder="+7 (___) ___-__-__*"
                 placeholderTextColor={colors.subtext}
                 keyboardType="number-pad"
+                inputMode="numeric"
+                autoCorrect={false}
+                autoCapitalize="none"
                 mask={[
                   "+",
                   "7",
-                  " (",
+                  " ",
+                  "(",
                   /\d/,
                   /\d/,
                   /\d/,
-                  ") ",
+                  ")",
+                  " ",
                   /\d/,
                   /\d/,
                   /\d/,
@@ -171,12 +200,27 @@ export default function JoinToTeamScreen() {
                   /\d/,
                   /\d/,
                 ]}
-                onChangeText={(masked, unmasked) =>
-                  onChange(unmasked.replace(/\D/g, "").slice(0, 10))
-                }
+                value={maskedPhone}
+                onChangeText={(masked, unmasked) => {
+                  const digitsOnly = (unmasked || "")
+                    .replace(/\D/g, "")
+                    .slice(0, 10);
+                  onChange(digitsOnly);
+                  setDigits(digitsOnly);
+                  setMaskedPhone(masked);
+                }}
+                maxLength={19}
               />
               {errors.digits && (
                 <Text style={s.error}>{errors.digits.message}</Text>
+              )}
+              {digits.length >= 3 && !isPrefixValid && (
+                <Text style={s.error}>
+                  {t(
+                    "jointoteam.onlyKazakhstanOperators",
+                    "Доступны только коды операторов Казахстана"
+                  )}
+                </Text>
               )}
             </>
           )}
