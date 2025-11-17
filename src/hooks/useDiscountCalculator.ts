@@ -39,6 +39,7 @@ export function useDiscountCalculator({
     toAmount?: number;
     discountPercent?: number;
   } | null>(null);
+
   const { t } = useTranslation();
 
   const debouncedAmount = useDebounce(fromAmount, 450);
@@ -50,7 +51,12 @@ export function useDiscountCalculator({
     return false;
   }, [isGuest, clientDiscountAvailable, baseAmount]);
 
-  // ✅ запрос на бэк
+  function roundAmount(value: number, precision = 2): number {
+    if (!isFinite(value)) return 0;
+    return Number(value.toFixed(precision));
+  }
+
+  // Только серверный запрос, никаких локальных вычислений
   useEffect(() => {
     if (!canShowDiscount) {
       setServerCalc(null);
@@ -74,7 +80,7 @@ export function useDiscountCalculator({
       .unwrap()
       .then((res) => {
         setServerCalc({
-          toAmount: roundAmount(Number(res.toAmount)), // ✅ округление
+          toAmount: roundAmount(Number(res.toAmount)),
           discountPercent: res.discountPercent,
         });
       })
@@ -89,42 +95,49 @@ export function useDiscountCalculator({
     canShowDiscount,
     request,
   ]);
-  function roundAmount(value: number, precision = 2): number {
-    if (!isFinite(value)) return 0;
-    return Number(value.toFixed(precision));
-  }
-  // ✅ процент
+
+  // Процент — только тот, что пришёл с бэка, никаких fallback
   const finalPercent = useMemo(() => {
     if (!canShowDiscount) return 0;
-    return serverCalc?.discountPercent ?? 5;
+    return serverCalc?.discountPercent ?? 0;
   }, [serverCalc, canShowDiscount]);
 
-  // ✅ итоговая сумма
+  // Итоговая сумма — только серверная. Если её нет, возвращаем null.
   const finalAmount = useMemo(() => {
     if (!canShowDiscount) return null;
 
-    // сервер приоритет
-    if (serverCalc?.toAmount !== undefined)
+    if (serverCalc?.toAmount !== undefined) {
       return roundAmount(serverCalc.toAmount);
+    }
 
-    // локальный fallback
-    const local = baseAmount - baseAmount * (finalPercent / 100);
-    return roundAmount(local);
-  }, [serverCalc, baseAmount, finalPercent, canShowDiscount]);
+    return null;
+  }, [serverCalc, canShowDiscount]);
 
   const discountMessage = useMemo(() => {
     const isBuy = mode === "buy";
 
     if (!canShowDiscount) {
       return isBuy
-        ? t("norates.withrates.discountOnlyAvailableForAmountGreaterThan500000", "Скидка доступна только при сумме больше 500 000 тенге")
-        : t("norates.withrates.premiumOnlyAvailableForAmountGreaterThan500000", "Наценка доступна только при сумме больше 500 000 тенге");
+        ? t(
+            "norates.withrates.discountOnlyAvailableForAmountGreaterThan500000",
+            "Скидка доступна только при сумме больше 500 000 тенге"
+          )
+        : t(
+            "norates.withrates.premiumOnlyAvailableForAmountGreaterThan500000",
+            "Наценка доступна только при сумме больше 500 000 тенге"
+          );
     }
 
     if (clientDiscountAvailable === true) {
       return isBuy
-        ? t("norates.withrates.discountOnlyAvailableForFirstBookingOrAmountGreaterThan500000", "Скидка доступна только на первую бронь или сумму больше 500 000 тенге")
-        : t("norates.withrates.premiumOnlyAvailableForFirstBookingOrAmountGreaterThan500000", "Наценка доступна только на первую бронь или сумму больше 500 000 тенге");
+        ? t(
+            "norates.withrates.discountOnlyAvailableForFirstBookingOrAmountGreaterThan500000",
+            "Скидка доступна только на первую бронь или сумму больше 500 000 тенге"
+          )
+        : t(
+            "norates.withrates.premiumOnlyAvailableForFirstBookingOrAmountGreaterThan500000",
+            "Наценка доступна только на первую бронь или сумму больше 500 000 тенге"
+          );
     }
 
     return isBuy
