@@ -162,6 +162,14 @@ export default function ReserveHistoryScreen() {
             />
           }
         >
+          {items.length > 0 && (
+            <Text style={s.historySub}>
+              {t(
+                "reserve.historySub",
+                "Ваша история бронирования валют сохраняется в течение 30 дней"
+              )}
+            </Text>
+          )}
           {items.length === 0 ? (
             <Text style={s.emptyText}>
               {t("reserve.emptyMessage", "Пока нет броней")}
@@ -228,5 +236,9 @@ const makeStyles = (colors: any) =>
       textAlign: "center",
       fontSize: 16,
       marginTop: 100,
+    },
+    historySub: {
+      color: colors.subtext,
+      fontSize: 14,
     },
   });

@@ -860,7 +860,7 @@ const makeStyles = (colors: any) =>
       alignItems: "center",
       justifyContent: "center",
     },
-    ctaText: { color: colors.text, fontSize: 17, fontWeight: "600" },
+    ctaText: { color: "#fff", fontSize: 17, fontWeight: "600" },
     input: {
       borderWidth: 1,
       borderColor: colors.border,

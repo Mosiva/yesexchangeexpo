@@ -70,14 +70,21 @@ export default function ModerationScreen() {
       await doCancelBooking({
         id: Number(id),
       }).unwrap();
-      Alert.alert(t("norates.moderation.success", "Успешно"), t("norates.moderation.bookingCancelled", "Бронь успешно отменена."), [
-        { text: "ОК", onPress: () => router.replace("/(tabs)/reserve") },
-      ]);
+      Alert.alert(
+        t("norates.moderation.success", "Успешно"),
+        t("norates.moderation.bookingCancelled", "Бронь успешно отменена."),
+        [{ text: "ОК", onPress: () => router.replace("/(tabs)/reserve") }]
+      );
     } catch (err: any) {
       console.error("❌ Cancel booking error:", err);
       Alert.alert(
         t("norates.moderation.error", "Ошибка"),
-        err?.data?.message || err?.error || t("norates.moderation.bookingCancelledError", "Не удалось отменить бронь")
+        err?.data?.message ||
+          err?.error ||
+          t(
+            "norates.moderation.bookingCancelledError",
+            "Не удалось отменить бронь"
+          )
       );
     }
   };
@@ -91,20 +98,42 @@ export default function ModerationScreen() {
         contentContainerStyle={{ paddingBottom: insets.bottom + 88 }}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.lead}>
-          {t("norates.moderation.applicationAccepted", "Заявка принята в работу, ожидайте звонка от нашего специалиста")}
-        </Text>
+        {isNoRate ? (
+          <Text style={styles.lead}>
+            {t(
+              "norates.moderation.applicationAccepted",
+              "Заявка принята в работу, ожидайте звонка от нашего специалиста"
+            )}
+          </Text>
+        ) : (
+          <Text style={styles.lead}>
+            {t(
+              "norates.withrates.applicationAccepted",
+              "Заявка принята в работу, ожидайте звонка от нашего специалиста"
+            )}
+          </Text>
+        )}
 
         {/* Card */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>{t("norates.moderation.bookingNumber", "Заявка №")}{bitrixId}</Text>
+          <Text style={styles.cardTitle}>
+            {t("norates.moderation.bookingNumber", "Заявка №")}
+            {bitrixId}
+          </Text>
           <Text style={styles.cardSub}>{kind}</Text>
 
           <View style={{ height: 16 }} />
 
-          <Row label={t("norates.moderation.bookingAmount", "Сумма брони:")} value={`${amount} ${currency}`} big />
+          <Row
+            label={t("norates.moderation.bookingAmount", "Сумма брони:")}
+            value={`${amount} ${currency}`}
+            big
+          />
           <View style={{ height: 10 }} />
-          <Row label={t("norates.moderation.bookingRate", "По курсу:")} value={rateText}>
+          <Row
+            label={t("norates.moderation.bookingRate", "По курсу:")}
+            value={rateText}
+          >
             {isNoRate && (
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 {/* Info icon + tooltip */}
@@ -124,7 +153,10 @@ export default function ModerationScreen() {
                 {showTooltip && (
                   <View style={styles.tooltip}>
                     <Text style={styles.tooltipText}>
-                      {t("norates.moderation.bookingRateTooltip", "Курс на момент создания заявки")}
+                      {t(
+                        "norates.moderation.bookingRateTooltip",
+                        "Курс на момент создания заявки"
+                      )}
                     </Text>
                   </View>
                 )}
@@ -132,7 +164,10 @@ export default function ModerationScreen() {
             )}
           </Row>
           <View style={{ height: 10 }} />
-          <Row label={t("norates.moderation.bookingAddress", "Адрес:")} value={address} />
+          <Row
+            label={t("norates.moderation.bookingAddress", "Адрес:")}
+            value={address}
+          />
 
           {/* Отменить бронь (только если не гость) */}
           {!isGuest && (
@@ -140,7 +175,9 @@ export default function ModerationScreen() {
               style={styles.dangerBtn}
               onPress={() => setShowCancelModal(true)}
             >
-              <Text style={styles.dangerText}>{t("norates.moderation.cancelBooking", "Отменить бронь")}</Text>
+              <Text style={styles.dangerText}>
+                {t("norates.moderation.cancelBooking", "Отменить бронь")}
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -196,63 +233,64 @@ function Row({
 }
 
 /* ——— Styles ——— */
-const makeStyles = (colors: any) => StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  container: { flex: 1, paddingHorizontal: 16 },
-  lead: {
-    fontSize: 16,
-    lineHeight: 28,
-    color: colors.text,
-    marginTop: 8,
-    marginBottom: 16,
-    fontWeight: "400",
-  },
-  card: {
-    backgroundColor: colors.cardBackground,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 16,
-  },
-  cardTitle: { fontSize: 17, fontWeight: "700", color: colors.text },
-  cardSub: { marginTop: 6, color: colors.subtext, fontSize: 12 },
-  rowLabel: { color: colors.subtext, fontSize: 12 },
-  rowValue: { color: colors.text, fontSize: 12, fontWeight: "700" },
-  rowValueBig: { fontSize: 12, fontWeight: "700" },
-  dangerBtn: {
-    marginTop: 16,
-    backgroundColor: COLORS.orange,
-    borderRadius: 14,
-    height: 56,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dangerText: { color: colors.text, fontSize: 14, fontWeight: "700" },
-  bottomBar: {
-    position: "absolute",
-    left: 16,
-    right: 16,
-    bottom: 0,
-  },
-  primaryBtn: {
-    backgroundColor: COLORS.orange,
-    height: 56,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  primaryText: { color: colors.text, fontSize: 16, fontWeight: "700" },
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.background },
+    container: { flex: 1, paddingHorizontal: 16 },
+    lead: {
+      fontSize: 16,
+      lineHeight: 28,
+      color: colors.text,
+      marginTop: 8,
+      marginBottom: 16,
+      fontWeight: "400",
+    },
+    card: {
+      backgroundColor: colors.cardBackground,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: 16,
+    },
+    cardTitle: { fontSize: 17, fontWeight: "700", color: colors.text },
+    cardSub: { marginTop: 6, color: colors.subtext, fontSize: 12 },
+    rowLabel: { color: colors.subtext, fontSize: 12 },
+    rowValue: { color: colors.text, fontSize: 12, fontWeight: "700" },
+    rowValueBig: { fontSize: 12, fontWeight: "700" },
+    dangerBtn: {
+      marginTop: 16,
+      backgroundColor: COLORS.orange,
+      borderRadius: 14,
+      height: 56,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    dangerText: { color: "#fff", fontSize: 14, fontWeight: "700" },
+    bottomBar: {
+      position: "absolute",
+      left: 16,
+      right: 16,
+      bottom: 0,
+    },
+    primaryBtn: {
+      backgroundColor: COLORS.orange,
+      height: 56,
+      borderRadius: 16,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    primaryText: { color: colors.text, fontSize: 16, fontWeight: "700" },
 
-  // tooltip bubble
-  tooltip: {
-    position: "absolute",
-    top: -40, // above the row
-    left: -100,
-    backgroundColor: "#35353599",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    zIndex: 5,
-  },
-  tooltipText: { color: colors.text, fontSize: 14, fontWeight: "700" },
-});
+    // tooltip bubble
+    tooltip: {
+      position: "absolute",
+      top: -40, // above the row
+      left: -100,
+      backgroundColor: "#35353599",
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 12,
+      zIndex: 5,
+    },
+    tooltipText: { color: colors.text, fontSize: 14, fontWeight: "700" },
+  });

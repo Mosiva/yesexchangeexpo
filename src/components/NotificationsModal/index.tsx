@@ -149,7 +149,7 @@ function Row({
           style={[
             rowStyles.thumb,
             {
-              backgroundColor: colors.text,
+              backgroundColor: "#fff",
               alignSelf: value ? "flex-end" : "flex-start",
             },
           ]}

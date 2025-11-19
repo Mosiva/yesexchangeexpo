@@ -202,7 +202,8 @@
     "login": "Login"
   },
   "reserve": {
-    "title": "Reservation",
+    "title": "Reservе",
+    "stackTitle": "Reservе",
     "noRate": "Without rate link",
     "withRate": "With rate link",
     "withRateSub": "Reservation up to 30 minutes",
@@ -230,7 +231,8 @@
     "syncFailed": "Sync failed",
     "externalDeleted": "External deleted",
     "unknown": "Unknown",
-    "noRateSub": "Reservation up to 1 hour"
+    "noRateSub": "Reservation up to 1 hour",
+    "historySub": "Your reservation history is saved for 30 days"
   },
 
   "cancelReservationModal": {
@@ -398,7 +400,8 @@
       "premiumOnlyAvailableForFirstBookingOrAmountGreaterThan500000": "The premium is available only for the first reservation or for amounts above 500,000 tenge",
       "discountOnlyAvailableForAmountGreaterThan500000": "The discount is available only for amounts above 500,000 tenge",
       "premiumOnlyAvailableForAmountGreaterThan500000": "The premium is available only for amounts above 500,000 tenge",
-      "kind": "With rate link"
+      "kind": "With rate link",
+      "applicationAccepted": "Your request is being processed. Our manager will contact the exchange office to confirm the required amount and call you to confirm. After the call and confirmation, a 30-minute timer will start. You must arrive at the exchange office and complete the exchange within this time. If the exchange rate changes during this time, the exchange amount will remain unchanged. If the timer expires, we cannot guarantee the required amount will be available at the exchange office, and the exchange rate may also change."
     },
     "moderation": {
       "name": "In processing",
@@ -410,7 +413,7 @@
       "cancelBooking": "Cancel reservation",
       "bookingCancelled": "Reservation successfully cancelled.",
       "bookingCancelledError": "Failed to cancel reservation",
-      "applicationAccepted": "Your request has been accepted. Please wait for a call from our specialist",
+      "applicationAccepted": "Your request is being processed. Our manager will contact the exchange office to confirm the required amount and call you to confirm. After the call and confirmation, a one-hour timer will start. You must arrive at the exchange office within this time and complete the exchange. If the exchange rate changes during this time, the exchange amount will change accordingly. If the timer expires, we cannot guarantee the required amount will be available at the exchange office.",
       "bookingNumber": "Booking number",
       "kind": "Without rate link"
     }

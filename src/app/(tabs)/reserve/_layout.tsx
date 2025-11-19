@@ -43,7 +43,7 @@ export default function Layout() {
           // Hide back by default + disable iOS swipe-back
           header: () => (
             <CustomHeader
-              title={t("reserve.title", "Бронь")}
+              title={t("reserve.stackTitle", "Бронь")}
               showBackButton={false}
             />
           ),
