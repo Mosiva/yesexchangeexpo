@@ -98,22 +98,6 @@ export default function ModerationScreen() {
         contentContainerStyle={{ paddingBottom: insets.bottom + 88 }}
         keyboardShouldPersistTaps="handled"
       >
-        {isNoRate ? (
-          <Text style={styles.lead}>
-            {t(
-              "norates.moderation.applicationAccepted",
-              "Заявка принята в работу, ожидайте звонка от нашего специалиста"
-            )}
-          </Text>
-        ) : (
-          <Text style={styles.lead}>
-            {t(
-              "norates.withrates.applicationAccepted",
-              "Заявка принята в работу, ожидайте звонка от нашего специалиста"
-            )}
-          </Text>
-        )}
-
         {/* Card */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
@@ -181,6 +165,21 @@ export default function ModerationScreen() {
             </TouchableOpacity>
           )}
         </View>
+        {isNoRate ? (
+          <Text style={styles.lead}>
+            {t(
+              "norates.moderation.applicationAccepted",
+              "Заявка принята в работу, ожидайте звонка от нашего специалиста"
+            )}
+          </Text>
+        ) : (
+          <Text style={styles.lead}>
+            {t(
+              "norates.withrates.applicationAccepted",
+              "Заявка принята в работу, ожидайте звонка от нашего специалиста"
+            )}
+          </Text>
+        )}
       </ScrollView>
 
       {/* Модалка подтверждения отмены */}
@@ -244,6 +243,7 @@ const makeStyles = (colors: any) =>
       marginTop: 8,
       marginBottom: 16,
       fontWeight: "400",
+      textAlign: "center",
     },
     card: {
       backgroundColor: colors.cardBackground,

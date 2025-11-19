@@ -67,7 +67,7 @@ export default function LineUpDownChartCard({
           }
         >
           <Text style={styles.moreText}>
-            {t("archives.showMore", "Показать больше")}
+            {t("archive.showMore", "Показать больше")}
           </Text>
         </Pressable>
       )}

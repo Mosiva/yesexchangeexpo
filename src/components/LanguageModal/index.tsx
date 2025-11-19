@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 
-  title: { fontSize: 18, fontWeight: "700" },
+  title: { fontSize: 16, fontWeight: "700" },
 
   row: {
     flexDirection: "row",

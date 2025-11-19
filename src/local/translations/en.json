@@ -217,7 +217,7 @@
     "error": "Error",
     "errorMessage": "Failed to cancel reservation.",
     "retry": "Retry",
-    "applicationNumber": "Application number",
+    "applicationNumber": "Application №",
     "bookingAmount": "Reservation amount",
     "address": "Address",
     "cancelReservation": "Cancel reservation",
@@ -334,7 +334,7 @@
     "archive": "Archive",
     "news": "News",
     "errorLoadingNbkRates": "Failed to load NBK rates",
-    "nbkRatesLabel": "NbRK rate"
+    "nbkRatesLabel": "NBK rate"
   },
   "currenciesMainCardList": {
     "purchase": "Buy",

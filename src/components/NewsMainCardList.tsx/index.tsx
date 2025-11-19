@@ -48,7 +48,7 @@ export default function NewsMainCardList({
   const hasMore = items.length > initial;
   const buttonLabel = expanded
     ? t("currenciesMainCardList.hide", "Скрыть")
-    : t("archives.showMore", "Показать больше");
+    : t("archive.showMore", "Показать больше");
 
   return (
     <View style={[styles.wrapper, style]}>
