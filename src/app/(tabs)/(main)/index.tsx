@@ -59,7 +59,7 @@ const getTodayDate = () => {
 };
 // Текущее локальное время
 const LocalTime = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
 
   const styles = makeStyles(colors);
@@ -70,18 +70,32 @@ const LocalTime = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // ✅ Берём месяцы из перевода
   const nominativeMonths = t("datepicker.months", {
     returnObjects: true,
   }) as string[];
 
-  // ✅ Преобразуем в родительный падеж
+  // функция для заглавной буквы
+  function capitalize(str: string) {
+    if (!str) return "";
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  // язык, для которого применяем склонение
+  const isSlavicLike =
+    i18n.language.startsWith("ru") || i18n.language.startsWith("kz");
+
   const genitiveMonths = nominativeMonths.map((m) => {
-    return m
-      .toLowerCase()
-      .replace("ь", "я") // Январь → Января
-      .replace("й", "я") // Май → Мая
-      .replace("т", "та"); // Август → Августа
+    // 🇷🇺 🇰🇿 → применяем склонение
+    if (isSlavicLike) {
+      return m
+        .toLowerCase()
+        .replace("ь", "я") // Январь → января
+        .replace("й", "я") // Май → мая
+        .replace("т", "та"); // Август → августа
+    }
+
+    // 🇬🇧🇺🇸 en → просто с большой буквы
+    return capitalize(m);
   });
 
   const day = String(now.getDate()).padStart(2, "0");

@@ -142,7 +142,7 @@ export default function LanguageChooseModal({
             style={[styles.saveBtn, { backgroundColor: colors.primary }]}
             onPress={handleSave}
           >
-            <Text style={[styles.saveText, { color: colors.text }]}>
+            <Text style={[styles.saveText, { color: "#fff" }]}>
               {t("common.save", "Сохранить")}
             </Text>
           </TouchableOpacity>
@@ -221,5 +221,5 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
 
-  saveText: { fontSize: 16, fontWeight: "700" },
+  saveText: { fontSize: 16, fontWeight: "700",  },
 });

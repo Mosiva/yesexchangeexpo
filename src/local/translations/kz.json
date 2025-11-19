@@ -444,7 +444,8 @@
     "cancel": "Болдырмау",
     "apply": "Қолданып беру",
     "limit": "Ограничение",
-    "youCanSelectPeriodNotMoreThan1Month": "Вы можете выбрать период не более 1 месяца"
+    "youCanSelectPeriodNotMoreThan1Month": "Вы можете выбрать период не более 1 месяца",
+    "showMore": "Көбірек көрсету"
   },
   "register": {
     "title": "Тіркелу",
