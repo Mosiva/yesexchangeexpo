@@ -17,7 +17,6 @@ export function SwitchPill({
     <Pressable
       style={[styles.track, value ? styles.on : styles.off]}
       onPress={onToggle}
-      disabled
     >
       <View style={[styles.thumb, { left: value ? 42 : 3 }]}>
         <Ionicons name={value ? "moon" : "sunny"} size={16} color="#F58220" />

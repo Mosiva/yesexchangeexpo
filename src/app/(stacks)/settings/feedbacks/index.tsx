@@ -281,7 +281,7 @@ export default function FeedbacksScreen() {
               (!isValid || isSubmitting || isLoading) && s.submitDisabled,
             ]}
             disabled={!isValid || isSubmitting || isLoading}
-            // onPress={handleSubmit(onSubmit)}
+            onPress={handleSubmit(onSubmit)}
           >
             <Text style={s.submitText}>
               {isSubmitting || isLoading

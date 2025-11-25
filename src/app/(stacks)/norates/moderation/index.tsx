@@ -237,13 +237,13 @@ const makeStyles = (colors: any) =>
     screen: { flex: 1, backgroundColor: colors.background },
     container: { flex: 1, paddingHorizontal: 16 },
     lead: {
-      fontSize: 16,
+      fontSize: 14,
       lineHeight: 28,
       color: colors.text,
       marginTop: 8,
       marginBottom: 16,
       fontWeight: "400",
-      textAlign: "center",
+      textAlign: "justify",
     },
     card: {
       backgroundColor: colors.cardBackground,

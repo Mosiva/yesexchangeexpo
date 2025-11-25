@@ -268,7 +268,7 @@ export default function JoinToTeamScreen() {
             s.submit,
             (!isValid || isSubmitting || isLoading) && s.submitDisabled,
           ]}
-          // onPress={handleSubmit(onSubmit)}
+          onPress={handleSubmit(onSubmit)}
           disabled={!isValid || isSubmitting || isLoading}
         >
           <Text style={s.submitText}>
