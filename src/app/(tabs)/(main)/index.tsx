@@ -30,6 +30,7 @@ import {
   useExchangeRatesCurrentQuery,
   useNbkRatesQuery,
   useNearestBranchQuery,
+  useNewsQuery,
 } from "../../../services/yesExchange";
 import { CurrencyCode } from "../../../types/api";
 import {
@@ -126,6 +127,14 @@ export default function MainScreen() {
     isLoading: isBranchesLoading,
     isError: isBranchesError,
   } = useBranchesQuery();
+  const {
+    data: rawNews,
+    refetch: refetchNews,
+    isLoading: isNewsLoading,
+    isError: isNewsError,
+  } = useNewsQuery({
+    limit: 4,
+  });
   // === API ===
   const {
     data: rawNearestBranch,
@@ -188,6 +197,7 @@ export default function MainScreen() {
   );
 
   const exchangeRates = rawExchangeRates?.data || [];
+  const news = rawNews?.data || [];
 
   // ✅ NBRK items safe filtered (only today)
   const nbkItems = React.useMemo(() => {
@@ -212,6 +222,15 @@ export default function MainScreen() {
       name: r.currency?.name ?? "",
     }));
   }, [rawNbkRates]);
+
+  const newsItems = React.useMemo(() => {
+    return news.map((n) => ({
+      id: n.id,
+      title: n.title,
+      summary: n.excerpt as string,
+      date: n.createdAt,
+    }));
+  }, [news]);
 
   React.useEffect(() => {
     // 🕓 1️⃣ Идёт загрузка ближайшего филиала
@@ -295,12 +314,14 @@ export default function MainScreen() {
       refetchNbkRates(),
       refetchExchangeRates(),
       refetchNearestBranch(),
+      refetchNews(),
     ]);
   }, [
     refetchBranches,
     refetchNbkRates,
     refetchExchangeRates,
     refetchNearestBranch,
+    refetchNews,
   ]);
 
   useFocusEffect(
@@ -529,51 +550,21 @@ export default function MainScreen() {
 
       {/* === Контент вкладок === */}
       {activeTab === "news" ? (
-        <NewsMainCardList
-          onDark={false}
-          items={[
-            {
-              id: 1,
-              title: "Информационное сообщение по валютному рынку",
-              summary:
-                "По итогам декабря курс тенге укрепился на 1,3% до 462,66 тенге за доллар США.",
-              date: "2024-12-24",
-            },
-            {
-              id: 2,
-              title: "Курс тенге укрепился к доллару",
-              summary:
-                "Нацбанк сообщил об изменении коридора и повышении интереса к нотам.",
-              date: "2024-12-20",
-            },
-            {
-              id: 3,
-              title: "Курс тенге укрепился к доллару",
-              summary:
-                "Нацбанк сообщил об изменении коридора и повышении интереса к нотам.",
-              date: "2024-12-20",
-            },
-            {
-              id: 4,
-              title: "Курс тенге укрепился к доллару",
-              summary:
-                "Нацбанк сообщил об изменении коридора и повышении интереса к нотам.",
-              date: "2024-12-20",
-            },
-          ]}
-          initial={3}
-          onItemPress={(item) =>
-            router.push({
-              pathname: "/(stacks)/news/[id]",
-              params: {
-                id: String(item.id),
-                title: item.title,
-                date: item.date.toString(),
-                content: item.summary,
-              },
-            })
-          }
-        />
+        isNewsLoading ? (
+          <View style={styles.skeletonContainer}>
+            <Skeleton width="90%" height={60} style={styles.skeletonItem} />
+            <Skeleton width="90%" height={60} style={styles.skeletonItem} />
+            <Skeleton width="90%" height={60} style={styles.skeletonItem} />
+          </View>
+        ) : isNewsError ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>
+              {t("main.errorLoadingNews", "Ошибка загрузки новостей")}
+            </Text>
+          </View>
+        ) : (
+          <NewsMainCardList items={newsItems} initial={3} />
+        )
       ) : isNbkRatesLoading ? (
         <View style={styles.skeletonContainer}>
           <Skeleton width="90%" height={60} style={styles.skeletonItem} />

@@ -1,117 +1,97 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
+  ActivityIndicator,
+  RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
 import { useTheme } from "../../../hooks/useTheme";
-
-const ORANGE = "#F58220";
-
-type NewsItem = {
-  id: string;
-  title: string;
-  excerpt: string;
-  date: string; // "24.12.2024"
-};
-
-const TABS = ["YesNews", "Kase", "Zakon.kz"] as const;
-type TabKey = (typeof TABS)[number];
-
-const SAMPLE: Record<TabKey, NewsItem[]> = {
-  YesNews: [
-    {
-      id: "yn1",
-      title: "Информационное сообщение по валютному рынку",
-      excerpt:
-        "По итогам декабря курс тенге укрепился на 1,3% до 462,66 тенге за доллар США. Сред...",
-      date: "24.12.2024",
-    },
-    {
-      id: "yn2",
-      title: "Курс тенге укрепился к доллару",
-      excerpt:
-        "Нацбанк сообщил об изменении коридора и повышении интереса к нотам. Доллар теряет...",
-      date: "20.12.2024",
-    },
-    {
-      id: "yn3",
-      title: "Новые правила обмена валют",
-      excerpt:
-        "Обновлены лимиты наличных операций и требования идентификации клиентов...",
-      date: "15.12.2024",
-    },
-  ],
-  Kase: [
-    {
-      id: "ka1",
-      title: "KASE: итоги торгов иностранной валютой",
-      excerpt:
-        "Объем сделок вырос, активность нерезидентов увеличилась, спред сузился...",
-      date: "24.12.2024",
-    },
-  ],
-  "Zakon.kz": [
-    {
-      id: "zk1",
-      title: "Минфин пояснил изменения на валютном рынке",
-      excerpt:
-        "Ведомство ожидает стабилизации курсов и сохранения инфляции в целевом коридоре...",
-      date: "24.12.2024",
-    },
-  ],
-};
+import { useNewsQuery } from "../../../services/yesExchange";
 
 export default function NewsScreen() {
-  const router = useRouter();
+  const {
+    data: rawNews,
+    refetch: refetchNews,
+    isLoading: isNewsLoading,
+    isError: isNewsError,
+  } = useNewsQuery({
+    limit: 100,
+  });
+
+  const news = rawNews?.data || [];
+
+  const newsItems = React.useMemo(() => {
+    return news.map((n) => ({
+      id: n.id,
+      title: n.title,
+      summary: n.excerpt as string,
+      date: n.createdAt,
+    }));
+  }, [news]);
+
   const { colors, theme } = useTheme();
   const isLight = theme === "light";
   const styles = makeStyles(colors);
-  const [active, setActive] = useState<TabKey>("YesNews");
+
   const [query, setQuery] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
-  const items = useMemo(() => {
-    const src = SAMPLE[active];
-    if (!query.trim()) return src;
-    const q = query.toLowerCase();
-    return src.filter(
-      (n) =>
-        n.title.toLowerCase().includes(q) || n.excerpt.toLowerCase().includes(q)
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetchNews();
+    setRefreshing(false);
+  }, [refetchNews]);
+
+  // ---------- Loading State ----------
+  if (isNewsLoading) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
     );
-  }, [active, query]);
+  }
 
+  // ---------- Error State ----------
+  if (isNewsError) {
+    return (
+      <View style={styles.container}>
+        <ScrollView
+          contentContainerStyle={{ paddingTop: 100, paddingHorizontal: 16 }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          <Text style={{ color: colors.text, fontSize: 16 }}>
+            Произошла ошибка. Потяните вниз, чтобы обновить.
+          </Text>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // ---------- Normal UI ----------
   return (
     <View style={styles.container}>
       <StatusBar barStyle={isLight ? "dark-content" : "light-content"} />
+
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
         keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
-        {/* Tabs */}
-        <View style={styles.tabsRow}>
-          {TABS.map((t) => {
-            const focused = active === t;
-            return (
-              <TouchableOpacity
-                key={t}
-                onPress={() => setActive(t)}
-                style={[styles.tab, focused && styles.tabActive]}
-              >
-                <Text style={[styles.tabText, focused && styles.tabTextActive]}>
-                  {t}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
         {/* Search */}
         <View style={styles.searchWrap}>
           <Ionicons
@@ -132,13 +112,8 @@ export default function NewsScreen() {
 
         {/* List */}
         <NewsMainCardList
-          items={items.map((n) => ({
-            id: n.id,
-            title: n.title,
-            summary: n.excerpt, // 👈 теперь попадёт в нужное поле
-            date: n.date,
-          }))}
-          initial={3}
+          items={newsItems}
+          initial={100}
           onMorePress={() => {}}
           onDark={false}
         />
@@ -157,33 +132,6 @@ const makeStyles = (colors: any) =>
       paddingTop: 6,
       marginBottom: 6,
     },
-    headerTitle: {
-      flex: 1,
-      textAlign: "center",
-      fontSize: 28,
-      fontWeight: "800",
-      color: "#111827",
-    },
-
-    tabsRow: {
-      flexDirection: "row",
-      gap: 14,
-      marginTop: 8,
-      marginBottom: 12,
-    },
-    tab: {
-      paddingHorizontal: 18,
-      paddingVertical: 12,
-      borderRadius: 12,
-      backgroundColor: colors.background,
-    },
-    tabActive: {
-      backgroundColor: colors.tabActive,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    tabText: { color: colors.text, fontSize: 14, fontWeight: "400" },
-    tabTextActive: { color: colors.text },
 
     searchWrap: {
       flexDirection: "row",
@@ -202,26 +150,4 @@ const makeStyles = (colors: any) =>
       fontWeight: "400",
       color: "#111827",
     },
-
-    // (leftover shared styles you had)
-    card: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: "#fff",
-      borderRadius: 16,
-      borderWidth: 1,
-      borderColor: "#ECECEC",
-      paddingHorizontal: 14,
-      paddingVertical: 16,
-      marginTop: 14,
-    },
-    cta: {
-      backgroundColor: ORANGE,
-      borderRadius: 16,
-      height: 56,
-      alignItems: "center",
-      justifyContent: "center",
-      marginTop: 16,
-    },
-    ctaText: { color: "#fff", fontSize: 16, fontWeight: "700" },
   });
