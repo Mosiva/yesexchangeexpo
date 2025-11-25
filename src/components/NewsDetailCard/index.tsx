@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import dayjs from "dayjs";
 import { useRouter } from "expo-router";
 import React, { memo } from "react";
 import {
@@ -47,7 +48,9 @@ export default function NewsDetailCard({ title, date, content, image }: Props) {
       {/* Article */}
       <View style={styles.body}>
         <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
-        <Text style={[styles.date, { color: colors.subtext }]}>{date}</Text>
+        <Text style={[styles.date, { color: colors.subtext }]}>
+          {dayjs(date).format("DD.MM.YYYY")}
+        </Text>
 
         <ArticleText text={content} />
       </View>

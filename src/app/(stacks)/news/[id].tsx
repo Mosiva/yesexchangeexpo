@@ -1,37 +1,95 @@
 import { useLocalSearchParams } from "expo-router";
-import { StatusBar } from "react-native";
+import React, { useCallback, useState } from "react";
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StatusBar,
+  Text,
+  View,
+} from "react-native";
 import NewsDetailCard from "../../../components/NewsDetailCard";
 import { useTheme } from "../../../hooks/useTheme";
+import { useNewsByIdQuery } from "../../../services/yesExchange";
 
 type Params = {
-  title?: string;
-  date?: string; // e.g. "24.12.2024"
-  content?: string;
-  image?: string;
+  id: string;
 };
 
 export default function NewsDetail() {
-  const { title, date, content, image } = useLocalSearchParams<Params>();
-  const { theme } = useTheme();
+  const { id } = useLocalSearchParams<Params>();
+  const numericId = Number(id);
+
+  const {
+    data: newsItem,
+    isLoading: isNewsLoading,
+    isError: isNewsError,
+    refetch,
+  } = useNewsByIdQuery({ id: numericId }, { skip: !numericId });
+
+  const { theme, colors } = useTheme();
   const isLight = theme === "light";
 
-  const safeTitle = title || "Информационное сообщение\nпо валютному рынку";
-  const safeDate = date || "24.12.2024";
-  const safeContent =
-    content ||
-    [
-      "По итогам декабря курс тенге укрепился на 1,3% до 462,66 тенге за доллар США. Среднедневной объём торгов на Казахстанской фондовой бирже за месяц увеличился с 132 до 141 млн долл. США.",
-      "Продажи валютной выручки субъектами квазигосударственного сектора в течение прошедшего месяца составили порядка 328,7 млн долл. США.",
-    ].join("\n\n");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
+
+  // ---------- Loading ----------
+  if (isNewsLoading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  // ---------- Error ----------
+  if (isNewsError) {
+    return (
+      <ScrollView
+        contentContainerStyle={{
+          paddingTop: 100,
+          paddingHorizontal: 16,
+          alignItems: "center",
+        }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <Text style={{ fontSize: 16 }}>
+          Произошла ошибка. Потяните вниз, чтобы обновить.
+        </Text>
+      </ScrollView>
+    );
+  }
+
+  // ---------- No Data ----------
+  if (!newsItem) {
+    return (
+      <View style={{ padding: 20 }}>
+        <Text style={{ fontSize: 16 }}>Новость не найдена.</Text>
+      </View>
+    );
+  }
 
   return (
     <>
       <StatusBar barStyle={isLight ? "dark-content" : "light-content"} />
       <NewsDetailCard
-        title={safeTitle}
-        date={safeDate}
-        content={safeContent}
-        image={image}
+        title={newsItem.title as string}
+        date={newsItem.createdAt as string}
+        content={newsItem.content as string}
+        image={newsItem.imageUrl as string}
       />
     </>
   );
