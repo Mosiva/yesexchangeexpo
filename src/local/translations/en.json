@@ -347,14 +347,14 @@
     "ctaText": "Reserve"
   },
   "currencyExchangeModal": {
-    "sell": "Sell",
-    "buy": "Buy",
+    "sell": "I sell",
+    "buy": "I buy",
     "sellInput": "Sell",
     "buyInput": "Buy",
-    "sellOutput": "Get",
-    "buyOutput": "Give",
-    "ctaText": "Reserve",
-    "rateHint": "By rate"
+    "sellOutput": "Give",
+    "buyOutput": "Receive",
+    "ctaText": "Book",
+    "rateHint": "At the rate of"
   },
   "norates": {
     "title": "Without rate link",

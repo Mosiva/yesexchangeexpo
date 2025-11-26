@@ -345,12 +345,12 @@
     "ctaText": "Забронировать"
   },
   "currencyExchangeModal": {
-    "sell": "Продажа",
-    "buy": "Покупка",
+    "sell": "Я покупаю",
+    "buy": "Я продаю",
     "sellInput": "Продать",
-    "buyInput": "Купить",
-    "sellOutput": "Получить",
-    "buyOutput": "Отдать",
+    "buyInput": "Продать",
+    "sellOutput": "Передать",
+    "buyOutput": "Получить",
     "ctaText": "Забронировать",
     "rateHint": "По курсу"
   },

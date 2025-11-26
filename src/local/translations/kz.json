@@ -347,12 +347,12 @@
     "ctaText": "Брондау"
   },
   "currencyExchangeModal": {
-    "sell": "Сату",
-    "buy": "Сатып алу",
+    "sell": "Мен сатамын",
+    "buy": "Мен сатып аламын",
     "sellInput": "Сату",
-    "buyInput": "Сатып алу",
-    "sellOutput": "Алу",
-    "buyOutput": "Беру",
+    "buyInput": "Сату",
+    "sellOutput": "Беру",
+    "buyOutput": "Алу",
     "ctaText": "Брондау",
     "rateHint": "Курс бойынша"
   },
