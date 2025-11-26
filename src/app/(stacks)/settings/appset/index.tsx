@@ -28,6 +28,8 @@ export default function AppSetScreen() {
   // ✅ список валют
   const { data: rawCurrencies } = useCurrenciesQuery();
   const currencies = Array.isArray(rawCurrencies) ? rawCurrencies : [];
+  // показываем все кроме KZT
+  const filteredCurrencies = currencies.filter((c) => c.code !== "KZT");
 
   const { isGuest, language } = useAuth();
 
@@ -133,7 +135,7 @@ export default function AppSetScreen() {
       />
 
       <CurrenciesModal
-        items={currencies}
+        items={filteredCurrencies}
         visible={currencyModalVisible}
         value={selectedCurrencies}
         onClose={() => setCurrencyModalVisible(false)}

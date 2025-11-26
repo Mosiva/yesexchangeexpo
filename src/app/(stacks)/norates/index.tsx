@@ -154,6 +154,7 @@ export default function ReserveNoRateScreen() {
       trend: item.trend || "same",
     }));
   }, [rawExchangeRates]);
+  const filteredCurrencies = currencies.filter((c) => c.code !== "KZT");
 
   const findCurrency = (code: string) =>
     currencies.find((c) => c.code === code) ?? {
@@ -528,7 +529,7 @@ export default function ReserveNoRateScreen() {
         }}
         value={[toCode]}
         buttonText={t("norates.selectCurrency", "Выбрать валюту")}
-        items={currencies.map((c) => ({
+        items={filteredCurrencies.map((c) => ({
           code: c.code,
           name: c.name,
           flag: <CurrencyFlag code={c.code as CurrencyCode} size={24} />,

@@ -90,8 +90,6 @@ export default function CurrenciesModal({
     <Modal
       isVisible={visible}
       onBackdropPress={onClose}
-      onSwipeComplete={onClose}
-      swipeDirection="down"
       style={styles.modal}
       animationIn="slideInUp"
       animationOut="slideOutDown"
@@ -105,7 +103,9 @@ export default function CurrenciesModal({
 
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>{t("currenciesModal.title", "Валюта на главном табло")}</Text>
+            <Text style={styles.title}>
+              {t("currenciesModal.title", "Валюта на главном табло")}
+            </Text>
             <TouchableOpacity onPress={onClose} hitSlop={8}>
               <Ionicons name="close" size={22} color={colors.text} />
             </TouchableOpacity>
@@ -121,7 +121,10 @@ export default function CurrenciesModal({
             />
             <TextInput
               style={styles.searchInput}
-              placeholder={t("currenciesModal.searchPlaceholder", "Поиск по названию валюты")}
+              placeholder={t(
+                "currenciesModal.searchPlaceholder",
+                "Поиск по названию валюты"
+              )}
               value={query}
               onChangeText={setQuery}
               autoCorrect={false}
@@ -145,7 +148,9 @@ export default function CurrenciesModal({
             style={[styles.bottomBar, { paddingBottom: insets.bottom + 8 }]}
           >
             <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-              <Text style={styles.saveText}>{t("currenciesModal.saveButton", "Сохранить")}</Text>
+              <Text style={styles.saveText}>
+                {t("currenciesModal.saveButton", "Сохранить")}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -154,92 +159,98 @@ export default function CurrenciesModal({
   );
 }
 
-const makeStyles = (colors: any) => StyleSheet.create({
-  modal: { justifyContent: "flex-end", margin: 0 },
-  overlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.4)",
-  },
-  sheet: {
-    backgroundColor: colors.background,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    maxHeight: "90%",
-  },
-  handle: {
-    width: 44,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#E9ECEF",
-    alignSelf: "center",
-    marginBottom: 12,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-  title: { fontSize: 20, fontWeight: "700", color: colors.text },
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    modal: { justifyContent: "flex-end", margin: 0 },
+    overlay: {
+      flex: 1,
+      justifyContent: "flex-end",
+      backgroundColor: "rgba(0,0,0,0.4)",
+    },
+    sheet: {
+      backgroundColor: colors.background,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      paddingHorizontal: 16,
+      paddingTop: 8,
+      maxHeight: "90%",
+    },
+    handle: {
+      width: 44,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: "#E9ECEF",
+      alignSelf: "center",
+      marginBottom: 12,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 12,
+    },
+    title: { fontSize: 20, fontWeight: "700", color: colors.text },
 
-  searchWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F5F6F8",
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 10,
-  },
-  searchInput: { flex: 1, fontSize: 16, color: "#111827" },
+    searchWrap: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: "#F5F6F8",
+      borderRadius: 14,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      marginBottom: 10,
+    },
+    searchInput: { flex: 1, fontSize: 16, color: "#111827" },
 
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 14,
-  },
-  flag: { fontSize: 24, marginRight: 10 },
-  code: { fontSize: 16, fontWeight: "700", color: colors.text },
-  name: { fontSize: 12, color: colors.subtext, marginTop: 2, fontWeight: "400" },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 14,
+    },
+    flag: { fontSize: 24, marginRight: 10 },
+    code: { fontSize: 16, fontWeight: "700", color: colors.text },
+    name: {
+      fontSize: 12,
+      color: colors.subtext,
+      marginTop: 2,
+      fontWeight: "400",
+    },
 
-  sep: { height: 1, backgroundColor: colors.border },
+    sep: { height: 1, backgroundColor: colors.border },
 
-  // Custom switch
-  switchTrack: {
-    width: 36,
-    height: 20,
-    borderRadius: 16,
-    padding: 3,
-    marginLeft: 12,
-    justifyContent: "center",
-  },
-  trackOn: { backgroundColor: ORANGE },
-  trackOff: { backgroundColor: "#6B6B6B" },
-  switchThumb: {
-    width: 16,
-    height: 16,
-    borderRadius: 13,
-    backgroundColor: "#fff",
-  },
-  thumbOn: { alignSelf: "flex-end" },
-  thumbOff: { alignSelf: "flex-start" },
+    // Custom switch
+    switchTrack: {
+      width: 36,
+      height: 20,
+      borderRadius: 16,
+      padding: 3,
+      marginLeft: 12,
+      justifyContent: "center",
+    },
+    trackOn: { backgroundColor: ORANGE },
+    trackOff: { backgroundColor: "#6B6B6B" },
+    switchThumb: {
+      width: 16,
+      height: 16,
+      borderRadius: 13,
+      backgroundColor: "#fff",
+    },
+    thumbOn: { alignSelf: "flex-end" },
+    thumbOff: { alignSelf: "flex-start" },
 
-  bottomBar: {
-    position: "absolute",
-    left: 16,
-    right: 16,
-    bottom: 0,
-    backgroundColor: "transparent",
-  },
-  saveBtn: {
-    backgroundColor: ORANGE,
-    height: 56,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  saveText: { color: "#fff", fontSize: 16, fontWeight: "700" },
-});
+    bottomBar: {
+      position: "absolute",
+      left: 16,
+      right: 16,
+      bottom: 0,
+      backgroundColor: "transparent",
+    },
+    saveBtn: {
+      backgroundColor: ORANGE,
+      height: 56,
+      borderRadius: 16,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    saveText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  });

@@ -91,8 +91,6 @@ export default function CurrenciesListModalArchive({
     <Modal
       isVisible={visible}
       onBackdropPress={onClose}
-      onSwipeComplete={onClose}
-      swipeDirection="down"
       style={styles.modal}
       animationIn="slideInUp"
       animationOut="slideOutDown"

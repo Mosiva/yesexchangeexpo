@@ -224,6 +224,9 @@ export default function ReserveWithRateScreen() {
     buy: 1,
     sell: 1,
   };
+
+  const filteredCurrencies = currencies.filter((c) => c.code !== "KZT");
+
   const to = findCurrency(toCode);
   const [toText, setToText] = useState("0");
   const [fromText, setFromText] = useState("0");
@@ -657,7 +660,7 @@ export default function ReserveWithRateScreen() {
         }}
         value={[toCode]}
         buttonText={t("norates.withrates.selectCurrency", "Выбрать валюту")}
-        items={currencies.map((c) => ({
+        items={filteredCurrencies.map((c) => ({
           code: c.code,
           name: c.name,
           flag: <CurrencyFlag code={c.code as CurrencyCode} size={24} />,
