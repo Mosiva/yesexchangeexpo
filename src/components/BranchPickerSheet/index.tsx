@@ -20,6 +20,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import ImageView from "react-native-image-viewing";
 import { useTheme } from "../../hooks/useTheme";
 import BranchScheduleBlock from "../BranchScheduleBlock";
 
@@ -64,6 +65,15 @@ export default function BranchPickerSheet({
   isRateLocked = false,
   isNearbyScreen = false,
 }: Props) {
+  // Добавляем состояние для галереи
+  const [isGalleryVisible, setIsGalleryVisible] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Подготавливаем массив картинок для ImageView (ему нужен формат [{uri: '...'}])
+  const galleryImages = useMemo(() => {
+    return (selectedBranch?.photos ?? []).map((photo) => ({ uri: photo }));
+  }, [selectedBranch]);
+
   const { t } = useTranslation();
   const { colors, theme } = useTheme();
   const s = makeStyles(colors);
@@ -413,20 +423,39 @@ export default function BranchPickerSheet({
             </View>
 
             {/* Галерея */}
+            {/* Галерея (Скролл превьюшек) */}
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               style={s.galleryRow}
             >
               {(selectedBranch.photos ?? []).map((url, idx) => (
-                <Image
+                <TouchableOpacity
                   key={idx}
-                  source={{ uri: url }}
-                  style={s.galleryImage}
-                  resizeMode="cover"
-                />
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    setCurrentImageIndex(idx); // Запоминаем, на какую нажали
+                    setIsGalleryVisible(true); // Открываем галерею
+                  }}
+                >
+                  <Image
+                    source={{ uri: url }}
+                    style={s.galleryImage}
+                    resizeMode="cover"
+                  />
+                </TouchableOpacity>
               ))}
             </ScrollView>
+
+            {/* --- САМА МОДАЛЬНАЯ ГАЛЕРЕЯ (Поверх всего) --- */}
+            <ImageView
+              images={galleryImages}
+              imageIndex={currentImageIndex}
+              visible={isGalleryVisible}
+              onRequestClose={() => setIsGalleryVisible(false)}
+              swipeToCloseEnabled={true}
+              doubleTapToZoomEnabled={true}
+            />
 
             {/* Время работы */}
             <Text style={s.workLabel}>
