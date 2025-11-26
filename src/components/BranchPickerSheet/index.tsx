@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Linking,
   Pressable,
   ScrollView,
   Share,
@@ -455,16 +456,35 @@ export default function BranchPickerSheet({
                 <Text style={s.workLabel}>
                   {t("branchPickerSheet.contacts", "Контакты")}
                 </Text>
-                <View style={s.contactRow}>
+
+                {/* --- ЗВОНОК ПО ТЕЛЕФОНУ --- */}
+                <TouchableOpacity
+                  style={s.contactRow}
+                  onPress={() => {
+                    // Очищаем номер от пробелов, скобок и тире, оставляем только цифры и +
+                    const phone =
+                      selectedBranch.contactPhone?.replace(/[^\d+]/g, "") || "";
+                    Linking.openURL(`tel:${phone}`);
+                  }}
+                >
                   <Ionicons name="call" size={18} color={ORANGE} />
                   <Text style={s.contactText}>
                     {selectedBranch.contactPhone}
                   </Text>
-                </View>
-                <View style={s.contactRow}>
-                  <Ionicons name="mail" size={18} color={ORANGE} />
-                  <Text style={s.contactText}>{selectedBranch.email}</Text>
-                </View>
+                </TouchableOpacity>
+
+                {/* --- ОТПРАВКА EMAIL --- */}
+                {selectedBranch.email && (
+                  <TouchableOpacity
+                    style={s.contactRow}
+                    onPress={() => {
+                      Linking.openURL(`mailto:${selectedBranch.email}`);
+                    }}
+                  >
+                    <Ionicons name="mail" size={18} color={ORANGE} />
+                    <Text style={s.contactText}>{selectedBranch.email}</Text>
+                  </TouchableOpacity>
+                )}
               </>
             )}
 
