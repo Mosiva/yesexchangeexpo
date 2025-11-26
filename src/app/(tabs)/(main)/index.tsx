@@ -350,7 +350,7 @@ export default function MainScreen() {
     setSelectedBranch(branch);
     setDropdownVisible(false);
   };
-
+  const filteredExchangeRates = exchangeRates.filter((c) => c.currency.code !== "KZT");
   // === Render ===
   return (
     <ScrollView
@@ -503,7 +503,7 @@ export default function MainScreen() {
           </View>
         ) : (
           <CurrenciesMainCardList
-            data={exchangeRates.map((rate) => ({
+            data={filteredExchangeRates.map((rate) => ({
               code: rate.currency.code as CurrencyCode,
               name: rate.currency.name,
               buy: rate.buy.toString(),
