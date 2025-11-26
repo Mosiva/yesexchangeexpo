@@ -347,7 +347,7 @@
   "currencyExchangeModal": {
     "sell": "Я покупаю",
     "buy": "Я продаю",
-    "sellInput": "Продать",
+    "sellInput": "Купить",
     "buyInput": "Продать",
     "sellOutput": "Передать",
     "buyOutput": "Получить",
