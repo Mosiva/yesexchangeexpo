@@ -350,7 +350,9 @@ export default function MainScreen() {
     setSelectedBranch(branch);
     setDropdownVisible(false);
   };
-  const filteredExchangeRates = exchangeRates.filter((c) => c.currency.code !== "KZT");
+  const filteredExchangeRates = exchangeRates.filter(
+    (c) => c.currency.code !== "KZT"
+  );
   // === Render ===
   return (
     <ScrollView
@@ -676,7 +678,7 @@ const makeStyles = (colors: any) =>
       justifyContent: "space-between",
       alignItems: "center",
       backgroundColor: "#F79633",
-      paddingTop: 56,
+      paddingTop: 10,
       paddingBottom: 14,
       paddingHorizontal: 20,
     },
