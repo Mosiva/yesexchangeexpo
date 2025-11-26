@@ -63,7 +63,7 @@ export default function NewsScreen() {
           { justifyContent: "center", alignItems: "center" },
         ]}
       >
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
