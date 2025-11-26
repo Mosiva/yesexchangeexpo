@@ -177,7 +177,7 @@ const makeStyles = (colors: any) =>
       width: 44,
       height: 4,
       borderRadius: 2,
-      backgroundColor: "#E9ECEF",
+      backgroundColor: colors.background,
       alignSelf: "center",
       marginBottom: 12,
     },
