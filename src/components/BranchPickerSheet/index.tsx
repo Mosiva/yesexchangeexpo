@@ -585,13 +585,13 @@ const makeStyles = (colors: any) =>
     searchBox: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: "#F5F6F8",
+      backgroundColor: colors.card,
       borderRadius: 14,
       paddingHorizontal: 12,
       height: 48,
       marginBottom: 12,
     },
-    searchInput: { flex: 1, marginLeft: 8, fontSize: 16 },
+    searchInput: { flex: 1, marginLeft: 8, fontSize: 16, color: colors.text },
     tabs: { flexDirection: "row", gap: 12, marginBottom: 10 },
     tab: {
       flex: 1,

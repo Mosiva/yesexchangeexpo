@@ -192,17 +192,18 @@ const makeStyles = (colors: any) =>
       marginHorizontal: 16,
       flexDirection: "row",
       alignItems: "center",
-      borderColor: "#ECECEC",
+      borderColor: colors.border,
       borderWidth: 1,
       borderRadius: 14,
       height: 52,
       paddingHorizontal: 12,
-      backgroundColor: "#F5F6F8",
+      backgroundColor: colors.card,
     },
     searchInput: {
       flex: 1,
       fontSize: 16,
       fontWeight: "400",
+      color: colors.text,
     },
 
     skeletonContainer: {

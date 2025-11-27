@@ -93,7 +93,7 @@ const makeStyles = (colors: any) =>
       height: COVER_H,
       position: "relative",
       overflow: "hidden",
-      backgroundColor: "#F3F4F6",
+      backgroundColor: colors.card,
     },
     cover: {
       width: "100%",
@@ -101,7 +101,7 @@ const makeStyles = (colors: any) =>
       resizeMode: "cover",
     },
     coverFallback: {
-      backgroundColor: "#E5E7EB",
+      backgroundColor: colors.card,
     },
     backBtn: {
       position: "absolute",

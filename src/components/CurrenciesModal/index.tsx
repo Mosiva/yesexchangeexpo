@@ -194,13 +194,13 @@ const makeStyles = (colors: any) =>
     searchWrap: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: "#F5F6F8",
+      backgroundColor: colors.card,
       borderRadius: 14,
       paddingHorizontal: 12,
       paddingVertical: 10,
       marginBottom: 10,
     },
-    searchInput: { flex: 1, fontSize: 16, color: "#111827" },
+    searchInput: { flex: 1, fontSize: 16, color: colors.text },
 
     row: {
       flexDirection: "row",

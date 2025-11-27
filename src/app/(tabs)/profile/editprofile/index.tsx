@@ -16,6 +16,7 @@ import {
 import MaskInput from "react-native-mask-input";
 import { clientApi } from "services";
 import { z } from "zod";
+import { useTheme } from "../../../../hooks/useTheme";
 import { useUpdateMeMutation } from "../../../../services/yesExchange";
 
 const { useGetClientQuery } = clientApi;
@@ -30,6 +31,9 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function EditProfileScreen() {
+  const { colors, theme } = useTheme();
+  const isLight = theme === "light";
+  const s = makeStyles(colors);
   const { t } = useTranslation();
   const router = useRouter();
 
@@ -76,19 +80,28 @@ export default function EditProfileScreen() {
         role: client?.role ?? undefined,
       }).unwrap();
 
-      Alert.alert(t("profile.success", "Готово"), t("profile.successMessage", "Данные сохранены"));
+      Alert.alert(
+        t("profile.success", "Готово"),
+        t("profile.successMessage", "Данные сохранены")
+      );
       router.back();
     } catch (err: any) {
-      Alert.alert(t("common.error", "Ошибка"), err?.data?.message || t("common.errorMessage", "Не удалось сохранить"));
+      Alert.alert(
+        t("common.error", "Ошибка"),
+        err?.data?.message || t("common.errorMessage", "Не удалось сохранить")
+      );
     }
   };
 
   return (
     <ScrollView
-      contentContainerStyle={styles.container}
+      contentContainerStyle={s.container}
       keyboardShouldPersistTaps="handled"
     >
-      <StatusBar barStyle="dark-content" />
+      <StatusBar
+        barStyle={isLight ? "dark-content" : "light-content"}
+        backgroundColor={colors.background}
+      />
       {/* First name */}
       <Controller
         control={control}
@@ -96,14 +109,14 @@ export default function EditProfileScreen() {
         render={({ field: { value, onChange, onBlur } }) => (
           <Field label={t("profile.yourname", "Ваше имя")}>
             <TextInput
-              style={styles.fieldInput}
+              style={s.fieldInput}
               placeholder="Азамат"
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
             />
             {errors.firstName && (
-              <Text style={styles.error}>{errors.firstName.message}</Text>
+              <Text style={s.error}>{errors.firstName.message}</Text>
             )}
           </Field>
         )}
@@ -114,9 +127,12 @@ export default function EditProfileScreen() {
         control={control}
         name="lastName"
         render={({ field: { value, onChange, onBlur } }) => (
-          <Field label={t("profile.yoursecondname", "Ваша фамилия")} topGap={14}>
+          <Field
+            label={t("profile.yoursecondname", "Ваша фамилия")}
+            topGap={14}
+          >
             <TextInput
-              style={styles.fieldInput}
+              style={s.fieldInput}
               placeholder="Жунумбеков"
               value={value}
               onChangeText={onChange}
@@ -133,7 +149,7 @@ export default function EditProfileScreen() {
         render={({ field: { value, onChange } }) => (
           <Field label={t("profile.phone", "Номер телефона")} topGap={14}>
             <MaskInput
-              style={styles.fieldInput}
+              style={s.fieldInput}
               placeholder="+7 707 777-77-77"
               keyboardType="number-pad"
               inputMode="numeric"
@@ -163,22 +179,21 @@ export default function EditProfileScreen() {
               maxLength={16}
             />
             {errors.digits && (
-              <Text style={styles.error}>{errors.digits.message}</Text>
+              <Text style={s.error}>{errors.digits.message}</Text>
             )}
           </Field>
         )}
       />
 
       <TouchableOpacity
-        style={[
-          styles.saveBtn,
-          (isSubmitting || isUpdating) && styles.saveBtnDisabled,
-        ]}
+        style={[s.saveBtn, (isSubmitting || isUpdating) && s.saveBtnDisabled]}
         onPress={handleSubmit(onSubmit)}
         disabled={isSubmitting || isUpdating}
       >
-        <Text style={styles.saveBtnText}>
-          {isSubmitting || isUpdating ? t("profile.saving", "Сохраняем...") : t("profile.saveChanges", "Сохранить изменения")}
+        <Text style={s.saveBtnText}>
+          {isSubmitting || isUpdating
+            ? t("profile.saving", "Сохраняем...")
+            : t("profile.saveChanges", "Сохранить изменения")}
         </Text>
       </TouchableOpacity>
     </ScrollView>
@@ -195,11 +210,13 @@ function Field({
   children: React.ReactNode;
   topGap?: number;
 }) {
+  const { colors } = useTheme();
+  const s = makeStyles(colors);
   return (
     <View style={{ marginTop: topGap }}>
-      <View style={styles.fieldWrap}>
-        <View style={styles.fieldLabelBadge}>
-          <Text style={styles.fieldLabelText}>{label}</Text>
+      <View style={s.fieldWrap}>
+        <View style={s.fieldLabelBadge}>
+          <Text style={s.fieldLabelText}>{label}</Text>
         </View>
         {children}
       </View>
@@ -207,61 +224,54 @@ function Field({
   );
 }
 
-const COLORS = {
-  orange: "#F58220",
-  text: "#111827",
-  subtext: "#6B7280",
-  border: "#F58220",
-  bg: "#FFFFFF",
-};
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    backgroundColor: COLORS.bg,
-    flexGrow: 1,
-  },
-  fieldWrap: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 16,
-    paddingTop: 18,
-    paddingBottom: 14,
-    paddingHorizontal: 16,
-    position: "relative",
-    marginBottom: 8,
-  },
-  fieldLabelBadge: {
-    position: "absolute",
-    left: 16,
-    top: -12,
-    backgroundColor: COLORS.bg,
-    paddingHorizontal: 10,
-  },
-  fieldLabelText: {
-    color: COLORS.orange,
-    fontSize: 14,
-    fontWeight: "400",
-  },
-  fieldInput: {
-    fontSize: 16,
-    color: COLORS.text,
-  },
-  saveBtn: {
-    backgroundColor: COLORS.orange,
-    borderRadius: 16,
-    height: 56,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 24,
-  },
-  saveBtnDisabled: {
-    opacity: 0.5,
-  },
-  saveBtnText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  error: { color: "red", fontSize: 13, marginTop: 4 },
-});
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      padding: 20,
+      backgroundColor: colors.background,
+      flexGrow: 1,
+    },
+    fieldWrap: {
+      borderWidth: 1,
+      borderColor: colors.primary,
+      borderRadius: 16,
+      paddingTop: 18,
+      paddingBottom: 14,
+      paddingHorizontal: 16,
+      position: "relative",
+      marginBottom: 8,
+    },
+    fieldLabelBadge: {
+      position: "absolute",
+      left: 16,
+      top: -12,
+      backgroundColor: colors.background,
+      paddingHorizontal: 10,
+    },
+    fieldLabelText: {
+      color: colors.primary,
+      fontSize: 14,
+      fontWeight: "400",
+    },
+    fieldInput: {
+      fontSize: 16,
+      color: colors.text,
+    },
+    saveBtn: {
+      backgroundColor: colors.primary,
+      borderRadius: 16,
+      height: 56,
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 24,
+    },
+    saveBtnDisabled: {
+      opacity: 0.5,
+    },
+    saveBtnText: {
+      color: "#fff",
+      fontSize: 16,
+      fontWeight: "700",
+    },
+    error: { color: "red", fontSize: 13, marginTop: 4 },
+  });
