@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   FlatList,
@@ -22,6 +23,7 @@ export default function NewsScreen() {
     isError: isNewsError,
   } = useNewsQuery({ limit: 100 });
 
+  const { t } = useTranslation();
   const news = rawNews?.data || [];
 
   const { colors, theme } = useTheme();
@@ -111,8 +113,8 @@ export default function NewsScreen() {
               <TextInput
                 value={query}
                 onChangeText={setQuery}
-                placeholder="Поиск по названию"
-                placeholderTextColor="#9CA3AF"
+                placeholder={t("news.searchByTitle", "Поиск по названию")}
+                placeholderTextColor={colors.subtext}
                 style={styles.searchInput}
                 returnKeyType="search"
               />

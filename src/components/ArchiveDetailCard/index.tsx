@@ -381,7 +381,7 @@ const makeStyles = (colors: any) =>
       paddingHorizontal: 16,
       height: 44,
       borderRadius: 12,
-      backgroundColor: COLORS.pillBg,
+      backgroundColor: colors.background,
       alignItems: "center",
       justifyContent: "center",
     },

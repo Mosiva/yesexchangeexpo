@@ -478,5 +478,8 @@
     "title": "Currency on the main screen",
     "searchPlaceholder": "Search by currency name",
     "saveButton": "Save"
+  },
+  "news": {
+    "searchByTitle": "Search by title"
   }
 }

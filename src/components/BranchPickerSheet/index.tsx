@@ -318,7 +318,7 @@ export default function BranchPickerSheet({
 
             {/* Поиск */}
             <View style={s.searchBox}>
-              <Ionicons name="search" size={18} color="#9CA3AF" />
+              <Ionicons name="search" size={18} color={colors.subtext} />
               <TextInput
                 value={query}
                 onChangeText={setQuery}
@@ -326,6 +326,7 @@ export default function BranchPickerSheet({
                   "branchPickerSheet.searchByAddress",
                   "Поиск по адресу"
                 )}
+                placeholderTextColor={colors.subtext}
                 style={s.searchInput}
                 returnKeyType="search"
               />

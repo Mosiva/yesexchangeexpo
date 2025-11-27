@@ -124,7 +124,7 @@ export default function ArchivesScreen() {
             "archives.searchByCurrencyName",
             "Поиск: USD / Доллар"
           )}
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={colors.subtext}
           style={styles.searchInput}
           returnKeyType="search"
         />

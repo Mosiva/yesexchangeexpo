@@ -116,7 +116,7 @@ export default function CurrenciesModal({
             <Ionicons
               name="search"
               size={18}
-              color="#9CA3AF"
+              color={colors.subtext}
               style={{ marginRight: 8 }}
             />
             <TextInput
@@ -125,6 +125,7 @@ export default function CurrenciesModal({
                 "currenciesModal.searchPlaceholder",
                 "Поиск по названию валюты"
               )}
+              placeholderTextColor={colors.subtext}
               value={query}
               onChangeText={setQuery}
               autoCorrect={false}
