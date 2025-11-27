@@ -48,6 +48,7 @@ const setHeader = (cfg: any, key: string, val: string) => {
   }
 };
 
+
 // REQUEST INTERCEPTOR
 axiosInstance.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem("access_token");
@@ -69,8 +70,17 @@ axiosInstance.interceptors.request.use(async (config) => {
     );
   }
 
-  const language = (await AsyncStorage.getItem(STORE_LANGUAGE_KEY)) || "ru";
-  setHeader(config, "Accept-Language", language);
+  const stored = (await AsyncStorage.getItem(STORE_LANGUAGE_KEY)) || "ru";
+
+  const languageMap: Record<string, string> = {
+    ru: "ru",
+    kz: "kk", // <-- важно!
+    en: "en",
+  };
+
+  const lang = languageMap[stored] || "ru";
+
+  setHeader(config, "Accept-Language", lang);
 
   return config;
 });
