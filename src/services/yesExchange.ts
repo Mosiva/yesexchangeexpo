@@ -24,7 +24,6 @@ import type {
   // health
   HealthCheckResponseDto,
   LoginDto,
-  LogoutDto,
   LogoutResponseDto,
   // nbk
   NbkRateDto,
@@ -39,6 +38,10 @@ import type {
   // auth
   RegisterDto,
   ResendOtpDto,
+  SetDefaultCurrencyDto,
+  SetDefaultCurrencyResponseDto,
+  SetFavoriteCurrenciesDto,
+  SetFavoriteCurrenciesResponseDto,
   TestNotificationDto,
   ToAmountQueryDto,
   ToAmountResponseDto,
@@ -47,7 +50,7 @@ import type {
   UserDto,
   VerifyGuestOtpDto,
   VerifyOtpDto,
-  VerifyOtpResponseDto
+  VerifyOtpResponseDto,
 } from "../types/api";
 
 export const yesExchangeApi = restApi.injectEndpoints({
@@ -87,8 +90,8 @@ export const yesExchangeApi = restApi.injectEndpoints({
     refreshToken: build.mutation<RefreshTokenResponseDto, void>({
       query: () => ({ url: "/api/v1/auth/token/refresh", method: "POST" }),
     }),
-    logout: build.mutation<LogoutResponseDto, LogoutDto>({
-      query: (data) => ({ url: "/api/v1/auth/logout", method: "POST", data }),
+    logout: build.mutation<LogoutResponseDto, void>({
+      query: () => ({ url: "/api/v1/auth/logout", method: "POST" }),
     }),
 
     // --- Текущий пользователь ---
@@ -98,6 +101,43 @@ export const yesExchangeApi = restApi.injectEndpoints({
     }),
     updateMe: build.mutation<UserDto, UpdateUserDto>({
       query: (data) => ({ url: "/api/v1/me", method: "PATCH", data }),
+      invalidatesTags: ["Users"],
+    }),
+    // --- Предпочтения пользователя (User Preferences) ---
+    getFavoriteCurrencies: build.query<string[], void>({
+      query: () => ({
+        url: "/api/v1/me/preferences/favorite-currencies",
+        method: "GET",
+      }),
+      providesTags: ["Users"],
+    }),
+    setFavoriteCurrencies: build.mutation<
+      SetFavoriteCurrenciesResponseDto,
+      SetFavoriteCurrenciesDto
+    >({
+      query: (data) => ({
+        url: "/api/v1/me/preferences/favorite-currencies",
+        method: "PUT",
+        data,
+      }),
+      invalidatesTags: ["Users"],
+    }),
+    getDefaultCurrency: build.query<string | null, void>({
+      query: () => ({
+        url: "/api/v1/me/preferences/default-currency",
+        method: "GET",
+      }),
+      providesTags: ["Users"],
+    }),
+    setDefaultCurrency: build.mutation<
+      SetDefaultCurrencyResponseDto,
+      SetDefaultCurrencyDto
+    >({
+      query: (data) => ({
+        url: "/api/v1/me/preferences/default-currency",
+        method: "PUT",
+        data,
+      }),
       invalidatesTags: ["Users"],
     }),
 
@@ -425,4 +465,10 @@ export const {
   // push
   useRegisterDeviceTokenMutation,
   useSendTestPushMutation,
+
+  // user preferences
+  useGetFavoriteCurrenciesQuery,
+  useSetFavoriteCurrenciesMutation,
+  useGetDefaultCurrencyQuery,
+  useSetDefaultCurrencyMutation,
 } = yesExchangeApi;

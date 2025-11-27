@@ -138,10 +138,6 @@ export type RefreshTokenResponseDto = {
   refreshToken: string;
 };
 
-export type LogoutDto = {
-  fcmToken?: string;
-};
-
 export type LogoutResponseDto = { ok: boolean };
 
 // --- User DTOs ---
@@ -160,6 +156,7 @@ export type UserDto = {
   defaultCurrency?: CurrencyDto;
   createdAt?: string; // ISO
   updatedAt?: string; // ISO
+  discount?: UserDiscountDto;
 };
 
 export type UpdateUserDto = Partial<
@@ -281,7 +278,10 @@ export type ToAmountQueryDto = {
 export type ToAmountResponseDto = {
   toAmount: string; // decimal-string
   rate: string; // decimal-string
-  discountPercent: number;
+  originalRate?: string; // без учета скидки
+  operationType: BookingOperationType;
+  discountPercent?: number | null;
+  savings?: unknown | null;
 };
 
 export type BookingDto = {
@@ -293,6 +293,8 @@ export type BookingDto = {
   amount: string;
   isRateLocked: boolean;
   toAmount: string | null;
+  lockedRate: number | null;
+  discountPercentApplied: number | null;
   operationType: BookingOperationType;
   status: BookingStatus;
   expiresAt: string | null;
@@ -389,4 +391,24 @@ export type DeviceTokenResponseDto = {
 export type TestNotificationDto = {
   title?: string;
   body: string;
+};
+
+// --- User Discount DTO (добавлено из openapi) ---
+export type UserDiscountDto = {
+  available: boolean;
+  percent: number;
+};
+
+// --- User Preferences DTOs (новые) ---
+export type SetFavoriteCurrenciesDto = {
+  currencyCodes: string[];
+};
+export type SetFavoriteCurrenciesResponseDto = {
+  message: string;
+};
+export type SetDefaultCurrencyDto = {
+  currencyCode: string | null;
+};
+export type SetDefaultCurrencyResponseDto = {
+  message: string;
 };
