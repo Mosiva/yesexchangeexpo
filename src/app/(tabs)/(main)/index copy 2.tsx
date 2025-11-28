@@ -169,7 +169,7 @@ export default function MainScreen() {
     return Array.isArray(rawBranches) ? rawBranches : [];
   }, [rawBranches]);
 
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"archive" | "news">("archive");
   const [selectedBranch, setSelectedBranch] = useState<any>(null);
@@ -195,48 +195,6 @@ export default function MainScreen() {
       skip: !selectedBranch?.id || isBranchesLoading,
     }
   );
-  React.useEffect(() => {
-    // Сбрасываем выбранный филиал
-    setSelectedBranch(null);
-
-    // Всегда можно рефетчить список филиалов — он не skip'ается
-    refetchBranches();
-
-    // nearestBranch можно рефетчить ТОЛЬКО если он был активирован
-    if (location) {
-      refetchNearestBranch();
-    }
-  }, [i18n.language, location]);
-
-  // === ЛОГИКА ВЫБОРА ФИЛИАЛА ===
-  React.useEffect(() => {
-    let isMounted = true;
-
-    const run = async () => {
-      // 1. Сбрасываем выбранный филиал
-      setSelectedBranch(null);
-
-      // 2. Рефетчим ветку филиалов
-      await refetchBranches();
-
-      // 3. Рефетчим nearest-बлижайший филиал (если активен)
-      if (location) {
-        await refetchNearestBranch();
-      }
-
-      // 4. После этого — общий рефетч всех данных
-      //    (курсы, новости, nbk, etc)
-      if (isMounted) {
-        await refetchAllData();
-      }
-    };
-
-    run();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [i18n.language, location]);
 
   const exchangeRates = rawExchangeRates?.data || [];
   const news = rawNews?.data || [];

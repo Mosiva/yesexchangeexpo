@@ -11,6 +11,7 @@ import {
   Text,
   View,
 } from "react-native";
+import Markdown from "react-native-markdown-display";
 import { useTheme } from "../../hooks/useTheme";
 
 type Props = {
@@ -72,25 +73,16 @@ export default function NewsDetailCard({
   );
 }
 
-/** Renders multi-paragraph text with spacing like the mock */
 const ArticleText = memo(({ text }: { text: string }) => {
   const { colors } = useTheme();
   const styles = makeStyles(colors);
-  const paragraphs = text
-    .split(/\n{2,}/)
-    .map((p) => p.trim())
-    .filter(Boolean);
+
   return (
     <View style={{ marginTop: 10 }}>
-      {paragraphs.map((p, idx) => (
-        <Text key={idx} style={[styles.p, idx > 0 && { marginTop: 14 }]}>
-          {p}
-        </Text>
-      ))}
+      <Markdown style={markdownStyles(colors)}>{text}</Markdown>
     </View>
   );
 });
-
 ArticleText.displayName = "ArticleText";
 
 const COVER_H = 220;
@@ -164,3 +156,37 @@ const makeStyles = (colors: any) =>
       color: colors.text,
     },
   });
+const markdownStyles = (colors: any) => ({
+  body: {
+    color: colors.text,
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  heading1: {
+    fontSize: 24,
+    fontWeight: "700",
+    marginTop: 16,
+    marginBottom: 8,
+    color: colors.text,
+  },
+  heading2: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginTop: 14,
+    marginBottom: 6,
+    color: colors.text,
+  },
+  paragraph: {
+    marginTop: 12,
+    marginBottom: 12,
+  },
+  list_item: {
+    marginVertical: 4,
+  },
+  bullet_list: {
+    marginVertical: 6,
+  },
+  link: {
+    color: colors.primary,
+  },
+});
