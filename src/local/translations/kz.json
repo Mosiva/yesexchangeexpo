@@ -482,6 +482,10 @@
     "saveButton": "Сақтау"
   },
   "news": {
-    "searchByTitle": "Таңдау аты бойынша іздеу"
+    "searchByTitle": "Таңдау аты бойынша іздеу",
+    "tabAll": "Барлығы",
+    "tabYesNews": "YesNews",
+    "tabKase": "KASE",
+    "tabZakon": "Zakon.kz"
   }
 }

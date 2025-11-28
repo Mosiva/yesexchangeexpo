@@ -479,6 +479,10 @@
     "saveButton": "Сохранить"
   },
   "news": {
-    "searchByTitle": "Поиск по названию"
+    "searchByTitle": "Поиск по названию",
+    "tabAll": "Все",
+    "tabYesNews": "YesNews",
+    "tabKase": "KASE",
+    "tabZakon": "Zakon.kz"
   }
 }

@@ -9,13 +9,35 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
 import { useTheme } from "../../../hooks/useTheme";
 import { useNewsQuery } from "../../../services/yesExchange";
 
+// ---------- Tabs & Source Mapping ----------
+const TABS = ["All", "YesNews", "Kase", "Zakon.kz"] as const;
+type TabKey = (typeof TABS)[number];
+
+const SOURCE_MAP: Record<TabKey, string | null> = {
+  YesNews: "YesNews", // если backend добавит
+  Kase: "KASE",
+  "Zakon.kz": "Zakon.kz",
+  All: null,
+};
+
 export default function NewsScreen() {
+  const [active, setActive] = useState<TabKey>("All");
+  const [query, setQuery] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const { colors, theme } = useTheme();
+  const isLight = theme === "light";
+  const styles = makeStyles(colors);
+
+  const { t } = useTranslation();
+
   const {
     data: rawNews,
     refetch: refetchNews,
@@ -23,24 +45,39 @@ export default function NewsScreen() {
     isError: isNewsError,
   } = useNewsQuery({ limit: 100 });
 
-  const { t } = useTranslation();
   const news = rawNews?.data || [];
 
-  const { colors, theme } = useTheme();
-  const isLight = theme === "light";
-  const styles = makeStyles(colors);
+  // ---------- Tab labels translations ----------
+  const TAB_LABELS: Record<TabKey, string> = {
+    All: t("news.tabAll", "All"),
+    YesNews: t("news.tabYesNews", "YesNews"),
+    Kase: t("news.tabKase", "KASE"),
+    "Zakon.kz": t("news.tabZakon", "Zakon.kz"),
+  };
 
-  const [query, setQuery] = useState("");
-  const [refreshing, setRefreshing] = useState(false);
+  // Debug: смотрим реальные source
+  console.log("sources:", [...new Set(news.map((n) => n.source))]);
 
-  // фильтрация новостей по названию
+  // ---------- FILTERING ----------
   const filteredNews = useMemo(() => {
-    if (!query.trim()) return news;
-    const q = query.toLowerCase();
-    return news.filter((item) => item.title.toLowerCase().includes(q));
-  }, [query, news]);
+    let arr = news;
 
-  // FlatList-совместимый массив
+    // 1. Filter by source (tab)
+    const selectedSource = SOURCE_MAP[active];
+    if (selectedSource) {
+      arr = arr.filter((item) => item.source === selectedSource);
+    }
+
+    // 2. Search filter
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      arr = arr.filter((item) => item.title.toLowerCase().includes(q));
+    }
+
+    return arr;
+  }, [news, active, query]);
+
+  // ---------- Convert to flatlist-friendly format ----------
   const newsItems = useMemo(() => {
     return filteredNews.map((n) => ({
       id: n.id,
@@ -51,6 +88,7 @@ export default function NewsScreen() {
     }));
   }, [filteredNews]);
 
+  // ---------- Pull-to-refresh ----------
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refetchNews();
@@ -95,15 +133,35 @@ export default function NewsScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={isLight ? "dark-content" : "light-content"} />
 
+      {/* ---------- Tabs ---------- */}
+      <View style={styles.tabsRow}>
+        {TABS.map((t) => {
+          const focused = active === t;
+          return (
+            <TouchableOpacity
+              key={t}
+              onPress={() => setActive(t)}
+              style={[styles.tab, focused && styles.tabActive]}
+            >
+              <Text style={[styles.tabText, focused && styles.tabTextActive]}>
+                {TAB_LABELS[t]}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {/* ---------- News List ---------- */}
       <FlatList
         data={newsItems}
         keyExtractor={(item) => item.id.toString()}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
         ListHeaderComponent={
-          <View>
-            {/* SEARCH */}
+          <>
+            {/* ---------- SEARCH ---------- */}
             <View style={styles.searchWrap}>
               <Ionicons
                 name="search"
@@ -120,9 +178,8 @@ export default function NewsScreen() {
                 returnKeyType="search"
               />
             </View>
-          </View>
+          </>
         }
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
         renderItem={({ item }) => (
           <NewsMainCardList
             items={[item]}
@@ -151,10 +208,44 @@ const makeStyles = (colors: any) =>
       marginBottom: 16,
       backgroundColor: colors.card,
     },
+
     searchInput: {
       flex: 1,
       fontSize: 16,
       fontWeight: "400",
       color: colors.text,
+    },
+
+    tabsRow: {
+      flexDirection: "row",
+      gap: 14,
+      marginTop: 8,
+      marginBottom: 12,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+
+    tab: {
+      paddingHorizontal: 18,
+      paddingVertical: 12,
+      borderRadius: 12,
+      backgroundColor: colors.background,
+    },
+
+    tabActive: {
+      backgroundColor: colors.tabActive,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+
+    tabText: {
+      color: colors.text,
+      fontSize: 14,
+      fontWeight: "400",
+    },
+
+    tabTextActive: {
+      color: colors.text,
+      fontWeight: "600",
     },
   });

@@ -480,6 +480,10 @@
     "saveButton": "Save"
   },
   "news": {
-    "searchByTitle": "Search by title"
+    "searchByTitle": "Search by title",
+    "tabAll": "All",
+    "tabYesNews": "YesNews",
+    "tabKase": "KASE",
+    "tabZakon": "Zakon.kz"
   }
 }
