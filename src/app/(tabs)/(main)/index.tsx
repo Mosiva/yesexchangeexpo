@@ -229,6 +229,7 @@ export default function MainScreen() {
       title: n.title,
       summary: n.excerpt as string,
       date: n.createdAt,
+      source: n.source,
     }));
   }, [news]);
 

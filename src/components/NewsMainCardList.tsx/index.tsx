@@ -17,6 +17,7 @@ type NewsItem = {
   title: string;
   summary?: string;
   date: string | Date;
+  source: string;
 };
 
 type Props = {
@@ -36,8 +37,8 @@ export default function NewsMainCardList({
   onDark = true,
   style,
 }: Props) {
-  const { colors,  } = useTheme();
- 
+  const { colors } = useTheme();
+
   const styles = makeStyles(colors);
   const { t } = useTranslation();
   const router = useRouter();
@@ -70,23 +71,35 @@ export default function NewsMainCardList({
                     id: String(it.id),
                     title: it.title,
                     date: String(it.date),
+                    source: it.source,
                     content: it.summary ?? "", // можно заменить на полный текст, если есть
                   },
                 });
               }
             }}
           >
-            <Text style={[styles.title, c.title, { color: colors.text }]} numberOfLines={2}>
+            <Text style={[styles.date, c.date, { color: colors.subtext }]}>
+              {it.source}
+            </Text>
+            <Text
+              style={[styles.title, c.title, { color: colors.text }]}
+              numberOfLines={2}
+            >
               {it.title}
             </Text>
 
             {!!it.summary && (
-              <Text style={[styles.summary, c.summary, { color: colors.subtext }]} numberOfLines={2}>
+              <Text
+                style={[styles.summary, c.summary, { color: colors.subtext }]}
+                numberOfLines={2}
+              >
                 {it.summary}
               </Text>
             )}
 
-            <Text style={[styles.date, c.date, { color: colors.subtext }]}>{formatDateRU(it.date)}</Text>
+            <Text style={[styles.date, c.date, { color: colors.subtext }]}>
+              {formatDateRU(it.date)}
+            </Text>
           </Pressable>
 
           {idx !== visible.length - 1 && (
@@ -104,7 +117,9 @@ export default function NewsMainCardList({
             borderless: true,
           }}
         >
-          <Text style={[styles.moreText, c.more, { color: colors.subtext }]}>{buttonLabel}</Text>
+          <Text style={[styles.moreText, c.more, { color: colors.subtext }]}>
+            {buttonLabel}
+          </Text>
         </Pressable>
       )}
     </View>
@@ -125,45 +140,46 @@ function formatDateRU(d: string | Date) {
     .replace(/\u00A0/g, " ");
 }
 
-const makeStyles = (colors: any) => StyleSheet.create({
-  wrapper: {
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  card: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: "700",
-    lineHeight: 22,
-    marginBottom: 6,
-  },
-  summary: {
-    fontSize: 14,
-    fontWeight: "400",
-    lineHeight: 20,
-    marginBottom: 10,
-  },
-  date: {
-    fontSize: 12,
-    fontWeight: "400",
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginHorizontal: 16,
-  },
-  moreBtn: {
-    alignItems: "center",
-    paddingVertical: 16,
-  },
-  moreText: {
-    fontSize: 14,
-    fontWeight: "700",
-    letterSpacing: 0.2,
-  },
-});
+const makeStyles = (colors: any) =>
+  StyleSheet.create({
+    wrapper: {
+      borderRadius: 12,
+      overflow: "hidden",
+    },
+    card: {
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    title: {
+      fontSize: 16,
+      fontWeight: "700",
+      lineHeight: 22,
+      marginBottom: 6,
+    },
+    summary: {
+      fontSize: 14,
+      fontWeight: "400",
+      lineHeight: 20,
+      marginBottom: 10,
+    },
+    date: {
+      fontSize: 12,
+      fontWeight: "400",
+    },
+    divider: {
+      height: StyleSheet.hairlineWidth,
+      marginHorizontal: 16,
+    },
+    moreBtn: {
+      alignItems: "center",
+      paddingVertical: 16,
+    },
+    moreText: {
+      fontSize: 14,
+      fontWeight: "700",
+      letterSpacing: 0.2,
+    },
+  });
 
 /* palettes for light / dark backgrounds */
 function palette(onDark: boolean) {

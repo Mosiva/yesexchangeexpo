@@ -1,9 +1,9 @@
-import { Ionicons } from "@expo/vector-icons";
 import dayjs from "dayjs";
 import { useRouter } from "expo-router";
 import React, { memo } from "react";
 import {
   Image,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -18,10 +18,20 @@ type Props = {
   date: string;
   content: string;
   image?: string;
+  source: string;
+  url: string;
 };
 
-export default function NewsDetailCard({ title, date, content, image }: Props) {
+export default function NewsDetailCard({
+  title,
+  date,
+  content,
+  image,
+  source,
+  url,
+}: Props) {
   const router = useRouter();
+  console.log(url);
   const { colors } = useTheme();
 
   const styles = makeStyles(colors);
@@ -36,23 +46,27 @@ export default function NewsDetailCard({ title, date, content, image }: Props) {
         )}
 
         {/* Back button */}
-        <Pressable
+        {/* <Pressable
           onPress={() => router.back()}
           hitSlop={10}
           style={styles.backBtn}
         >
           <Ionicons name="arrow-back" size={20} color="#111827" />
-        </Pressable>
+        </Pressable> */}
       </View>
 
       {/* Article */}
       <View style={styles.body}>
+        <Text style={[styles.date, { color: colors.subtext }]}>{source}</Text>
         <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
         <Text style={[styles.date, { color: colors.subtext }]}>
           {dayjs(date).format("DD.MM.YYYY")}
         </Text>
 
         <ArticleText text={content} />
+        <Pressable onPress={() => Linking.openURL(url)} style={styles.button}>
+          <Text style={styles.buttonText}>Источник</Text>
+        </Pressable>
       </View>
     </ScrollView>
   );
@@ -87,7 +101,18 @@ const makeStyles = (colors: any) =>
       backgroundColor: colors.background,
       flex: 1,
     },
-
+    button: {
+      marginTop: 16,
+      backgroundColor: colors.primary,
+      paddingVertical: 12,
+      borderRadius: 8,
+      alignItems: "center",
+    },
+    buttonText: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: "600",
+    },
     /* Cover */
     coverWrap: {
       height: COVER_H,

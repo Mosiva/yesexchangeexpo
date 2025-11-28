@@ -47,6 +47,7 @@ export default function NewsScreen() {
       title: n.title,
       summary: n.excerpt as string,
       date: n.createdAt,
+      source: n.source,
     }));
   }, [filteredNews]);
 

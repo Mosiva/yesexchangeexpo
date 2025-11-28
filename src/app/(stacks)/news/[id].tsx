@@ -91,6 +91,8 @@ export default function NewsDetail() {
         date={newsItem.createdAt as string}
         content={newsItem.content as string}
         image={newsItem.imageUrl as string}
+        source={newsItem.source as string}
+        url={newsItem.url as string}
       />
     </>
   );
