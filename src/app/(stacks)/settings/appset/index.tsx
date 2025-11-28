@@ -15,6 +15,7 @@ import CurrenciesModal from "../../../../components/CurrenciesModal";
 import LanguageChooseModal from "../../../../components/LanguageModal";
 import NotificationsModal from "../../../../components/NotificationsModal";
 import { SwitchPill } from "../../../../components/SwitchPill";
+import { useRefetchOnLanguageChange } from "../../../../hooks/useRefetchOnLanguageChange";
 import { useTheme } from "../../../../hooks/useTheme";
 import { useAuth } from "../../../../providers/Auth";
 import { ThemeContext } from "../../../../providers/ThemeProvider";
@@ -26,13 +27,14 @@ export default function AppSetScreen() {
   const { theme, colors } = useTheme();
   const { setMode } = useContext(ThemeContext);
   // ✅ список валют
-  const { data: rawCurrencies } = useCurrenciesQuery();
+  const { data: rawCurrencies, refetch: refetchCurrencies } =
+    useCurrenciesQuery();
   const currencies = Array.isArray(rawCurrencies) ? rawCurrencies : [];
   // показываем все кроме KZT
   const filteredCurrencies = currencies.filter((c) => c.code !== "KZT");
 
   const { isGuest, language } = useAuth();
-
+  useRefetchOnLanguageChange([refetchCurrencies]);
   const s = makeStyles(colors);
   const isLight = theme === "light";
 
