@@ -116,6 +116,14 @@ export default function BranchPickerSheet({
       if (/круглосуточно/i.test(str)) {
         return t("branchPickerSheet.open24Hours", "Открыто (24 часа)");
       }
+      // ✅ Нормализация круглосуточно
+      if (/Around the clock/i.test(str)) {
+        return t("branchPickerSheet.open24Hours", "Открыто (24 часа)");
+      }
+      // ✅ Нормализация круглосуточно
+      if (/Тәулік бойы/i.test(str)) {
+        return t("branchPickerSheet.open24Hours", "Открыто (24 часа)");
+      }
 
       return str;
     };
