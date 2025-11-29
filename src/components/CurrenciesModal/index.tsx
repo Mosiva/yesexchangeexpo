@@ -35,7 +35,7 @@ export default function CurrenciesModal({
   visible,
   onClose,
   onConfirm,
-  value = ["USD", "RUB", "EUR"],
+  value = [],
   items,
 }: Props) {
   const { t } = useTranslation();

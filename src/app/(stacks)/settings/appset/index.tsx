@@ -9,8 +9,13 @@ import {
   Text,
   View,
 } from "react-native";
-import { useCurrenciesQuery } from "../../../../services/yesExchange";
+import {
+  useCurrenciesQuery,
+  useGetFavoriteCurrenciesQuery,
+  useSetFavoriteCurrenciesMutation,
+} from "../../../../services/yesExchange";
 
+import { useFocusEffect } from "@react-navigation/native";
 import CurrenciesModal from "../../../../components/CurrenciesModal";
 import LanguageChooseModal from "../../../../components/LanguageModal";
 import NotificationsModal from "../../../../components/NotificationsModal";
@@ -32,6 +37,9 @@ export default function AppSetScreen() {
   const currencies = Array.isArray(rawCurrencies) ? rawCurrencies : [];
   // показываем все кроме KZT
   const filteredCurrencies = currencies.filter((c) => c.code !== "KZT");
+  const { data: favoriteCurrencies, refetch: refetchFavoriteCurrencies } =
+    useGetFavoriteCurrenciesQuery();
+  const [setFavoriteCurrencies] = useSetFavoriteCurrenciesMutation();
 
   const { isGuest, language } = useAuth();
   useRefetchOnLanguageChange([refetchCurrencies]);
@@ -46,11 +54,19 @@ export default function AppSetScreen() {
     language as "kz" | "ru" | "en"
   );
 
-  const [selectedCurrencies, setSelectedCurrencies] = useState([
-    "USD",
-    "RUB",
-    "EUR",
-  ]);
+  const [selectedCurrencies, setSelectedCurrencies] = useState<string[]>([]);
+  React.useEffect(() => {
+    if (Array.isArray(favoriteCurrencies)) {
+      setSelectedCurrencies(favoriteCurrencies);
+    }
+  }, [favoriteCurrencies]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refetchCurrencies();
+      refetchFavoriteCurrencies();
+    }, [refetchCurrencies, refetchFavoriteCurrencies])
+  );
 
   const [notifPrefs, setNotifPrefs] = useState({
     rates: true,
@@ -141,8 +157,18 @@ export default function AppSetScreen() {
         visible={currencyModalVisible}
         value={selectedCurrencies}
         onClose={() => setCurrencyModalVisible(false)}
-        onConfirm={(next) => {
-          setSelectedCurrencies(next);
+        onConfirm={async (next) => {
+          try {
+            await setFavoriteCurrencies({ currencyCodes: next }).unwrap();
+            setSelectedCurrencies(next);
+
+            // Рефетчим с бэка
+            refetchFavoriteCurrencies();
+            refetchCurrencies();
+          } catch (e) {
+            console.log("Ошибка сохранения избранных валют", e);
+          }
+
           setCurrencyModalVisible(false);
         }}
       />
