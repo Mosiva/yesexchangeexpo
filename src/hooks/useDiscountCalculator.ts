@@ -81,7 +81,7 @@ export function useDiscountCalculator({
       .then((res) => {
         setServerCalc({
           toAmount: roundAmount(Number(res.toAmount)),
-          discountPercent: res.discountPercent,
+          discountPercent: res.discountPercent ?? 0,
         });
       })
       .catch(() => {
@@ -141,8 +141,14 @@ export function useDiscountCalculator({
     }
 
     return isBuy
-      ? "Скидка доступна только при сумме больше 500 000 тенге"
-      : "Наценка доступна только при сумме больше 500 000 тенге";
+      ? t(
+          "norates.withrates.discountOnlyAvailableForAmountGreaterThan500000",
+          "Скидка доступна только при сумме больше 500 000 тенге"
+        )
+      : t(
+          "norates.withrates.premiumOnlyAvailableForAmountGreaterThan500000",
+          "Наценка доступна только при сумме больше 500 000 тенге"
+        );
   }, [canShowDiscount, clientDiscountAvailable, mode]);
 
   return {

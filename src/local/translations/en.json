@@ -402,7 +402,12 @@
       "discountOnlyAvailableForAmountGreaterThan500000": "The discount is available only for amounts above 500,000 tenge",
       "premiumOnlyAvailableForAmountGreaterThan500000": "The premium is available only for amounts above 500,000 tenge",
       "kind": "With rate link",
-      "applicationAccepted": "Your request is being processed. Our manager will contact the exchange office to confirm the required amount and call you to confirm. After the call and confirmation, a 30-minute timer will start. You must arrive at the exchange office and complete the exchange within this time. If the exchange rate changes during this time, the exchange amount will remain unchanged. If the timer expires, we cannot guarantee the required amount will be available at the exchange office, and the exchange rate may also change."
+      "applicationAccepted": "Your request is being processed. Our manager will contact the exchange office to confirm the required amount and call you to confirm. After the call and confirmation, a 30-minute timer will start. You must arrive at the exchange office and complete the exchange within this time. If the exchange rate changes during this time, the exchange amount will remain unchanged. If the timer expires, we cannot guarantee the required amount will be available at the exchange office, and the exchange rate may also change.",
+      "discountCalculation": {
+        "baseRates": "Selling rate is {{sell}} tenge, buying rate is {{buy}} tenge.",
+        "difference": "Difference is {{diff}} tenge, {{percent}}% of the difference = {{percentValue}} tenge",
+        "withDiscount": "With the discount, the selling rate is {{sellWithDiscount}} tenge, and the buying rate is {{buyWithDiscount}} tenge."
+      }
     },
     "moderation": {
       "name": "In processing",

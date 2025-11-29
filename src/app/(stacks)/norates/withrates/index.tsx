@@ -411,6 +411,32 @@ export default function ReserveWithRateScreen() {
     branchId: Number(branchIdParam),
   });
 
+  // -------- EXPLANATION CALCULATION --------
+  const discountExplanation = useMemo(() => {
+    if (!canShowDiscount || finalPercent == null || !to?.buy || !to?.sell) {
+      return null;
+    }
+
+    const sell = Number(to.sell); // Курс продажи
+    const buy = Number(to.buy); // Курс покупки
+
+    const diff = Math.abs(sell - buy); // разница
+    const percent = finalPercent / 100;
+    const discountValue = diff * percent;
+
+    const sellWithDiscount = sell - discountValue;
+    const buyWithDiscount = buy + discountValue;
+
+    return {
+      sell,
+      buy,
+      diff,
+      percentValue: discountValue,
+      sellWithDiscount,
+      buyWithDiscount,
+    };
+  }, [canShowDiscount, finalPercent, to]);
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -517,32 +543,61 @@ export default function ReserveWithRateScreen() {
         )}
 
         {canShowDiscount && finalAmount != null && (
-          <View style={styles.discountRow}>
-            <Text style={styles.discountLabel}>
-              {mode === "buy"
-                ? `${t(
-                    "norates.withrates.withDiscount",
-                    "С"
-                  )} ${finalPercent}% ${t(
-                    "norates.withrates.discount",
-                    "скидкой"
-                  )}:`
-                : `${t(
-                    "norates.withrates.withPremium",
-                    "С"
-                  )} ${finalPercent}% ${t(
-                    "norates.withrates.premium",
-                    "наценкой"
-                  )}:`}
-            </Text>
+          <>
+            <View style={styles.discountRow}>
+              <Text style={styles.discountLabel}>
+                {mode === "buy"
+                  ? `${t(
+                      "norates.withrates.withDiscount",
+                      "С"
+                    )} ${finalPercent}% ${t(
+                      "norates.withrates.discount",
+                      "скидкой"
+                    )}:`
+                  : `${t(
+                      "norates.withrates.withPremium",
+                      "С"
+                    )} ${finalPercent}% ${t(
+                      "norates.withrates.premium",
+                      "наценкой"
+                    )}:`}
+              </Text>
 
-            <Text style={styles.discountValue}>
-              {finalAmount.toLocaleString("ru-RU", {
-                maximumFractionDigits: 2,
-              })}{" "}
-              ₸
-            </Text>
-          </View>
+              <Text style={styles.discountValue}>
+                {finalAmount.toLocaleString("ru-RU", {
+                  maximumFractionDigits: 2,
+                })}{" "}
+                ₸
+              </Text>
+            </View>
+            {discountExplanation && (
+              <View style={{ marginTop: 10 }}>
+                <Text style={styles.discountCalcText}>
+                  {t("norates.withrates.discountCalculation.baseRates", {
+                    sell: discountExplanation.sell,
+                    buy: discountExplanation.buy,
+                  })}
+                </Text>
+
+                <Text style={styles.discountCalcText}>
+                  {t("norates.withrates.discountCalculation.difference", {
+                    diff: discountExplanation.diff.toFixed(2),
+                    percent: finalPercent,
+                    percentValue: discountExplanation.percentValue.toFixed(4),
+                  })}
+                </Text>
+
+                <Text style={styles.discountCalcText}>
+                  {t("norates.withrates.discountCalculation.withDiscount", {
+                    sellWithDiscount:
+                      discountExplanation.sellWithDiscount.toFixed(2),
+                    buyWithDiscount:
+                      discountExplanation.buyWithDiscount.toFixed(2),
+                  })}
+                </Text>
+              </View>
+            )}
+          </>
         )}
 
         {/* Guest phone */}
@@ -901,5 +956,11 @@ const makeStyles = (colors: any) =>
       color: colors.subtext, // SUB
       fontStyle: "italic",
       marginLeft: 2,
+    },
+    discountCalcText: {
+      fontSize: 13,
+      color: colors.subtext,
+      marginTop: 4,
+      lineHeight: 18,
     },
   });
