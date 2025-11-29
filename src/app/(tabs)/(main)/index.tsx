@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   FlatList,
@@ -22,6 +22,7 @@ import LineUpDownChartCard from "../../../components/LineUpDownChartCard";
 import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
 import ReservePromoCard from "../../../components/ReservePromoCard";
 import { Skeleton } from "../../../components/skeleton";
+import { useRefetchOnLanguageChange } from "../../../hooks/useRefetchOnLanguageChange";
 import { useTheme } from "../../../hooks/useTheme";
 import { useUserLocation } from "../../../hooks/useUserLocation";
 import { useAuth } from "../../../providers/Auth";
@@ -195,48 +196,29 @@ export default function MainScreen() {
       skip: !selectedBranch?.id || isBranchesLoading,
     }
   );
-  React.useEffect(() => {
-    // Сбрасываем выбранный филиал
-    setSelectedBranch(null);
 
-    // Всегда можно рефетчить список филиалов — он не skip'ается
-    refetchBranches();
-
-    // nearestBranch можно рефетчить ТОЛЬКО если он был активирован
+  // 1) При появлении геолокации — обновляем nearest branch
+  useEffect(() => {
     if (location) {
       refetchNearestBranch();
     }
-  }, [i18n.language, location]);
+  }, [location]);
 
-  // === ЛОГИКА ВЫБОРА ФИЛИАЛА ===
-  React.useEffect(() => {
-    let isMounted = true;
+  // 2) При смене языка — обновляем branches + nearest if possible
+  useRefetchOnLanguageChange([
+    async () => {
+      setSelectedBranch(null); // как у старого кода
+      await refetchBranches(); // как у старого кода
 
-    const run = async () => {
-      // 1. Сбрасываем выбранный филиал
-      setSelectedBranch(null);
-
-      // 2. Рефетчим ветку филиалов
-      await refetchBranches();
-
-      // 3. Рефетчим nearest-बлижайший филиал (если активен)
+      // nearest только если геолокация есть
       if (location) {
         await refetchNearestBranch();
       }
 
-      // 4. После этого — общий рефетч всех данных
-      //    (курсы, новости, nbk, etc)
-      if (isMounted) {
-        await refetchAllData();
-      }
-    };
-
-    run();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [i18n.language, location]);
+      // полностью обновляем остальные данные
+      await refetchAllData(); // как делал твой второй useEffect
+    },
+  ]);
 
   const exchangeRates = rawExchangeRates?.data || [];
   const news = rawNews?.data || [];
