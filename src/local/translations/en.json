@@ -357,6 +357,7 @@
     "rateHint": "At the rate of"
   },
   "norates": {
+    "kzt": "Kazakhstan tenge",
     "title": "Without rate link",
     "rateAlertTitle": "Rate as of",
     "rateAlertMessage": "Please note that the rate may change before receiving the currency at the exchange point.",

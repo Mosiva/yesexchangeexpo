@@ -380,7 +380,7 @@ export default function ReserveNoRateScreen() {
         <FXRow
           flag={<CurrencyFlag code="KZT" size={18} />}
           code="KZT"
-          name="Казахстанский тенге"
+          name={t("norates.kzt", "Казахстанский тенге")}
           value={fromText}
           onChangeText={(t) => {
             setActiveInput("from");
