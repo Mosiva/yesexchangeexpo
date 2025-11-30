@@ -29,6 +29,7 @@ import { useAuth } from "../../../providers/Auth";
 import {
   useBranchesQuery,
   useExchangeRatesCurrentQuery,
+  useGetFavoriteCurrenciesQuery,
   useNbkRatesQuery,
   useNearestBranchQuery,
   useNewsQuery,
@@ -120,6 +121,16 @@ export default function MainScreen() {
   const styles = makeStyles(colors);
   const { isGuest } = useAuth();
   // usePushNotifications(isGuest);
+  const {
+    data: favoriteCurrencies,
+    refetch: refetchFavoriteCurrencies,
+    isLoading: isFavoriteCurrenciesLoading,
+    isError: isFavoriteCurrenciesError,
+  } = useGetFavoriteCurrenciesQuery(undefined, {
+    skip: isGuest, // 👈 если гость — запрос НЕ выполнится
+  });
+  const favoriteCurrenciesData =
+    !isGuest && Array.isArray(favoriteCurrencies) ? favoriteCurrencies : [];
 
   // === API ===
   const {
@@ -182,20 +193,23 @@ export default function MainScreen() {
     rate: any;
   } | null>(null);
 
+  const exchangeQueryArgs: any = {
+    branchId: selectedBranch?.id?.toString() || "",
+    limit: 100,
+  };
+
+  if (!isGuest) {
+    exchangeQueryArgs.currencyCodes = favoriteCurrenciesData;
+  }
+
   const {
     data: rawExchangeRates,
     refetch: refetchExchangeRates,
     isLoading: isExchangeRatesLoading,
     isError: isExchangeRatesError,
-  } = useExchangeRatesCurrentQuery(
-    {
-      branchId: selectedBranch?.id?.toString() || "",
-      limit: 100,
-    },
-    {
-      skip: !selectedBranch?.id || isBranchesLoading,
-    }
-  );
+  } = useExchangeRatesCurrentQuery(exchangeQueryArgs, {
+    skip: !selectedBranch?.id || isBranchesLoading,
+  });
 
   // 1) При появлении геолокации — обновляем nearest branch
   useEffect(() => {
