@@ -347,8 +347,8 @@
     "ctaText": "Брондау"
   },
   "currencyExchangeModal": {
-    "sell": "Мен сатамын",
-    "buy": "Мен сатып аламын",
+    "sell": "Мен сатып аламын",
+    "buy": "Мен сатамын",
     "sellInput": "Алу",
     "buyInput": "Сату",
     "sellOutput": "Беру",
