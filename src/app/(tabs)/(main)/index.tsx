@@ -210,45 +210,6 @@ export default function MainScreen() {
   } = useExchangeRatesCurrentQuery(exchangeQueryArgs, {
     skip: !selectedBranch?.id || isBranchesLoading,
   });
-
-  // 1) При появлении геолокации — обновляем nearest branch
-  useEffect(() => {
-    if (location) {
-      refetchNearestBranch();
-    }
-  }, [location]);
-  useRefetchOnLanguageChange([
-    async () => {
-      const prev = selectedBranch; // запоминаем
-
-      setSelectedBranch(null);
-      await refetchBranches();
-
-      // Если был выбран филиал ДО смены языка — выбираем тот же по id
-      if (prev?.id && Array.isArray(rawBranches)) {
-        const updated = rawBranches.find((b) => b.id === prev.id);
-        if (updated) {
-          setSelectedBranch(updated); // 👈 теперь city/address обновятся
-        }
-      }
-
-      if (location) {
-        await refetchNearestBranch();
-      }
-
-      await refetchAllData();
-    },
-  ]);
-  useEffect(() => {
-    if (!selectedBranch) return;
-    if (!Array.isArray(branches)) return;
-
-    const updated = branches.find((b) => b.id === selectedBranch.id);
-    if (updated) {
-      setSelectedBranch(updated);
-    }
-  }, [branches]);
-
   const exchangeRates = rawExchangeRates?.data || [];
   const news = rawNews?.data || [];
 
@@ -286,7 +247,7 @@ export default function MainScreen() {
     }));
   }, [news]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // 🕓 1️⃣ Идёт загрузка ближайшего филиала
     if (isNearestBranchLoading && !selectedBranch) {
       console.log("🕓 Определяем ближайший филиал по геолокации...");
@@ -359,6 +320,38 @@ export default function MainScreen() {
     permissionDenied,
     rawBranches,
     selectedBranch,
+  ]);
+  useEffect(() => {
+    if (!selectedBranch) return;
+    if (!Array.isArray(branches)) return;
+
+    const updated = branches.find((b) => b.id === selectedBranch.id);
+    if (updated) {
+      setSelectedBranch(updated);
+    }
+  }, [branches]);
+
+  useRefetchOnLanguageChange([
+    async () => {
+      const prev = selectedBranch; // запоминаем
+
+      setSelectedBranch(null);
+      await refetchBranches();
+
+      // Если был выбран филиал ДО смены языка — выбираем тот же по id
+      if (prev?.id && Array.isArray(rawBranches)) {
+        const updated = rawBranches.find((b) => b.id === prev.id);
+        if (updated) {
+          setSelectedBranch(updated); // 👈 теперь city/address обновятся
+        }
+      }
+
+      if (location) {
+        await refetchNearestBranch();
+      }
+
+      await refetchAllData();
+    },
   ]);
 
   // === Обновление данных ===
