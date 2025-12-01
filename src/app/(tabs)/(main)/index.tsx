@@ -185,6 +185,9 @@ export default function MainScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"archive" | "news">("archive");
   const [selectedBranch, setSelectedBranch] = useState<any>(null);
+  const [isBranchManuallySelected, setIsBranchManuallySelected] =
+    useState(false);
+
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
   const [exchangeVisible, setExchangeVisible] = useState(false);
@@ -254,9 +257,9 @@ export default function MainScreen() {
       return;
     }
 
-    // 🟢 2️⃣ Успешно нашли ближайший филиал
     if (
       !selectedBranch &&
+      !isBranchManuallySelected && // <-- NEW
       !permissionDenied &&
       !isNearestBranchLoading &&
       rawNearestBranch?.id
@@ -280,6 +283,7 @@ export default function MainScreen() {
 
     // 🚫 4️⃣ Геолокация отключена — выбираем дефолтный филиал
     if (
+      !isBranchManuallySelected &&
       (permissionDenied || isNearestBranchError) &&
       Array.isArray(rawBranches) &&
       rawBranches.length > 0 &&
@@ -395,6 +399,7 @@ export default function MainScreen() {
   };
   const handleBranchSelect = (branch: any) => {
     setSelectedBranch(branch);
+    setIsBranchManuallySelected(true);
     setDropdownVisible(false);
   };
   const filteredExchangeRates = exchangeRates.filter(
