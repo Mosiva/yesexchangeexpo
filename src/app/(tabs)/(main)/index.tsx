@@ -217,22 +217,37 @@ export default function MainScreen() {
       refetchNearestBranch();
     }
   }, [location]);
-
-  // 2) При смене языка — обновляем branches + nearest if possible
   useRefetchOnLanguageChange([
     async () => {
-      setSelectedBranch(null); // как у старого кода
-      await refetchBranches(); // как у старого кода
+      const prev = selectedBranch; // запоминаем
 
-      // nearest только если геолокация есть
+      setSelectedBranch(null);
+      await refetchBranches();
+
+      // Если был выбран филиал ДО смены языка — выбираем тот же по id
+      if (prev?.id && Array.isArray(rawBranches)) {
+        const updated = rawBranches.find((b) => b.id === prev.id);
+        if (updated) {
+          setSelectedBranch(updated); // 👈 теперь city/address обновятся
+        }
+      }
+
       if (location) {
         await refetchNearestBranch();
       }
 
-      // полностью обновляем остальные данные
-      await refetchAllData(); // как делал твой второй useEffect
+      await refetchAllData();
     },
   ]);
+  useEffect(() => {
+    if (!selectedBranch) return;
+    if (!Array.isArray(branches)) return;
+
+    const updated = branches.find((b) => b.id === selectedBranch.id);
+    if (updated) {
+      setSelectedBranch(updated);
+    }
+  }, [branches]);
 
   const exchangeRates = rawExchangeRates?.data || [];
   const news = rawNews?.data || [];
