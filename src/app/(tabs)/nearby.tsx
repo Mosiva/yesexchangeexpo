@@ -14,6 +14,7 @@ import {
   Animated,
   Easing,
   Image,
+  Platform,
   Pressable,
   StatusBar,
   StyleSheet,
@@ -25,6 +26,7 @@ import MapView, { Marker } from "react-native-maps";
 import BranchPickerSheet from "../../components/BranchPickerSheet";
 import { useTheme } from "../../hooks/useTheme";
 import { useUserLocation } from "../../hooks/useUserLocation";
+import { darkMapStyle } from "../../theme/mapStyles";
 
 import {
   useBranchesQuery,
@@ -198,6 +200,9 @@ export default function NearbyScreen() {
         }}
         showsUserLocation
         showsMyLocationButton
+        customMapStyle={
+          Platform.OS === "android" && theme === "dark" ? darkMapStyle : []
+        }
       >
         {branchesWithDistance.map((branch) => {
           const isSelected = selectedBranch?.id === branch.id;

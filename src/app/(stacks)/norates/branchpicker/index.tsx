@@ -14,6 +14,7 @@ import {
   Animated,
   Easing,
   Image,
+  Platform,
   Pressable,
   StatusBar,
   StyleSheet,
@@ -28,6 +29,7 @@ import {
   useBranchesQuery,
   useNearestBranchesQuery,
 } from "../../../../services/yesExchange";
+import { darkMapStyle } from "../../../../theme/mapStyles";
 
 export default function BranchPickerScreen() {
   const { t } = useTranslation();
@@ -204,6 +206,9 @@ export default function BranchPickerScreen() {
         }
         showsUserLocation
         showsMyLocationButton
+        customMapStyle={
+          Platform.OS === "android" && theme === "dark" ? darkMapStyle : []
+        }
       >
         {branchesWithDistance.map((branch) => {
           const isSelected = selectedBranch?.id === branch.id;
