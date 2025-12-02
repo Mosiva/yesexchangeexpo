@@ -11,6 +11,7 @@ import {
   Alert,
   Image,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   Share,
@@ -18,7 +19,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import ImageView from "react-native-image-viewing";
 import { useTheme } from "../../hooks/useTheme";
@@ -404,7 +405,7 @@ export default function BranchPickerSheet({
                 keyExtractor={(b) => String(b.id)}
                 renderItem={renderBranchItem}
                 ItemSeparatorComponent={() => <View style={s.sep} />}
-                contentContainerStyle={{ paddingBottom: 170 }}
+                contentContainerStyle={{ paddingBottom: Platform.OS === "ios" ? 170 : 195 }}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
               />
