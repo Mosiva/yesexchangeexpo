@@ -34,6 +34,7 @@ import {
   useNearestBranchQuery,
   useNewsQuery,
 } from "../../../services/yesExchange";
+import { useBranchStore } from "../../../store/useBranchStore";
 import { CurrencyCode } from "../../../types/api";
 import {
   dmyLocal,
@@ -114,21 +115,19 @@ const LocalTime = () => {
   );
 };
 export default function MainScreen() {
-  const { location, loading, permissionDenied } = useUserLocation();
+  const { location, permissionDenied } = useUserLocation();
   const [refreshing, setRefreshing] = useState(false);
   const { colors, theme } = useTheme();
   const isLight = theme === "light";
   const styles = makeStyles(colors);
   const { isGuest } = useAuth();
   // usePushNotifications(isGuest);
-  const {
-    data: favoriteCurrencies,
-    refetch: refetchFavoriteCurrencies,
-    isLoading: isFavoriteCurrenciesLoading,
-    isError: isFavoriteCurrenciesError,
-  } = useGetFavoriteCurrenciesQuery(undefined, {
-    skip: isGuest, // 👈 если гость — запрос НЕ выполнится
-  });
+  const { data: favoriteCurrencies } = useGetFavoriteCurrenciesQuery(
+    undefined,
+    {
+      skip: isGuest, // 👈 если гость — запрос НЕ выполнится
+    }
+  );
   const favoriteCurrenciesData =
     !isGuest && Array.isArray(favoriteCurrencies) ? favoriteCurrencies : [];
 
@@ -184,9 +183,8 @@ export default function MainScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"archive" | "news">("archive");
-  const [selectedBranch, setSelectedBranch] = useState<any>(null);
-  const [isBranchManuallySelected, setIsBranchManuallySelected] =
-    useState(false);
+  const { selectedBranch, isBranchManuallySelected, setBranch, setAutoBranch } =
+    useBranchStore();
 
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
@@ -270,7 +268,7 @@ export default function MainScreen() {
         "|",
         rawNearestBranch.address
       );
-      setSelectedBranch(rawNearestBranch);
+      setAutoBranch(rawNearestBranch);
       return;
     }
 
@@ -310,7 +308,7 @@ export default function MainScreen() {
         defaultBranch.address
       );
 
-      setSelectedBranch(defaultBranch);
+      setAutoBranch(defaultBranch);
     }
 
     // 💤 5️⃣ Если всё ещё ничего не выбрано (например, очень ранний рендер)
@@ -331,22 +329,23 @@ export default function MainScreen() {
 
     const updated = branches.find((b) => b.id === selectedBranch.id);
     if (updated) {
-      setSelectedBranch(updated);
+      setAutoBranch(updated); // ✔ ПРАВИЛЬНО
     }
   }, [branches]);
 
   useRefetchOnLanguageChange([
     async () => {
-      const prev = selectedBranch; // запоминаем
+      const prev = selectedBranch;
 
-      setSelectedBranch(null);
-      await refetchBranches();
+      // правильный сброс
+      useBranchStore.getState().clearBranch();
 
-      // Если был выбран филиал ДО смены языка — выбираем тот же по id
-      if (prev?.id && Array.isArray(rawBranches)) {
-        const updated = rawBranches.find((b) => b.id === prev.id);
+      const freshBranches = await refetchBranches().unwrap();
+
+      if (prev?.id) {
+        const updated = freshBranches.find((b) => b.id === prev.id);
         if (updated) {
-          setSelectedBranch(updated); // 👈 теперь city/address обновятся
+          setAutoBranch(updated); // 👈 правильно
         }
       }
 
@@ -398,8 +397,7 @@ export default function MainScreen() {
     setExchangeVisible(true);
   };
   const handleBranchSelect = (branch: any) => {
-    setSelectedBranch(branch);
-    setIsBranchManuallySelected(true);
+    setBranch(branch); // ставим ручной выбор
     setDropdownVisible(false);
   };
   const filteredExchangeRates = exchangeRates.filter(

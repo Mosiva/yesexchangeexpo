@@ -12,7 +12,7 @@ export function useUserLocation() {
   const [loading, setLoading] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
 
-  /** 💾 загрузка сохранённой позиции */
+  /** 💾 Загрузка последней сохранённой локации */
   const loadLastLocation = useCallback(async () => {
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
@@ -23,11 +23,11 @@ export function useUserLocation() {
         }
       }
     } catch (e) {
-      console.warn("⚠️ Не удалось загрузить последнюю локацию", e);
+      console.warn("⚠️ Не удалось загрузить сохранённую локацию", e);
     }
   }, []);
 
-  /** 📍 запрос текущей позиции */
+  /** 📍 Основной запрос локации (с UI) */
   const requestLocation = useCallback(async () => {
     try {
       setLoading(true);
@@ -55,34 +55,57 @@ export function useUserLocation() {
             ? `${city}${street ? `, ${street}` : ""}`
             : "Не определено"
         );
-      } else {
-        setAddress("Не определено");
       }
     } catch (e) {
-      console.error("Ошибка при получении геолокации:", e);
+      console.error("Ошибка получения геолокации:", e);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  /** 🚀 автоинициализация при монтировании */
+  /** 🔄 Тихое обновление (без UI) — повышает точность */
+  const silentRefresh = useCallback(async () => {
+    try {
+      const current = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+
+      setLocation(current); // обновляем quietly
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+
+      const [reverse] = await Location.reverseGeocodeAsync(current.coords);
+      if (reverse) {
+        const city = reverse.city ?? reverse.region ?? "";
+        const street = reverse.street ?? "";
+        setAddress(
+          city || street
+            ? `${city}${street ? `, ${street}` : ""}`
+            : "Не определено"
+        );
+      }
+    } catch (_) {
+      /* Тихо игнорируем */
+    }
+  }, []);
+
+  /** 🚀 Автоинициализация */
   useEffect(() => {
     (async () => {
       await loadLastLocation();
-      await requestLocation();
+      await requestLocation(); // один раз — с UI
 
-      // 🔁 через секунду повторно обновляем для надёжности
+      // через 1.5 сек. — тихая корректировка (без мерцания)
       setTimeout(() => {
-        requestLocation();
-      }, 1000);
+        silentRefresh();
+      }, 1500);
     })();
-  }, [loadLastLocation, requestLocation]);
+  }, [loadLastLocation, requestLocation, silentRefresh]);
 
   return {
     location,
     address,
     loading,
     permissionDenied,
-    requestLocation,
+    requestLocation, // кнопка "Обновить"
   };
 }
