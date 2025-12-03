@@ -85,8 +85,7 @@ const LocalTime = () => {
   }
 
   // язык, для которого применяем склонение
-  const isSlavicLike =
-    i18n.language.startsWith("ru") || i18n.language.startsWith("kz");
+  const isSlavicLike = i18n.language.startsWith("ru");
 
   const genitiveMonths = nominativeMonths.map((m) => {
     // 🇷🇺 🇰🇿 → применяем склонение
