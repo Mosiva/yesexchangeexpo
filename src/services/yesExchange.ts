@@ -29,6 +29,7 @@ import type {
   NbkRateDto,
   // news
   NewsDto,
+  NewsSource,
   OtpRequestResultDto,
   // rates
   Paginated,
@@ -324,11 +325,11 @@ export const yesExchangeApi = restApi.injectEndpoints({
 
     // --- Новости ---
     news: build.query<
-      Paginated<NewsDto, { source?: string | string[] }>,
+      Paginated<NewsDto>,
       {
         page?: number;
         limit?: number;
-        "filter.source"?: string[];
+        source?: NewsSource;
         sortBy?: (
           | "publishedAt:ASC"
           | "publishedAt:DESC"

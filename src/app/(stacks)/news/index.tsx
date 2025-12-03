@@ -13,15 +13,17 @@ import {
   View,
 } from "react-native";
 import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
+import { useDebounce } from "../../../hooks/useDebounce";
 import { useTheme } from "../../../hooks/useTheme";
 import { useNewsQuery } from "../../../services/yesExchange";
+import { NewsSource } from "../../../types/api";
 
-// ---------- Tabs & Source Mapping ----------
+// ---------- Tabs ----------
 const TABS = ["All", "YesNews", "Kase", "Zakon.kz"] as const;
 type TabKey = (typeof TABS)[number];
 
 const SOURCE_MAP: Record<TabKey, string | null> = {
-  YesNews: "YesNews", // если backend добавит
+  YesNews: "YesNews",
   Kase: "KASE",
   "Zakon.kz": "Zakon.kz",
   All: null,
@@ -32,22 +34,39 @@ export default function NewsScreen() {
   const [query, setQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
+  const debouncedQuery = useDebounce(query, 500);
+
   const { colors, theme } = useTheme();
   const isLight = theme === "light";
   const styles = makeStyles(colors);
 
   const { t } = useTranslation();
 
+  const selectedSource = SOURCE_MAP[active];
+
+  // ---------- QUERY PARAMS ----------
+  const queryParams =
+    debouncedQuery.trim().length > 0
+      ? {
+          limit: 100,
+          search: debouncedQuery.trim(),
+          searchBy: ["title"] as ("title" | "content")[],
+        }
+      : selectedSource
+      ? { limit: 100, source: selectedSource as NewsSource }
+      : { limit: 100 };
+
+  // ---------- API ----------
   const {
     data: rawNews,
     refetch: refetchNews,
     isLoading: isNewsLoading,
     isError: isNewsError,
-  } = useNewsQuery({ limit: 100 });
+  } = useNewsQuery(queryParams);
 
   const news = rawNews?.data || [];
 
-  // ---------- Tab labels translations ----------
+  // ---------- Tab labels ----------
   const TAB_LABELS: Record<TabKey, string> = {
     All: t("news.tabAll", "All"),
     YesNews: t("news.tabYesNews", "YesNews"),
@@ -55,40 +74,18 @@ export default function NewsScreen() {
     "Zakon.kz": t("news.tabZakon", "Zakon.kz"),
   };
 
-  // Debug: смотрим реальные source
-  console.log("sources:", [...new Set(news.map((n) => n.source))]);
-
-  // ---------- FILTERING ----------
-  const filteredNews = useMemo(() => {
-    let arr = news;
-
-    // 1. Filter by source (tab)
-    const selectedSource = SOURCE_MAP[active];
-    if (selectedSource) {
-      arr = arr.filter((item) => item.source === selectedSource);
-    }
-
-    // 2. Search filter
-    if (query.trim()) {
-      const q = query.toLowerCase();
-      arr = arr.filter((item) => item.title.toLowerCase().includes(q));
-    }
-
-    return arr;
-  }, [news, active, query]);
-
-  // ---------- Convert to flatlist-friendly format ----------
+  // ---------- Convert to list items ----------
   const newsItems = useMemo(() => {
-    return filteredNews.map((n) => ({
+    return news.map((n) => ({
       id: n.id,
       title: n.title,
-      summary: n.excerpt as string,
+      summary: typeof n.excerpt === "string" ? n.excerpt : undefined,
       date: n.createdAt,
       source: n.source,
     }));
-  }, [filteredNews]);
+  }, [news]);
 
-  // ---------- Pull-to-refresh ----------
+  // ---------- Refresh ----------
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refetchNews();
@@ -120,7 +117,10 @@ export default function NewsScreen() {
         }
         ListEmptyComponent={
           <Text style={{ color: colors.text, fontSize: 16 }}>
-            Произошла ошибка. Потяните вниз, чтобы обновить.
+            {t(
+              "news.error",
+              "Произошла ошибка. Потяните вниз, чтобы обновить."
+            )}
           </Text>
         }
         renderItem={null}
@@ -151,7 +151,7 @@ export default function NewsScreen() {
         })}
       </View>
 
-      {/* ---------- News List ---------- */}
+      {/* ---------- LIST ---------- */}
       <FlatList
         data={newsItems}
         keyExtractor={(item) => item.id.toString()}
@@ -160,33 +160,25 @@ export default function NewsScreen() {
         }
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
         ListHeaderComponent={
-          <>
-            {/* ---------- SEARCH ---------- */}
-            <View style={styles.searchWrap}>
-              <Ionicons
-                name="search"
-                size={20}
-                color="#9CA3AF"
-                style={{ marginRight: 8 }}
-              />
-              <TextInput
-                value={query}
-                onChangeText={setQuery}
-                placeholder={t("news.searchByTitle", "Поиск по названию")}
-                placeholderTextColor={colors.subtext}
-                style={styles.searchInput}
-                returnKeyType="search"
-              />
-            </View>
-          </>
+          <View style={styles.searchWrap}>
+            <Ionicons
+              name="search"
+              size={20}
+              color="#9CA3AF"
+              style={{ marginRight: 8 }}
+            />
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder={t("news.searchByTitle", "Поиск по названию")}
+              placeholderTextColor={colors.subtext}
+              style={styles.searchInput}
+              returnKeyType="search"
+            />
+          </View>
         }
         renderItem={({ item }) => (
-          <NewsMainCardList
-            items={[item]}
-            initial={1}
-            onMorePress={() => {}}
-            onDark={false}
-          />
+          <NewsMainCardList items={[item]} initial={1} onDark={false} />
         )}
       />
     </View>
