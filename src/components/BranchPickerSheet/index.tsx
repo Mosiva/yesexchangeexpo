@@ -308,7 +308,7 @@ export default function BranchPickerSheet({
       );
     }
   };
-
+  const [showAllPhotos, setShowAllPhotos] = useState(false);
   return (
     <BottomSheet
       ref={sheetRef}
@@ -434,29 +434,83 @@ export default function BranchPickerSheet({
               </Pressable>
             </View>
 
+            {/* GRID ГАЛЕРЕЯ 3xN */}
             {/* Галерея */}
-            {/* Галерея (Скролл превьюшек) */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={s.galleryRow}
-            >
-              {(selectedBranch.photos ?? []).map((url, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  onPress={() => {
-                    setCurrentImageIndex(idx); // Запоминаем, на какую нажали
-                    setIsGalleryVisible(true); // Открываем галерею
-                  }}
+            {Platform.OS === "android" ? (
+              // 🔹 ANDROID: GRID 3xN
+              <View style={{ marginVertical: 12 }}>
+                <View
+                  style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}
                 >
-                  <Image
-                    source={{ uri: url }}
-                    style={s.galleryImage}
-                    resizeMode="cover"
-                  />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+                  {(showAllPhotos
+                    ? selectedBranch.photos ?? []
+                    : (selectedBranch.photos ?? []).slice(0, 3)
+                  ).map((url, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      activeOpacity={0.8}
+                      onPress={() => {
+                        setCurrentImageIndex(idx);
+                        setIsGalleryVisible(true);
+                      }}
+                      style={{
+                        width: "31%",
+                        aspectRatio: 1.6,
+                        borderRadius: 8,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Image
+                        source={{ uri: url }}
+                        style={{ width: "100%", height: "100%" }}
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                {(selectedBranch.photos?.length ?? 0) > 3 && (
+                  <Pressable
+                    onPress={() => setShowAllPhotos((v) => !v)}
+                    style={{
+                      alignSelf: "center",
+                      marginTop: 10,
+                      paddingVertical: 6,
+                    }}
+                  >
+                    <Text style={{ color: colors.subtext, fontWeight: "600" }}>
+                      {showAllPhotos
+                        ? t("currenciesMainCardList.hide", "Скрыть")
+                        : t("archive.showMore", "Показать все")}
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            ) : (
+              // 🔹 iOS: Horizontal ScrollView
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={s.galleryRow}
+              >
+                {(selectedBranch.photos ?? []).map((url, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      setCurrentImageIndex(idx);
+                      setIsGalleryVisible(true);
+                    }}
+                  >
+                    <Image
+                      source={{ uri: url }}
+                      style={s.galleryImage}
+                      resizeMode="cover"
+                    />
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
 
             {/* --- САМА МОДАЛЬНАЯ ГАЛЕРЕЯ (Поверх всего) --- */}
             <ImageView
