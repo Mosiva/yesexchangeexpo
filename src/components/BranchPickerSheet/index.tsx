@@ -19,7 +19,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import ImageView from "react-native-image-viewing";
 import { useTheme } from "../../hooks/useTheme";
@@ -405,7 +405,9 @@ export default function BranchPickerSheet({
                 keyExtractor={(b) => String(b.id)}
                 renderItem={renderBranchItem}
                 ItemSeparatorComponent={() => <View style={s.sep} />}
-                contentContainerStyle={{ paddingBottom: Platform.OS === "ios" ? 170 : 195 }}
+                contentContainerStyle={{
+                  paddingBottom: Platform.OS === "ios" ? 170 : 195,
+                }}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
               />
@@ -442,7 +444,6 @@ export default function BranchPickerSheet({
               {(selectedBranch.photos ?? []).map((url, idx) => (
                 <TouchableOpacity
                   key={idx}
-                  activeOpacity={0.8}
                   onPress={() => {
                     setCurrentImageIndex(idx); // Запоминаем, на какую нажали
                     setIsGalleryVisible(true); // Открываем галерею
