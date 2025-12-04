@@ -16,7 +16,6 @@ import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { useTheme } from "../../../hooks/useTheme";
 import { useNewsQuery } from "../../../services/yesExchange";
-import { NewsSource } from "../../../types/api";
 
 // ---------- Tabs ----------
 const TABS = ["All", "YesNews", "Kase", "Zakon.kz"] as const;
@@ -53,7 +52,10 @@ export default function NewsScreen() {
           searchBy: ["title"] as ("title" | "content")[],
         }
       : selectedSource
-      ? { limit: 100, source: selectedSource as NewsSource }
+      ? {
+          limit: 100,
+          "filter.source": [selectedSource],
+        }
       : { limit: 100 };
 
   // ---------- API ----------
@@ -150,6 +152,27 @@ export default function NewsScreen() {
           );
         })}
       </View>
+      <View style={styles.searchWrap}>
+        <Ionicons
+          name="search"
+          size={20}
+          color="#9CA3AF"
+          style={{ marginRight: 8 }}
+        />
+        <TextInput
+          value={query}
+          onChangeText={(text) => {
+            setQuery(text);
+            if (text.trim().length > 0 && active !== "All") {
+              setActive("All");
+            }
+          }}
+          placeholder={t("news.searchByTitle", "Поиск по названию")}
+          placeholderTextColor={colors.subtext}
+          style={styles.searchInput}
+          returnKeyType="search"
+        />
+      </View>
 
       {/* ---------- LIST ---------- */}
       <FlatList
@@ -158,25 +181,7 @@ export default function NewsScreen() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
-        ListHeaderComponent={
-          <View style={styles.searchWrap}>
-            <Ionicons
-              name="search"
-              size={20}
-              color="#9CA3AF"
-              style={{ marginRight: 8 }}
-            />
-            <TextInput
-              value={query}
-              onChangeText={setQuery}
-              placeholder={t("news.searchByTitle", "Поиск по названию")}
-              placeholderTextColor={colors.subtext}
-              style={styles.searchInput}
-              returnKeyType="search"
-            />
-          </View>
-        }
+        contentContainerStyle={{ paddingHorizontal: 5 }}
         renderItem={({ item }) => (
           <NewsMainCardList items={[item]} initial={1} onDark={false} />
         )}
@@ -195,10 +200,10 @@ const makeStyles = (colors: any) =>
       borderWidth: 1,
       borderColor: colors.border,
       borderRadius: 14,
-      height: 52,
+      height: 48,
       paddingHorizontal: 12,
-      marginBottom: 16,
       backgroundColor: colors.card,
+      marginHorizontal: 16,
     },
 
     searchInput: {
