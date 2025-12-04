@@ -4,14 +4,15 @@ import React, { memo } from "react";
 import {
   Image,
   Linking,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
+  useWindowDimensions
 } from "react-native";
 import Markdown from "react-native-markdown-display";
+import RenderHTML from "react-native-render-html";
 import { useTheme } from "../../hooks/useTheme";
 
 type Props = {
@@ -32,28 +33,18 @@ export default function NewsDetailCard({
   url,
 }: Props) {
   const router = useRouter();
-  console.log(url);
   const { colors } = useTheme();
 
   const styles = makeStyles(colors);
   return (
     <ScrollView style={styles.container} bounces>
-      {/* Cover image / placeholder */}
+      {/* Cover */}
       <View style={styles.coverWrap}>
         {typeof image === "string" ? (
           <Image source={{ uri: image }} style={styles.cover} />
         ) : (
           <View style={[styles.cover, styles.coverFallback]} />
         )}
-
-        {/* Back button */}
-        {/* <Pressable
-          onPress={() => router.back()}
-          hitSlop={10}
-          style={styles.backBtn}
-        >
-          <Ionicons name="arrow-back" size={20} color="#111827" />
-        </Pressable> */}
       </View>
 
       {/* Article */}
@@ -64,7 +55,9 @@ export default function NewsDetailCard({
           {dayjs(date).format("DD.MM.YYYY")}
         </Text>
 
-        <ArticleText text={content} />
+        {/* 🔥 Условный рендер */}
+        <ArticleText text={content} source={source} />
+
         <Pressable onPress={() => Linking.openURL(url)} style={styles.button}>
           <Text style={styles.buttonText}>Источник</Text>
         </Pressable>
@@ -73,17 +66,41 @@ export default function NewsDetailCard({
   );
 }
 
-const ArticleText = memo(({ text }: { text: string }) => {
-  const { colors } = useTheme();
-  const styles = makeStyles(colors);
+/* ---------- ArticleText ---------- */
 
-  return (
-    <View style={{ marginTop: 10 }}>
-      <Markdown style={markdownStyles(colors)}>{text}</Markdown>
-    </View>
-  );
-});
+const ArticleText = memo(
+  ({ text, source }: { text: string; source: string }) => {
+    const { colors } = useTheme();
+    const { width } = useWindowDimensions();
+
+    // YesNews → HTML
+    const isHtml = source === "YesNews";
+
+    if (isHtml) {
+      return (
+        <View style={{ marginTop: 10 }}>
+          <RenderHTML
+            contentWidth={width - 40}
+            source={{ html: text }}
+            defaultTextProps={{ selectable: true }}
+            tagsStyles={htmlStyles(colors)}
+          />
+        </View>
+      );
+    }
+
+    // Остальные → Markdown
+    return (
+      <View style={{ marginTop: 10 }}>
+        <Markdown style={markdownStyles(colors)}>{text}</Markdown>
+      </View>
+    );
+  }
+);
+
 ArticleText.displayName = "ArticleText";
+
+/* ---------- Styles ---------- */
 
 const COVER_H = 220;
 
@@ -105,10 +122,9 @@ const makeStyles = (colors: any) =>
       fontSize: 16,
       fontWeight: "600",
     },
-    /* Cover */
+
     coverWrap: {
       height: COVER_H,
-      position: "relative",
       overflow: "hidden",
       backgroundColor: colors.card,
     },
@@ -120,19 +136,7 @@ const makeStyles = (colors: any) =>
     coverFallback: {
       backgroundColor: colors.card,
     },
-    backBtn: {
-      position: "absolute",
-      left: 12,
-      top: Platform.select({ ios: 50, android: 50 }),
-      width: 36,
-      height: 36,
-      borderRadius: 10,
-      backgroundColor: "rgba(255,255,255,0.9)",
-      alignItems: "center",
-      justifyContent: "center",
-    },
 
-    /* Content */
     body: {
       paddingHorizontal: 20,
       paddingTop: 16,
@@ -142,20 +146,15 @@ const makeStyles = (colors: any) =>
       fontSize: 20,
       lineHeight: 26,
       fontWeight: "800",
-      color: "#111827",
       marginBottom: 6,
     },
     date: {
       fontSize: 13,
-      color: "#6B7280",
       marginBottom: 8,
     },
-    p: {
-      fontSize: 15,
-      lineHeight: 22,
-      color: colors.text,
-    },
   });
+
+/* ---------- Markdown styles ---------- */
 const markdownStyles = (colors: any) => ({
   body: {
     color: colors.text,
@@ -180,13 +179,40 @@ const markdownStyles = (colors: any) => ({
     marginTop: 12,
     marginBottom: 12,
   },
-  list_item: {
-    marginVertical: 4,
-  },
-  bullet_list: {
-    marginVertical: 6,
-  },
   link: {
     color: colors.primary,
+  },
+});
+
+/* ---------- HTML styles ---------- */
+const htmlStyles = (colors: any) => ({
+  body: {
+    color: colors.text,
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  h1: {
+    fontSize: 24,
+    fontWeight: "700" as const,
+    marginTop: 16,
+    marginBottom: 8,
+    color: colors.text,
+  },
+  h2: {
+    fontSize: 20,
+    fontWeight: "700" as const,
+    marginTop: 14,
+    marginBottom: 6,
+    color: colors.text,
+  },
+  p: {
+    marginTop: 12,
+    marginBottom: 12,
+  },
+  a: {
+    color: colors.primary,
+  },
+  li: {
+    marginVertical: 4,
   },
 });
