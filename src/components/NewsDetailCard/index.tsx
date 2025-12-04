@@ -11,9 +11,9 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
+import Markdown from "react-native-markdown-display";
 import RenderHTML from "react-native-render-html";
 import { useTheme } from "../../hooks/useTheme";
-
 type Props = {
   title: string;
   date: string;
@@ -91,12 +91,7 @@ const ArticleText = memo(
     // Остальные → Markdown
     return (
       <View style={{ marginTop: 10 }}>
-        <RenderHTML
-          contentWidth={width - 40}
-          source={{ html: text }}
-          defaultTextProps={{ selectable: true }}
-          tagsStyles={htmlStyles(colors)}
-        />
+        <Markdown style={markdownStyles(colors)}>{text}</Markdown>
       </View>
     );
   }

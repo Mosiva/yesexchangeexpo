@@ -22,6 +22,7 @@ import LineUpDownChartCard from "../../../components/LineUpDownChartCard";
 import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
 import ReservePromoCard from "../../../components/ReservePromoCard";
 import { Skeleton } from "../../../components/skeleton";
+import { usePushNotifications } from "../../../hooks/usePushNotifications";
 import { useRefetchOnLanguageChange } from "../../../hooks/useRefetchOnLanguageChange";
 import { useTheme } from "../../../hooks/useTheme";
 import { useUserLocation } from "../../../hooks/useUserLocation";
@@ -120,7 +121,7 @@ export default function MainScreen() {
   const isLight = theme === "light";
   const styles = makeStyles(colors);
   const { isGuest } = useAuth();
-  // usePushNotifications(isGuest);
+  usePushNotifications(isGuest);
   const { data: favoriteCurrencies } = useGetFavoriteCurrenciesQuery(
     undefined,
     {
