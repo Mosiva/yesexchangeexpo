@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "buildNumber": "17",
+      "buildNumber": "18",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Ваше местоположение нужно, чтобы показать ближайшие филиалы обмена валют.",
         "ITSAppUsesNonExemptEncryption": false,
@@ -35,7 +35,7 @@
         "backgroundColor": "#ffffff"
       },
       "softwareKeyboardLayoutMode": "pan",
-      "versionCode": 17,
+      "versionCode": 1,
       "edgeToEdgeEnabled": true,
       "package": "com.mosiva.yesexchangeexpo"
     },
