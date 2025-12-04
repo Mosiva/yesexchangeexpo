@@ -204,6 +204,7 @@ const makeStyles = (colors: any) =>
       paddingHorizontal: 12,
       backgroundColor: colors.card,
       marginHorizontal: 16,
+      marginBottom: 10,
     },
 
     searchInput: {
