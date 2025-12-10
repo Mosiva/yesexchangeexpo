@@ -4,10 +4,12 @@ import { setOnAuthFail } from "api";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { authApi } from "services";
 import i18n, { STORE_LANGUAGE_KEY } from "../local/i18n";
+import { useRegisterDeviceTokenMutation } from "../services/yesExchange";
 import type { User } from "../types";
 
 const STORE_GUEST_KEY = "is_guest";
 const ACCESS_TOKEN_KEY = "access_token";
+const EXPO_PUSH_TOKEN_KEY = "expo_push_token";
 
 export interface AuthState {
   user: User | null;
@@ -37,6 +39,8 @@ const { useLogoutMutation } = authApi;
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const [logout] = useLogoutMutation();
+
+  const [registerDeviceToken] = useRegisterDeviceTokenMutation();
 
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -124,16 +128,37 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       "refresh:",
       refresh?.slice(0, 20) + "..."
     );
+
+    // ✅ 1. Сохраняем авторизацию
     setToken(access);
     setUser(company ?? null);
     setIsAuthenticated(true);
     setIsGuest(false);
     setError({ text: "" });
+
     await AsyncStorage.multiSet([
       ["access_token", access],
       ["refresh_token", refresh ?? ""],
       [STORE_GUEST_KEY, "false"],
     ]);
+
+    // ✅ 2. ЧИТАЕМ EXPO TOKEN ИЗ ASYNCSTORAGE
+    const expoToken = await AsyncStorage.getItem(EXPO_PUSH_TOKEN_KEY);
+
+    if (expoToken) {
+      try {
+        console.log("📡 Sending expo token to backend:", expoToken);
+        await registerDeviceToken({
+          pushToken: expoToken,
+          tokenType: "expo",
+        }).unwrap();
+        console.log("✅ Expo token successfully attached to user");
+      } catch (e) {
+        console.warn("⚠️ Failed to attach expo token:", e);
+      }
+    } else {
+      console.log("ℹ️ No expo token found in storage");
+    }
   };
 
   const handleLogout = async () => {

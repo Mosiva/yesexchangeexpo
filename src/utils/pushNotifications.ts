@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
@@ -94,6 +95,7 @@ export async function registerForPushNotificationsAsync(): Promise<
   try {
     const token = (await Notifications.getExpoPushTokenAsync({ projectId }))
       .data;
+    await AsyncStorage.setItem("expo_push_token", token);
     console.log("📱 Expo push token:", token);
     return token;
   } catch (e: any) {
