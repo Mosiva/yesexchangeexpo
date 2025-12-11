@@ -26,6 +26,7 @@ import { useRefetchOnLanguageChange } from "../../../../hooks/useRefetchOnLangua
 import { useTheme } from "../../../../hooks/useTheme";
 import { useAuth } from "../../../../providers/Auth";
 import { ThemeContext } from "../../../../providers/ThemeProvider";
+import { formatNotificationSubtitle } from "../../../../utils/formatNotificationSubtitle";
 
 const ORANGE = "#F58220";
 
@@ -157,6 +158,7 @@ export default function AppSetScreen() {
             colors={colors}
             icon="notifications-outline"
             title={t("appset.notifications", "Уведомления")}
+            subtitle={formatNotificationSubtitle(notifPrefs, t)}
             onPress={() => setNotifModalVisible(true)}
           />
         )}
