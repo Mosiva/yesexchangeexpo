@@ -76,7 +76,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       const storedLang =
         (await AsyncStorage.getItem(STORE_LANGUAGE_KEY)) || "ru";
       const storedGuest = await AsyncStorage.getItem(STORE_GUEST_KEY);
-
+      const storedExpoToken = await AsyncStorage.getItem(EXPO_PUSH_TOKEN_KEY);
       console.log("🔑 Init AuthProvider");
       console.log("   stored access:", storedToken?.slice(0, 20) + "...");
       console.log(
@@ -84,7 +84,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         storedRefreshToken?.slice(0, 20) + "..."
       );
       console.log("   stored guest:", storedGuest);
-
+      console.log("   stored expo token:", storedExpoToken);
       i18n.changeLanguage(storedLang);
       setLanguage(storedLang);
 
