@@ -1,23 +1,46 @@
-import React from "react";
+import React, { memo } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
+import RenderHTML from "react-native-render-html";
 import { useTheme } from "../../../../hooks/useTheme";
+import { useGetAboutQuery } from "../../../../services/yesExchange";
 
 const { width } = Dimensions.get("window");
-const HERO_H = Math.round((width - 32) * 0.56); // 16:9-ish, minus horizontal padding
+const HERO_H = Math.round((width - 32) * 0.56);
 
 export default function AboutUsScreen() {
   const { colors, theme } = useTheme();
   const s = makeStyles(colors);
   const isLight = theme === "light";
 
-  // const certs = []; // при необходимости добавить изображения
+  const { data: about, isLoading } = useGetAboutQuery();
+
+  const content = about?.content ?? "";
+
+  const AboutText = memo(({ text }: { text: string }) => {
+    const { colors } = useTheme();
+    const { width } = useWindowDimensions();
+    return (
+      <View style={{ marginTop: 10 }}>
+        <RenderHTML
+          contentWidth={width - 40}
+          source={{ html: text }}
+          defaultTextProps={{ selectable: true }}
+          tagsStyles={htmlStyles(colors)}
+        />
+      </View>
+    );
+  });
+
+  AboutText.displayName = "AboutText";
 
   return (
     <View style={s.container}>
@@ -25,10 +48,17 @@ export default function AboutUsScreen() {
         barStyle={isLight ? "dark-content" : "light-content"}
         backgroundColor={colors.background}
       />
+
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
         keyboardShouldPersistTaps="handled"
       >
+        {/* LOADING */}
+        {isLoading && (
+          <View style={{ marginTop: 40, alignItems: "center" }}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+        )}
         {/* Hero Image (опционально)
         <Image
           source={require("../../../../assets/images/about-hero.jpg")}
@@ -36,24 +66,15 @@ export default function AboutUsScreen() {
           resizeMode="cover"
         /> */}
 
-        {/* Наша история */}
-        <Text style={s.h1}>Наша история</Text>
-        <Text style={s.p}>
-          ТОО «СЕРВИС» — один из лидеров рынка валют в Казахстане. Компания
-          основана в 1997 в аэропорту г. Алматы. Компания по сей день работает
-          не покладая рук и развивается в ногу со временем.
-        </Text>
+        {/* CONTENT */}
+        {!isLoading && content !== "" && <AboutText text={content} />}
 
-        {/* Наша цель */}
-        <Text style={s.h1}>Наша цель</Text>
-        <Text style={s.p}>
-          Мы стремимся сделать процесс обмена валют максимально удобным,
-          безопасным и прозрачным для каждого клиента, используя современные
-          технологии и профессиональный подход.
-        </Text>
-
-        {/* Наши сертификаты */}
-        <Text style={s.h1}>Наши сертификаты</Text>
+        {/* Если контента нет */}
+        {!isLoading && content === "" && (
+          <Text style={{ color: colors.subtext, marginTop: 20 }}>
+            Нет данных
+          </Text>
+        )}
 
         {/* 
         <ScrollView
@@ -76,42 +97,43 @@ export default function AboutUsScreen() {
 const makeStyles = (colors: any) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
-
     hero: {
       width: "100%",
       borderRadius: 12,
       marginTop: 16,
       marginBottom: 20,
     },
-
-    h1: {
-      fontSize: 18,
-      fontWeight: "500",
-      color: colors.text,
-      marginTop: 8,
-      marginBottom: 10,
-    },
-
-    p: {
-      fontSize: 16,
-      lineHeight: 22,
-      color: colors.subtext,
-      marginBottom: 18,
-      fontWeight: "400",
-    },
-
-    certPlaceholder: {
-      width: 200,
-      height: 160,
-      borderRadius: 12,
-      backgroundColor: colors.card,
-      marginRight: 16,
-    },
-
-    certImage: {
-      width: 200,
-      height: 160,
-      borderRadius: 12,
-      marginRight: 16,
-    },
   });
+
+/* ---------- HTML styles ---------- */
+const htmlStyles = (colors: any) => ({
+  body: {
+    color: colors.text,
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  h1: {
+    fontSize: 24,
+    fontWeight: "700" as const,
+    marginTop: 16,
+    marginBottom: 8,
+    color: colors.text,
+  },
+  h2: {
+    fontSize: 20,
+    fontWeight: "700" as const,
+    marginTop: 14,
+    marginBottom: 6,
+    color: colors.text,
+  },
+  p: {
+    marginTop: 12,
+    marginBottom: 12,
+  },
+  a: {
+    color: colors.primary,
+  },
+  li: {
+    marginVertical: 4,
+  },
+});

@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Pressable,
@@ -12,7 +12,9 @@ import {
 import {
   useCurrenciesQuery,
   useGetFavoriteCurrenciesQuery,
+  useGetNotificationSettingsQuery,
   useSetFavoriteCurrenciesMutation,
+  useUpdateNotificationSettingsMutation,
 } from "../../../../services/yesExchange";
 
 import { useFocusEffect } from "@react-navigation/native";
@@ -31,21 +33,33 @@ export default function AppSetScreen() {
   const { t } = useTranslation();
   const { theme, colors } = useTheme();
   const { setMode } = useContext(ThemeContext);
-  // ✅ список валют
+
+  // === Валюты ===
   const { data: rawCurrencies, refetch: refetchCurrencies } =
     useCurrenciesQuery();
   const currencies = Array.isArray(rawCurrencies) ? rawCurrencies : [];
-  // показываем все кроме KZT
   const filteredCurrencies = currencies.filter((c) => c.code !== "KZT");
+
   const { data: favoriteCurrencies, refetch: refetchFavoriteCurrencies } =
     useGetFavoriteCurrenciesQuery();
   const [setFavoriteCurrencies] = useSetFavoriteCurrenciesMutation();
 
+  // === Уведомления ===
+  const {
+    data: notificationSettings,
+    refetch: refetchNotificationSettings,
+    isLoading: isNotifLoading,
+  } = useGetNotificationSettingsQuery();
+
+  const [updateNotificationSettings] = useUpdateNotificationSettingsMutation();
+
   const { isGuest, language } = useAuth();
-  useRefetchOnLanguageChange([refetchCurrencies]);
   const s = makeStyles(colors);
   const isLight = theme === "light";
 
+  useRefetchOnLanguageChange([refetchCurrencies]);
+
+  // === Modals ===
   const [langModalVisible, setLangModalVisible] = useState(false);
   const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
   const [notifModalVisible, setNotifModalVisible] = useState(false);
@@ -55,24 +69,37 @@ export default function AppSetScreen() {
   );
 
   const [selectedCurrencies, setSelectedCurrencies] = useState<string[]>([]);
-  React.useEffect(() => {
+  useEffect(() => {
     if (Array.isArray(favoriteCurrencies)) {
       setSelectedCurrencies(favoriteCurrencies);
     }
   }, [favoriteCurrencies]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      refetchCurrencies();
-      refetchFavoriteCurrencies();
-    }, [refetchCurrencies, refetchFavoriteCurrencies])
-  );
-
+  // === Notification prefs локально ===
   const [notifPrefs, setNotifPrefs] = useState({
     rates: true,
     finance: true,
     yesNews: false,
   });
+
+  // Подтягиваем реальные настройки с бэка
+  useEffect(() => {
+    if (notificationSettings) {
+      setNotifPrefs({
+        rates: notificationSettings.exchangeRatesEnabled,
+        finance: notificationSettings.financialNewsEnabled,
+        yesNews: notificationSettings.yesxNewsEnabled,
+      });
+    }
+  }, [notificationSettings]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refetchCurrencies();
+      refetchFavoriteCurrencies();
+      refetchNotificationSettings();
+    }, [])
+  );
 
   const nextTheme = isLight
     ? { label: t("appset.theme.light", "Светлая"), icon: "sunny-outline" }
@@ -104,8 +131,7 @@ export default function AppSetScreen() {
           />
         </View>
 
-        {/* === CURRENCY === */}
-
+        {/* === CURRENCIES === */}
         {!isGuest && (
           <SettingsCard
             colors={colors}
@@ -126,16 +152,11 @@ export default function AppSetScreen() {
         />
 
         {/* === NOTIFICATIONS === */}
-        {!isGuest && (
+        {!isGuest && !isNotifLoading && (
           <SettingsCard
             colors={colors}
             icon="notifications-outline"
             title={t("appset.notifications", "Уведомления")}
-            subtitle={
-              notifPrefs.rates || notifPrefs.finance || notifPrefs.yesNews
-                ? t("appset.notifications.enabled", "Включены")
-                : t("appset.notifications.disabled", "Отключены")
-            }
             onPress={() => setNotifModalVisible(true)}
           />
         )}
@@ -162,7 +183,6 @@ export default function AppSetScreen() {
             await setFavoriteCurrencies({ currencyCodes: next }).unwrap();
             setSelectedCurrencies(next);
 
-            // Рефетчим с бэка
             refetchFavoriteCurrencies();
             refetchCurrencies();
           } catch (e) {
@@ -177,8 +197,20 @@ export default function AppSetScreen() {
         visible={notifModalVisible}
         value={notifPrefs}
         onClose={() => setNotifModalVisible(false)}
-        onConfirm={(next) => {
-          setNotifPrefs(next);
+        onConfirm={async (next) => {
+          try {
+            await updateNotificationSettings({
+              exchangeRatesEnabled: next.rates,
+              financialNewsEnabled: next.finance,
+              yesxNewsEnabled: next.yesNews,
+            }).unwrap();
+
+            setNotifPrefs(next);
+            refetchNotificationSettings();
+          } catch (e) {
+            console.log("❌ Failed to update notification settings", e);
+          }
+
           setNotifModalVisible(false);
         }}
       />
@@ -186,9 +218,6 @@ export default function AppSetScreen() {
   );
 }
 
-// ================================
-// ✅ SETTINGS CARD COMPONENT
-// ================================
 function SettingsCard({ icon, title, subtitle, onPress, colors }: any) {
   const s = makeStyles(colors);
 
@@ -208,9 +237,6 @@ function SettingsCard({ icon, title, subtitle, onPress, colors }: any) {
   );
 }
 
-// ================================
-// ✅ THEME STYLES (dynamic)
-// ================================
 const makeStyles = (colors: any) =>
   StyleSheet.create({
     container: {
