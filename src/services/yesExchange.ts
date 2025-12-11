@@ -1,5 +1,6 @@
 import { restApi } from "../api";
 import type {
+  AboutDto,
   BitrixEventDto,
   BitrixResponseDto,
   // bitrix
@@ -29,6 +30,7 @@ import type {
   NbkRateDto,
   // news
   NewsDto,
+  NotificationSettingsDto,
   OtpRequestResultDto,
   // rates
   Paginated,
@@ -45,12 +47,13 @@ import type {
   TestNotificationDto,
   ToAmountQueryDto,
   ToAmountResponseDto,
+  UpdateNotificationSettingsDto,
   UpdateUserDto,
   // user
   UserDto,
   VerifyGuestOtpDto,
   VerifyOtpDto,
-  VerifyOtpResponseDto
+  VerifyOtpResponseDto,
 } from "../types/api";
 
 export const yesExchangeApi = restApi.injectEndpoints({
@@ -391,6 +394,33 @@ export const yesExchangeApi = restApi.injectEndpoints({
         data,
       }),
     }),
+    // --- Настройки уведомлений (новое) ---
+    getNotificationSettings: build.query<NotificationSettingsDto, void>({
+      query: () => ({
+        url: "/api/v1/me/preferences/notification-settings",
+        method: "GET",
+      }),
+      providesTags: ["Users"],
+    }),
+    updateNotificationSettings: build.mutation<
+      NotificationSettingsDto,
+      UpdateNotificationSettingsDto
+    >({
+      query: (data) => ({
+        url: "/api/v1/me/preferences/notification-settings",
+        method: "PATCH",
+        data,
+      }),
+      invalidatesTags: ["Users"],
+    }),
+
+    // --- О нас (новое) ---
+    getAbout: build.query<AboutDto, void>({
+      query: () => ({
+        url: "/api/v1/about",
+        method: "GET",
+      }),
+    }),
     sendTestPush: build.mutation<void, TestNotificationDto>({
       query: (data) => ({
         url: "/api/v1/notifications/push",
@@ -471,4 +501,11 @@ export const {
   useSetFavoriteCurrenciesMutation,
   useGetDefaultCurrencyQuery,
   useSetDefaultCurrencyMutation,
+
+  // notification settings (новое)
+  useGetNotificationSettingsQuery,
+  useUpdateNotificationSettingsMutation,
+
+  // about (новое)
+  useGetAboutQuery,
 } = yesExchangeApi;

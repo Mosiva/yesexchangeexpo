@@ -277,12 +277,27 @@ export type ToAmountQueryDto = {
 
 export type ToAmountResponseDto = {
   toAmount: string; // decimal-string
-  rate: string; // decimal-string
-  originalRate?: string; // без учета скидки
+  rate: string; // decimal-string (эффективный)
+  originalRate?: string; // decimal-string (без скидки)
   operationType: BookingOperationType;
-  discountPercent?: number | null;
-  savings?: unknown | null;
+  discountPercent?: number | null; // null если не применена
+  savings?: string | null; // decimal-string | null
 };
+
+export type AboutDto = {
+  id: number;
+  title: string;
+  content: string; // HTML
+};
+
+// --- User Notification Settings DTOs (новое) ---
+export type NotificationSettingsDto = {
+  exchangeRatesEnabled: boolean; // изменения курсов избранных валют
+  financialNewsEnabled: boolean; // KASE, Zakon
+  yesxNewsEnabled: boolean; // новости YesExchange
+};
+
+export type UpdateNotificationSettingsDto = Partial<NotificationSettingsDto>;
 
 export type BookingDto = {
   id: number;
