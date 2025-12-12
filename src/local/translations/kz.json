@@ -276,7 +276,11 @@
     "saveChanges": "Өзгерістерді сақтау",
     "success": "Сәтті",
     "successMessage": "Деректер сақталды",
-    "errorMessage": "Сақтау мүмкін болмады"
+    "errorMessage": "Сақтау мүмкін болмады",
+    "confirmDeleteAccount": "Сіз өзіңіздің аккаунтыңызды өшіруді қалайсыз ба?",
+    "deleteAccount": "Аккаунтты өшіру",
+    "delete": "Өшіру",
+    "cancel": "Болдырмау"
   },
   "nearby": {
     "title": "Карта",

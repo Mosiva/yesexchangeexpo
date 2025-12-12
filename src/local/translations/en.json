@@ -276,7 +276,11 @@
     "saveChanges": "Save changes",
     "success": "Success",
     "successMessage": "Data saved",
-    "errorMessage": "Failed to save"
+    "errorMessage": "Failed to save",
+    "confirmDeleteAccount": "Are you sure you want to delete your account?",
+    "deleteAccount": "Delete account",
+    "delete": "Delete",
+    "cancel": "Cancel"
   },
   "nearby": {
     "title": "Map",

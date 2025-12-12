@@ -274,7 +274,11 @@
     "saveChanges": "Сохранить изменения",
     "success": "Успешно",
     "successMessage": "Данные сохранены",
-    "errorMessage": "Не удалось сохранить"
+    "errorMessage": "Не удалось сохранить",
+    "confirmDeleteAccount": "Вы уверены, что хотите удалить аккаунт?",
+    "deleteAccount": "Удалить аккаунт",
+    "delete": "Удалить",
+    "cancel": "Отмена"
   },
   "nearby": {
     "title": "Карта",
