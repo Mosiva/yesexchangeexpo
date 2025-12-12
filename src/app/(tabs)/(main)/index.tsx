@@ -243,7 +243,7 @@ export default function MainScreen() {
       id: n.id,
       title: n.title,
       summary: n.excerpt as string,
-      date: n.createdAt,
+      date: n.publishedAt as string,
       source: n.source,
     }));
   }, [news]);

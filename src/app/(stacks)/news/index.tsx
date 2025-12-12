@@ -82,7 +82,7 @@ export default function NewsScreen() {
       id: n.id,
       title: n.title,
       summary: typeof n.excerpt === "string" ? n.excerpt : undefined,
-      date: n.createdAt,
+      date: n.publishedAt as string,
       source: n.source,
     }));
   }, [news]);

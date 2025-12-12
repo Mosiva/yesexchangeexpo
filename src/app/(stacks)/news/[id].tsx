@@ -88,7 +88,7 @@ export default function NewsDetail() {
       <StatusBar barStyle={isLight ? "dark-content" : "light-content"} />
       <NewsDetailCard
         title={newsItem.title as string}
-        date={newsItem.createdAt as string}
+        date={newsItem.publishedAt as string}
         content={newsItem.content as string}
         image={newsItem.imageUrl as string}
         source={newsItem.source as string}
