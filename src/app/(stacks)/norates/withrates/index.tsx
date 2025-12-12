@@ -590,9 +590,9 @@ export default function ReserveWithRateScreen() {
                 <Text style={styles.discountCalcText}>
                   {t("norates.withrates.discountCalculation.withDiscount", {
                     sellWithDiscount:
-                      discountExplanation.sellWithDiscount.toFixed(2),
+                      discountExplanation.sellWithDiscount.toFixed(4),
                     buyWithDiscount:
-                      discountExplanation.buyWithDiscount.toFixed(2),
+                      discountExplanation.buyWithDiscount.toFixed(4),
                   })}
                 </Text>
               </View>
