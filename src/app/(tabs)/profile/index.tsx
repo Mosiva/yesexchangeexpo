@@ -43,7 +43,14 @@ export default function ProfileScreen() {
   const isLight = theme === "light";
   const s = makeStyles(colors);
   const { logout, error, isGuest } = useAuth();
-
+  const [showDeleteButton, setShowDeleteButton] = useState(false);
+  const handleDeleteClient = async () => {
+    try {
+      setShowDeleteButton(false);
+    } catch (error) {
+      console.error("Error deleting client:", error);
+    }
+  };
   const {
     data: rawClient,
     refetch: refetchClient,
@@ -269,6 +276,42 @@ export default function ProfileScreen() {
               {t("profile.logout", "Выйти из профиля")}
             </Text>
           </Pressable>
+
+          {showDeleteButton ? (
+            <>
+              <Text style={s.deletelClientTitle1}>
+                {t(
+                  "profile.confirmDeleteAccount",
+                  "Вы уверены, что хотите удалить аккаунт?"
+                )}
+              </Text>
+              <View style={s.deleteButtonsRow}>
+                <TouchableOpacity
+                  style={[s.actionButton, s.confirmDeleteButton]}
+                  onPress={handleDeleteClient}
+                >
+                  <Text style={s.deleteButtonText}>
+                    {t("profile.delete", "Удалить")}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[s.actionButton, s.cancelButton]}
+                  onPress={() => setShowDeleteButton(false)}
+                >
+                  <Text style={s.cancelButtonText}>
+                    {t("profile.cancel", "Отмена")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : (
+            <Text
+              style={s.deletelClientTitle}
+              onPress={() => setShowDeleteButton(true)}
+            >
+              {t("profile.deleteAccount", "Удалить аккаунт")}
+            </Text>
+          )}
         </>
       )}
     </ScrollView>
@@ -379,5 +422,53 @@ const makeStyles = (colors: any) =>
       fontWeight: "700",
       color: colors.text,
       textAlign: "center",
+    },
+    deletelClientTitle1: {
+      fontSize: 18,
+      fontWeight: "bold",
+      color: colors.text,
+      textAlign: "center",
+      marginTop: 10,
+      marginBottom: 10,
+    },
+    deleteButtonsRow: {
+      flexDirection: "row",
+    },
+    confirmDeleteButton: {
+      flex: 1,
+    },
+    actionButton: {
+      alignItems: "center",
+      marginHorizontal: 16,
+      marginTop: 10,
+      marginBottom: 10,
+      backgroundColor: "#DC2626",
+      borderRadius: 12,
+      paddingVertical: 10,
+      paddingHorizontal: 24,
+    },
+    cancelButton: {
+      flex: 1,
+      backgroundColor: "#6B7280",
+      borderRadius: 12,
+      paddingVertical: 10,
+      paddingHorizontal: 24,
+    },
+    deletelClientTitle: {
+      fontSize: 12,
+      color: colors.subtext,
+      textAlign: "center",
+      marginTop: 20,
+      marginBottom: 20,
+    },
+    deleteButtonText: {
+      color: "#fff",
+      fontSize: 16,
+      fontWeight: "700",
+    },
+    cancelButtonText: {
+      color: "#fff",
+      fontSize: 16,
+      fontWeight: "700",
     },
   });
