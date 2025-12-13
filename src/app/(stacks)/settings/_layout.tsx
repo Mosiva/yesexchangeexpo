@@ -63,7 +63,7 @@ export default function Layout() {
         options={{
           header: () => (
             <CustomHeader
-              title={t("aboutus.title", "О компании")}
+              title={t("settings.aboutus", "О компании")}
               showBackButton
             />
           ),
