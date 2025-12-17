@@ -1,4 +1,5 @@
-import React, { memo } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { memo, useCallback } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -21,7 +22,13 @@ export default function AboutUsScreen() {
   const s = makeStyles(colors);
   const isLight = theme === "light";
 
-  const { data: about, isLoading } = useGetAboutQuery();
+  const { data: about, isLoading, refetch } = useGetAboutQuery();
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   const content = about?.content ?? "";
 
