@@ -23,14 +23,13 @@ A modern mobile application for currency exchange services built with Expo and R
 
 ### Additional Features
 - **Maps Integration**: Interactive maps showing branch locations
-- **QR Code Generation**: Generate QR codes for bookings
 - **Feedback System**: Submit feedback and job applications
 - **Archive**: Access historical exchange rate data
 
 ### Permissions
 - Location access (for finding nearby branches)
 - Push notifications
-- Camera (for QR codes)
+
 
 ## Internationalization
 
