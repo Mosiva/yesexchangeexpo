@@ -32,7 +32,7 @@
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#F79633"
       },
       "softwareKeyboardLayoutMode": "pan",
       "versionCode": 22,
