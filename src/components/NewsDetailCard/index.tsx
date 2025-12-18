@@ -73,7 +73,9 @@ const ArticleText = memo(
     const { width } = useWindowDimensions();
 
     // YesNews → HTML
-    const isHtml = source === "YesNews";
+
+    const HTML_SOURCES = ["YesNews", "KASE"];
+    const isHtml = HTML_SOURCES.includes(source);
 
     if (isHtml) {
       return (
@@ -214,4 +216,5 @@ const htmlStyles = (colors: any) => ({
   li: {
     marginVertical: 4,
   },
+  pre: {},
 });
