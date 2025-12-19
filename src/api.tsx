@@ -48,7 +48,6 @@ const setHeader = (cfg: any, key: string, val: string) => {
   }
 };
 
-
 // REQUEST INTERCEPTOR
 axiosInstance.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem("access_token");
