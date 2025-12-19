@@ -12,14 +12,12 @@
         "buildType": "apk"
       },
       "env": {
-        "GOOGLE_SERVICES_JSON": "GOOGLE_SERVICES_JSON",
         "EXPO_PUBLIC_API_URL": "https://api.yesx.sailet.kz"
       },
       "distribution": "internal"
     },
     "production": {
       "env": {
-        "GOOGLE_SERVICES_JSON": "GOOGLE_SERVICES_JSON",
         "EXPO_PUBLIC_API_URL": "https://api.yesx.sailet.kz"
       }
     }
