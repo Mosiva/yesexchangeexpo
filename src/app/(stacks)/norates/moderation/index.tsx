@@ -243,7 +243,7 @@ const makeStyles = (colors: any) =>
       marginTop: 8,
       marginBottom: 16,
       fontWeight: "400",
-      textAlign: "justify",
+      textAlign: "left",
     },
     card: {
       backgroundColor: colors.cardBackground,
