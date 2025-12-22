@@ -227,7 +227,14 @@ export type ExchangeRateHistoryRecordDto = {
   changePercent?: ChangePercentDto;
   trend?: TrendDto;
 };
+// --- User Preferences: Preferred Branch ---
+export type SetPreferredBranchDto = {
+  branchId: number; // ID филиала
+};
 
+export type SetPreferredBranchResponseDto = {
+  message: string;
+};
 // --- НБК (Нацбанк) DTOs ---
 
 export type NbkRateDto = {

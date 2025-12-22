@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   FlatList,
@@ -34,6 +34,7 @@ import {
   useNbkRatesQuery,
   useNearestBranchQuery,
   useNewsQuery,
+  useSetPreferredBranchMutation,
 } from "../../../services/yesExchange";
 import { useBranchStore } from "../../../store/useBranchStore";
 import { CurrencyCode } from "../../../types/api";
@@ -403,6 +404,29 @@ export default function MainScreen() {
   const filteredExchangeRates = exchangeRates.filter(
     (c) => c.currency.code !== "KZT"
   );
+  
+  const prevSentBranchId = useRef<number | null>(null);
+
+  const [setPreferredBranch] = useSetPreferredBranchMutation();
+
+  useEffect(() => {
+    if (isGuest) return;
+    if (!selectedBranch?.id) return;
+
+    // ❗️не отправляем повторно тот же филиал
+    if (prevSentBranchId.current === selectedBranch.id) return;
+
+    prevSentBranchId.current = selectedBranch.id;
+
+    setPreferredBranch({ branchId: selectedBranch.id })
+      .unwrap()
+      .then(() => {
+        console.log("✅ Preferred branch sent:", selectedBranch.id);
+      })
+      .catch((e) => {
+        console.log("❌ Failed to set preferred branch", e);
+      });
+  }, [selectedBranch?.id, isGuest]);
   // === Render ===
   return (
     <ScrollView

@@ -44,6 +44,8 @@ import type {
   SetDefaultCurrencyResponseDto,
   SetFavoriteCurrenciesDto,
   SetFavoriteCurrenciesResponseDto,
+  SetPreferredBranchDto,
+  SetPreferredBranchResponseDto,
   TestNotificationDto,
   ToAmountQueryDto,
   ToAmountResponseDto,
@@ -104,6 +106,18 @@ export const yesExchangeApi = restApi.injectEndpoints({
     }),
     updateMe: build.mutation<UserDto, UpdateUserDto>({
       query: (data) => ({ url: "/api/v1/me", method: "PATCH", data }),
+      invalidatesTags: ["Users"],
+    }),
+    // --- Предпочтения пользователя (выбранный филиал) ---
+    setPreferredBranch: build.mutation<
+      SetPreferredBranchResponseDto,
+      SetPreferredBranchDto
+    >({
+      query: (data) => ({
+        url: "/api/v1/me/preferences/branch",
+        method: "PUT",
+        data,
+      }),
       invalidatesTags: ["Users"],
     }),
     // --- Предпочтения пользователя (User Preferences) ---
@@ -449,6 +463,7 @@ export const {
   // user
   useMeQuery,
   useUpdateMeMutation,
+  useSetPreferredBranchMutation,
 
   // currencies
   useCurrenciesQuery,
