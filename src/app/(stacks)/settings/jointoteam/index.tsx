@@ -79,6 +79,10 @@ export default function JoinToTeamScreen() {
     mode: "onChange",
   });
 
+  function makeSafeFileName(originalName: string) {
+    const ext = originalName.split(".").pop() || "bin";
+    return `file_${Date.now()}.${ext}`;
+  }
   const onSubmit = async (values: FormValues) => {
     if (isLoading || isSubmitting) return;
 
@@ -92,7 +96,7 @@ export default function JoinToTeamScreen() {
       if (resume) {
         form.append("resume", {
           uri: resume.uri,
-          name: resume.name,
+          name: makeSafeFileName(resume.name),
           type: resume.type,
         } as any);
       }
