@@ -96,14 +96,15 @@ const makeStyles = (colors: any) =>
       flex: 1,
     },
     button: {
-      marginTop: 16,
+      marginTop: 10,
       backgroundColor: colors.primary,
       paddingVertical: 12,
       borderRadius: 8,
       alignItems: "center",
-    },
+      marginBottom: 16,
+    },  
     buttonText: {
-      color: colors.text,
+      color: "#fff",
       fontSize: 16,
       fontWeight: "600",
     },
