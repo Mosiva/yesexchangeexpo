@@ -54,7 +54,7 @@ export default function NewsDetailCard({
         </Text>
 
         {/* 🔥 Условный рендер */}
-        <ArticleText text={content} source={source} />
+        <ArticleText text={content} />
 
         <Pressable onPress={() => Linking.openURL(url)} style={styles.button}>
           <Text style={styles.buttonText}>Источник</Text>
@@ -66,42 +66,22 @@ export default function NewsDetailCard({
 
 /* ---------- ArticleText ---------- */
 
-const ArticleText = memo(
-  ({ text, source }: { text: string; source: string }) => {
-    const { colors } = useTheme();
-    const { width } = useWindowDimensions();
+const ArticleText = memo(({ text }: { text: string }) => {
+  const { colors } = useTheme();
+  const { width } = useWindowDimensions();
 
-    // YesNews → HTML
-
-    const HTML_SOURCES = ["YesNews", "KASE"];
-    const isHtml = HTML_SOURCES.includes(source);
-
-    if (isHtml) {
-      return (
-        <View style={{ marginTop: 10 }}>
-          <RenderHTML
-            contentWidth={width - 40}
-            source={{ html: text }}
-            defaultTextProps={{ selectable: true }}
-            tagsStyles={htmlStyles(colors)}
-          />
-        </View>
-      );
-    }
-
-    // Остальные → Markdown
-    return (
-      <View style={{ marginTop: 10 }}>
-        <RenderHTML
-          contentWidth={width - 40}
-          source={{ html: text }}
-          defaultTextProps={{ selectable: true }}
-          tagsStyles={htmlStyles(colors)}
-        />
-      </View>
-    );
-  }
-);
+  // Остальные → Markdown
+  return (
+    <View style={{ marginTop: 10 }}>
+      <RenderHTML
+        contentWidth={width - 40}
+        source={{ html: text }}
+        defaultTextProps={{ selectable: true }}
+        tagsStyles={htmlStyles(colors)}
+      />
+    </View>
+  );
+});
 
 ArticleText.displayName = "ArticleText";
 
