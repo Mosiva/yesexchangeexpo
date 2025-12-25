@@ -1,15 +1,15 @@
 import dayjs from "dayjs";
-import { useRouter } from "expo-router";
 import React, { memo } from "react";
 import {
   Image,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  View,
   useWindowDimensions,
+  View,
 } from "react-native";
 import RenderHTML from "react-native-render-html";
 import { useTheme } from "../../hooks/useTheme";
@@ -30,7 +30,6 @@ export default function NewsDetailCard({
   source,
   url,
 }: Props) {
-  const router = useRouter();
   const { colors } = useTheme();
 
   const styles = makeStyles(colors);
@@ -54,7 +53,7 @@ export default function NewsDetailCard({
         </Text>
 
         {/* 🔥 Условный рендер */}
-        <ArticleText text={content} />
+        <ArticleText text={content} source={source} />
 
         <Pressable onPress={() => Linking.openURL(url)} style={styles.button}>
           <Text style={styles.buttonText}>Источник</Text>
@@ -66,22 +65,56 @@ export default function NewsDetailCard({
 
 /* ---------- ArticleText ---------- */
 
-const ArticleText = memo(({ text }: { text: string }) => {
-  const { colors } = useTheme();
-  const { width } = useWindowDimensions();
+const ArticleText = memo(
+  ({ text, source }: { text: string; source: string }) => {
+    const { colors } = useTheme();
+    const { width } = useWindowDimensions();
+    const kaseSources = ["KASE"];
+    const isKase = kaseSources.includes(source);
 
-  // Остальные → Markdown
-  return (
-    <View style={{ marginTop: 10 }}>
-      <RenderHTML
-        contentWidth={width - 40}
-        source={{ html: text }}
-        defaultTextProps={{ selectable: true }}
-        tagsStyles={htmlStyles(colors)}
-      />
-    </View>
-  );
-});
+    const plainText = text.replace(/<\/?pre>/g, "");
+
+    if (isKase) {
+      return (
+        <View style={{ marginTop: 10 }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator
+            contentContainerStyle={{ flexGrow: 1 }}
+          >
+            <Text
+              style={{
+                fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+                fontSize: 12,
+                lineHeight: 16,
+                color: colors.text,
+                flexShrink: 0, // <-- не сжимать
+              }}
+              selectable
+              // Важно! Отключаем перенос
+              numberOfLines={0}
+            >
+              {plainText}
+            </Text>
+          </ScrollView>
+        </View>
+      );
+    }
+
+    // Остальные → Markdown
+    return (
+      <View style={{ marginTop: 10 }}>
+        <RenderHTML
+          contentWidth={width - 40}
+          source={{ html: text }}
+          defaultTextProps={{ selectable: true }}
+          tagsStyles={htmlStyles(colors)}
+          enableExperimentalMarginCollapsing={true}
+        />
+      </View>
+    );
+  }
+);
 
 ArticleText.displayName = "ArticleText";
 
@@ -102,7 +135,7 @@ const makeStyles = (colors: any) =>
       borderRadius: 8,
       alignItems: "center",
       marginBottom: 16,
-    },  
+    },
     buttonText: {
       color: "#fff",
       fontSize: 16,
@@ -140,36 +173,6 @@ const makeStyles = (colors: any) =>
     },
   });
 
-/* ---------- Markdown styles ---------- */
-const markdownStyles = (colors: any) => ({
-  body: {
-    color: colors.text,
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  heading1: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginTop: 16,
-    marginBottom: 8,
-    color: colors.text,
-  },
-  heading2: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginTop: 14,
-    marginBottom: 6,
-    color: colors.text,
-  },
-  paragraph: {
-    marginTop: 12,
-    marginBottom: 12,
-  },
-  link: {
-    color: colors.primary,
-  },
-});
-
 /* ---------- HTML styles ---------- */
 const htmlStyles = (colors: any) => ({
   body: {
@@ -201,5 +204,13 @@ const htmlStyles = (colors: any) => ({
   li: {
     marginVertical: 4,
   },
-  pre: {},
+  pre: {
+    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+    fontSize: 11,
+    lineHeight: 16,
+    backgroundColor: colors.card,
+    padding: 12,
+    borderRadius: 8,
+    overflow: "hidden" as const,
+  },
 });

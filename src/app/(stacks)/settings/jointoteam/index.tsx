@@ -1,7 +1,5 @@
 // screens/JoinToTeamScreen.tsx
-
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -79,10 +77,6 @@ export default function JoinToTeamScreen() {
     mode: "onChange",
   });
 
-  function makeSafeFileName(originalName: string) {
-    const ext = originalName.split(".").pop() || "bin";
-    return `file_${Date.now()}.${ext}`;
-  }
   const onSubmit = async (values: FormValues) => {
     if (isLoading || isSubmitting) return;
 
@@ -96,7 +90,7 @@ export default function JoinToTeamScreen() {
       if (resume) {
         form.append("resume", {
           uri: resume.uri,
-          name: makeSafeFileName(resume.name),
+          name: resume.name,
           type: resume.type,
         } as any);
       }
