@@ -34,7 +34,7 @@ export default function NewsDetailCard({
 
   const styles = makeStyles(colors);
   return (
-    <ScrollView style={styles.container} bounces>
+    <ScrollView style={styles.container} bounces showsVerticalScrollIndicator={false}>
       {/* Cover */}
       <View style={styles.coverWrap}>
         {typeof image === "string" ? (
@@ -79,7 +79,7 @@ const ArticleText = memo(
         <View style={{ marginTop: 10 }}>
           <ScrollView
             horizontal
-            showsHorizontalScrollIndicator
+            showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ flexGrow: 1 }}
           >
             <Text
