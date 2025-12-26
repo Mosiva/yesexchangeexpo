@@ -244,5 +244,5 @@ const makeStyles = (colors: any) =>
       alignItems: "center",
       justifyContent: "center",
     },
-    saveText: { color: colors.text, fontSize: 16, fontWeight: "700" },
+    saveText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
   });

@@ -19,7 +19,10 @@ export default function RateAlert({ asOf, message, style }: Props) {
     "Обратите внимание, курс может измениться к моменту получения валюты в обменном пункте."
   );
   const dt = asOf instanceof Date ? asOf : new Date(asOf ?? Date.now());
-  const title = `${t("norates.rateAlertTitle", "Курс по состоянию на")} ${dt.toLocaleString("ru-RU", {
+  const title = `${t(
+    "norates.rateAlertTitle",
+    "Курс по состоянию на"
+  )} ${dt.toLocaleString("ru-RU", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -50,7 +53,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#EAF1FF", // мягкий голубой фон
     borderRadius: 16,
     padding: 14,
-    height: 105,
   },
   titleRow: {
     flexDirection: "row",
