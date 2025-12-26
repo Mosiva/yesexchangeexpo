@@ -607,6 +607,7 @@ export default function ReserveWithRateScreen() {
               marginTop: 20,
               borderTopWidth: 1,
               borderTopColor: BORDER,
+              marginBottom: 50,
             }}
           >
             <View style={{ marginTop: 20 }}>
