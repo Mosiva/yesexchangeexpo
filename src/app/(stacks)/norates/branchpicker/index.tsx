@@ -335,7 +335,7 @@ const makeStyles = (colors: any) =>
       fontWeight: "700",
     },
     refreshBtn: {
-      backgroundColor: colors.buttonDark,
+      backgroundColor: colors.primary,
       paddingHorizontal: 14,
       height: 36,
       borderRadius: 10,
