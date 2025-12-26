@@ -571,7 +571,7 @@ export default function ReserveWithRateScreen() {
               </Text>
             </View>
             {discountExplanation && (
-              <View style={{ marginTop: 10 }}>
+              <View style={{ marginTop: 10, marginBottom: 50 }}>
                 <Text style={styles.discountCalcText}>
                   {t("norates.withrates.discountCalculation.baseRates", {
                     sell: discountExplanation.sell,
