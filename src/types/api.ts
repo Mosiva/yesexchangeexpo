@@ -1,5 +1,12 @@
 // --- Общие типы ---
 
+// --- Static/HTML Page DTOs ---
+export type ExchangeLicensesPageDto = {
+  id: number;
+  title: string; // заголовок страницы
+  content: string; // HTML
+};
+
 export type CurrencyCode =
   | "AED"
   | "AMD"

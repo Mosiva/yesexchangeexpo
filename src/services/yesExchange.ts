@@ -19,6 +19,8 @@ import type {
   // dictionaries
   CurrencyDto,
   DeviceTokenResponseDto,
+  // static/html pages
+  ExchangeLicensesPageDto,
   ExchangeRateDto,
   ExchangeRateHistoryRecordDto,
   GuestBookingTokenResponseDto,
@@ -428,6 +430,14 @@ export const yesExchangeApi = restApi.injectEndpoints({
       invalidatesTags: ["Users"],
     }),
 
+    // --- Exchange Licenses Page ---
+    exchangeLicenses: build.query<ExchangeLicensesPageDto, void>({
+      query: () => ({
+        url: "/api/v1/exchange-licenses",
+        method: "GET",
+      }),
+    }),
+
     // --- О нас (новое) ---
     getAbout: build.query<AboutDto, void>({
       query: () => ({
@@ -443,6 +453,7 @@ export const yesExchangeApi = restApi.injectEndpoints({
       }),
     }),
   }),
+
   overrideExisting: true,
 });
 
@@ -520,6 +531,9 @@ export const {
   // notification settings (новое)
   useGetNotificationSettingsQuery,
   useUpdateNotificationSettingsMutation,
+
+  // static/html pages
+  useExchangeLicensesQuery,
 
   // about (новое)
   useGetAboutQuery,

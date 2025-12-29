@@ -12,7 +12,10 @@ import {
 } from "react-native";
 import RenderHTML from "react-native-render-html";
 import { useTheme } from "../../../../hooks/useTheme";
-import { useGetAboutQuery } from "../../../../services/yesExchange";
+import {
+  useExchangeLicensesQuery,
+  useGetAboutQuery,
+} from "../../../../services/yesExchange";
 
 const { width } = Dimensions.get("window");
 const HERO_H = Math.round((width - 32) * 0.56);
@@ -23,6 +26,11 @@ export default function AboutUsScreen() {
   const isLight = theme === "light";
 
   const { data: about, isLoading, refetch } = useGetAboutQuery();
+  const {
+    data: exchangeLicenses,
+    isLoading: isExchangeLicensesLoading,
+    refetch: refetchExchangeLicenses,
+  } = useExchangeLicensesQuery();
 
   useFocusEffect(
     useCallback(() => {
@@ -75,6 +83,10 @@ export default function AboutUsScreen() {
 
         {/* CONTENT */}
         {!isLoading && content !== "" && <AboutText text={content} />}
+
+        {!isLoading && exchangeLicenses && exchangeLicenses.content !== "" && (
+          <AboutText text={exchangeLicenses.content} />
+        )}
 
         {/* Если контента нет */}
         {!isLoading && content === "" && (
