@@ -44,7 +44,7 @@ export async function sendPushNotification(expoPushToken: string) {
 
 function handleRegistrationError(message: string) {
   Alert.alert("Ошибка", message);
-  // ❌ НИКАКИХ throw
+  throw new Error(message);
 }
 
 /**
@@ -77,19 +77,9 @@ export async function registerForPushNotificationsAsync(): Promise<
     const { status } = await Notifications.requestPermissionsAsync();
     finalStatus = status;
   }
-  // 3️⃣ Если всё ещё не разрешено — тихо выходим
+
   if (finalStatus !== "granted") {
-    const deniedBefore = await AsyncStorage.getItem("push_permission_denied");
-
-    // 🔔 Показываем Alert ТОЛЬКО один раз
-    if (!deniedBefore) {
-      Alert.alert(
-        "Уведомления отключены",
-        "Вы можете включить уведомления позже в настройках приложения."
-      );
-      await AsyncStorage.setItem("push_permission_denied", "1");
-    }
-
+    handleRegistrationError("Разрешение на уведомления не предоставлено");
     return null;
   }
 
@@ -106,11 +96,10 @@ export async function registerForPushNotificationsAsync(): Promise<
     const token = (await Notifications.getExpoPushTokenAsync({ projectId }))
       .data;
     await AsyncStorage.setItem("expo_push_token", token);
-    await AsyncStorage.removeItem("push_permission_denied");
     console.log("📱 Expo push token:", token);
     return token;
   } catch (e: any) {
-    console.warn("❌ Ошибка получения Expo push token:", e?.message);
+    handleRegistrationError(e.message);
     return null;
   }
 }
