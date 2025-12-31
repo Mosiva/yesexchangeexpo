@@ -11,7 +11,7 @@ export default {
 
     ios: {
       supportsTablet: true,
-      buildNumber: "27",
+      buildNumber: "30",
       bundleIdentifier: "com.mosiva.yesexchangeexpo",
       infoPlist: {
         NSLocationWhenInUseUsageDescription:
@@ -23,7 +23,7 @@ export default {
 
     android: {
       package: "com.mosiva.yesexchangeexpo",
-      versionCode: 27,
+      versionCode: 30,
       googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",

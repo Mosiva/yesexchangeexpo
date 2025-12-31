@@ -58,7 +58,9 @@ export default function ProfileScreen() {
     isError: isClientError,
   } = useGetClientQuery({});
 
+
   const client: any = (rawClient as any)?.data ?? rawClient ?? null;
+  console.log("client", client);
 
   useFocusEffect(
     useCallback(() => {
