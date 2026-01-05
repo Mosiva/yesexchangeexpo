@@ -9,6 +9,7 @@ export function useUserLocation() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
+
   const [address, setAddress] = useState<string>("Не определено");
   const [loading, setLoading] = useState(false);
 
@@ -17,27 +18,46 @@ export function useUserLocation() {
 
   const permissionDenied = permissionStatus === "denied";
 
-  /** 💾 Загрузка последней сохранённой локации */
+  /* ------------------------------------------------------------------ */
+  /* 💾 Загрузка последней сохранённой локации (БЕЗ permission UI) */
+  /* ------------------------------------------------------------------ */
   const loadLastLocation = useCallback(async () => {
     try {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed?.coords) {
-          setLocation(parsed);
-        }
+      const current = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      setLocation(current);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+
+      const [reverse] = await Location.reverseGeocodeAsync(current.coords);
+
+      if (reverse) {
+        const city = reverse.city ?? reverse.region ?? "";
+        const street = reverse.street ?? "";
+
+        setAddress(
+          city || street
+            ? `${city}${street ? `, ${street}` : ""}`
+            : "Не определено"
+        );
       }
     } catch (e) {
-      console.warn("⚠️ Не удалось загрузить сохранённую локацию", e);
+      console.error("❌ loadLastLocation error", e);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  /** ⚙️ Открыть настройки */
+  /* ------------------------------------------------------------------ */
+  /* ⚙️ Открыть настройки приложения */
+  /* ------------------------------------------------------------------ */
   const openSettings = useCallback(() => {
     Linking.openSettings();
   }, []);
 
-  /** 📍 Запрос геолокации (ТОЛЬКО по кнопке / с Main) */
+  /* ------------------------------------------------------------------ */
+  /* 🟥 MAIN: запрос геолокации С permission UI */
+  /* ------------------------------------------------------------------ */
   const requestLocation = useCallback(async () => {
     try {
       setLoading(true);
@@ -46,9 +66,7 @@ export function useUserLocation() {
 
       setPermissionStatus(status);
 
-      if (status !== "granted") {
-        return;
-      }
+      if (status !== "granted") return;
 
       const current = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
@@ -58,9 +76,11 @@ export function useUserLocation() {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(current));
 
       const [reverse] = await Location.reverseGeocodeAsync(current.coords);
+
       if (reverse) {
         const city = reverse.city ?? reverse.region ?? "";
         const street = reverse.street ?? "";
+
         setAddress(
           city || street
             ? `${city}${street ? `, ${street}` : ""}`
@@ -68,41 +88,44 @@ export function useUserLocation() {
         );
       }
     } catch (e) {
-      console.error("Ошибка получения геолокации:", e);
+      console.error("❌ requestLocation error", e);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  /** 🔄 Тихое обновление (без permission UI) */
-  const silentRefresh = useCallback(async () => {
-    if (permissionStatus !== "granted") return;
-
+  /* ------------------------------------------------------------------ */
+  /* 🟢 NEARBY: тихая попытка получить координаты (БЕЗ permission UI) */
+  /* ------------------------------------------------------------------ */
+  const tryGetLocation = useCallback(async () => {
     try {
+      const { status } = await Location.getForegroundPermissionsAsync();
+
+      setPermissionStatus(status);
+
+      if (status !== "granted") return false;
+
       const current = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
+        accuracy: Location.Accuracy.Balanced,
       });
 
       setLocation(current);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+      return true;
     } catch {
-      /* ignore */
+      return false;
     }
-  }, [permissionStatus]);
+  }, []);
 
-  /** 🚀 Автоинициализация */
+  /* ------------------------------------------------------------------ */
+  /* 🚀 Автоинициализация (БЕЗ permission UI) */
+  /* ------------------------------------------------------------------ */
   useEffect(() => {
-    (async () => {
-      await loadLastLocation();
-      await requestLocation(); // один раз — с UI
+    loadLastLocation();
+    tryGetLocation(); // безопасно, без системного диалога
+  }, [loadLastLocation, tryGetLocation]);
 
-      // через 1.5 сек. — тихая корректировка (без мерцания)
-      setTimeout(() => {
-        silentRefresh();
-      }, 1500);
-    })();
-  }, [loadLastLocation, requestLocation, silentRefresh]);
-
+  /* ------------------------------------------------------------------ */
   return {
     location,
     address,
@@ -111,8 +134,9 @@ export function useUserLocation() {
     permissionDenied,
     permissionStatus,
 
-    requestLocation, // 👉 вызывается ТОЛЬКО на Main или по кнопке
+    // 🔑 API
+    requestLocation, // 👉 Main / кнопка
+    tryGetLocation, // 👉 Nearby
     openSettings,
-    silentRefresh,
   };
 }

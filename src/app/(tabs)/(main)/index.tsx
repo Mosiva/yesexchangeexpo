@@ -116,7 +116,10 @@ const LocalTime = () => {
   );
 };
 export default function MainScreen() {
-  const { location, permissionDenied } = useUserLocation();
+  const { location, permissionDenied, requestLocation } = useUserLocation();
+  useEffect(() => {
+    requestLocation();
+  }, []);
 
   const [refreshing, setRefreshing] = useState(false);
   const { colors, theme } = useTheme();

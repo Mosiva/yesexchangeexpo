@@ -51,9 +51,13 @@ export default function NearbyScreen() {
     address,
     loading: loadingLocation,
     permissionDenied,
-    requestLocation,
     openSettings,
+    tryGetLocation,
   } = useUserLocation();
+
+  useEffect(() => {
+    tryGetLocation();
+  }, []);
 
   const [showPermissionOverlay, setShowPermissionOverlay] = useState(true);
   useEffect(() => {
@@ -206,7 +210,7 @@ export default function NearbyScreen() {
                 // если ранее закрыли — снова показываем overlay
                 setShowPermissionOverlay(true);
               } else {
-                requestLocation();
+                tryGetLocation();
               }
             }}
           >
