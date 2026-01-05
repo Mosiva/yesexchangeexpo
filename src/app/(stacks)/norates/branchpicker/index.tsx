@@ -49,10 +49,14 @@ export default function BranchPickerScreen() {
     address,
     loading: loadingLocation,
     permissionDenied,
-    requestLocation,
+
     openSettings,
+    tryGetLocation,
   } = useUserLocation();
 
+  useEffect(() => {
+    tryGetLocation();
+  }, []);
   /** 🔗 API */
   const { data: rawBranches, refetch: refetchBranches } = useBranchesQuery();
   const { refetch: refetchNearestBranches } = useNearestBranchesQuery({
@@ -207,7 +211,7 @@ export default function BranchPickerScreen() {
                 // если ранее закрыли — снова показываем overlay
                 setShowPermissionOverlay(true);
               } else {
-                requestLocation();
+                tryGetLocation();
               }
             }}
           >
