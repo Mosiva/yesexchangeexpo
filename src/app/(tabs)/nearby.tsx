@@ -52,7 +52,15 @@ export default function NearbyScreen() {
     loading: loadingLocation,
     permissionDenied,
     requestLocation,
+    openSettings,
   } = useUserLocation();
+
+  const [showPermissionOverlay, setShowPermissionOverlay] = useState(true);
+  useEffect(() => {
+    if (permissionDenied) {
+      setShowPermissionOverlay(true);
+    }
+  }, [permissionDenied]);
 
   /** 🔗 API */
   const { data: rawBranches, refetch: refetchBranches } = useBranchesQuery();
@@ -77,15 +85,24 @@ export default function NearbyScreen() {
     }, [refetchAllData])
   );
 
-  /** 📏 Расстояния */
   const computeDistances = useCallback(() => {
+    // ⛔ нет геолокации — просто показываем все филиалы
+    if (!location && branches.length) {
+      setBranchesWithDistance(
+        branches.map((b) => ({ ...b, distanceKm: null }))
+      );
+      return;
+    }
+
     if (!location || !branches.length) return;
 
     const computed = branches.map((branch) => {
       const lat = Number(branch.lat);
       const lng = Number(branch.lng);
 
-      if (isNaN(lat) || isNaN(lng)) return { ...branch, distanceKm: null };
+      if (isNaN(lat) || isNaN(lng)) {
+        return { ...branch, distanceKm: null };
+      }
 
       const distanceMeters = getDistance(
         {
@@ -182,7 +199,17 @@ export default function NearbyScreen() {
             </View>
           </View>
 
-          <Pressable style={s.refreshBtn} onPress={requestLocation}>
+          <Pressable
+            style={s.refreshBtn}
+            onPress={() => {
+              if (permissionDenied) {
+                // если ранее закрыли — снова показываем overlay
+                setShowPermissionOverlay(true);
+              } else {
+                requestLocation();
+              }
+            }}
+          >
             <Text style={s.refreshText}>{t("nearby.refresh", "Обновить")}</Text>
           </Pressable>
         </View>
@@ -259,13 +286,14 @@ export default function NearbyScreen() {
       />
 
       {/* ==== PERMISSION OVERLAY ==== */}
-      {permissionDenied && (
+      {permissionDenied && showPermissionOverlay && (
         <View style={s.permissionOverlay}>
           <Ionicons
             name="alert-circle-outline"
             size={48}
             color={colors.primary}
           />
+
           <Text style={s.permissionTitle}>
             {t("nearby.locationDisabled", "Геолокация отключена")}
           </Text>
@@ -273,13 +301,27 @@ export default function NearbyScreen() {
           <Text style={s.permissionDesc}>
             {t(
               "nearby.locationPermissionDescription",
-              "Разрешите доступ к геолокации, чтобы увидеть ближайшие филиалы"
+              "Разрешите доступ к геолокации в настройках, чтобы увидеть ближайшие филиалы"
             )}
           </Text>
 
-          <Pressable style={s.retryBtn} onPress={requestLocation}>
+          {/* Открыть настройки */}
+          <Pressable style={s.retryBtn} onPress={openSettings}>
             <Text style={s.retryText}>
-              {t("nearby.tryAgain", "Попробовать снова")}
+              {t("nearby.openSettings", "Открыть настройки")}
+            </Text>
+          </Pressable>
+
+          {/* Закрыть */}
+          <Pressable
+            style={[
+              s.retryBtn,
+              { backgroundColor: "transparent", marginTop: 8 },
+            ]}
+            onPress={() => setShowPermissionOverlay(false)}
+          >
+            <Text style={[s.retryText, { color: colors.subtext }]}>
+              {t("common.close", "Закрыть")}
             </Text>
           </Pressable>
         </View>

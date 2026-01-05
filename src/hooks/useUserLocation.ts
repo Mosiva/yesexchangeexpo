@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Linking from "expo-linking";
 import * as Location from "expo-location";
 import { useCallback, useEffect, useState } from "react";
 
@@ -10,7 +11,11 @@ export function useUserLocation() {
   );
   const [address, setAddress] = useState<string>("Не определено");
   const [loading, setLoading] = useState(false);
-  const [permissionDenied, setPermissionDenied] = useState(false);
+
+  const [permissionStatus, setPermissionStatus] =
+    useState<Location.PermissionStatus | null>(null);
+
+  const permissionDenied = permissionStatus === "denied";
 
   /** 💾 Загрузка последней сохранённой локации */
   const loadLastLocation = useCallback(async () => {
@@ -27,15 +32,21 @@ export function useUserLocation() {
     }
   }, []);
 
-  /** 📍 Основной запрос локации (с UI) */
+  /** ⚙️ Открыть настройки */
+  const openSettings = useCallback(() => {
+    Linking.openSettings();
+  }, []);
+
+  /** 📍 Запрос геолокации (ТОЛЬКО по кнопке / с Main) */
   const requestLocation = useCallback(async () => {
     try {
       setLoading(true);
-      setPermissionDenied(false);
 
       const { status } = await Location.requestForegroundPermissionsAsync();
+
+      setPermissionStatus(status);
+
       if (status !== "granted") {
-        setPermissionDenied(true);
         return;
       }
 
@@ -63,30 +74,21 @@ export function useUserLocation() {
     }
   }, []);
 
-  /** 🔄 Тихое обновление (без UI) — повышает точность */
+  /** 🔄 Тихое обновление (без permission UI) */
   const silentRefresh = useCallback(async () => {
+    if (permissionStatus !== "granted") return;
+
     try {
       const current = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
       });
 
-      setLocation(current); // обновляем quietly
+      setLocation(current);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(current));
-
-      const [reverse] = await Location.reverseGeocodeAsync(current.coords);
-      if (reverse) {
-        const city = reverse.city ?? reverse.region ?? "";
-        const street = reverse.street ?? "";
-        setAddress(
-          city || street
-            ? `${city}${street ? `, ${street}` : ""}`
-            : "Не определено"
-        );
-      }
-    } catch (_) {
-      /* Тихо игнорируем */
+    } catch {
+      /* ignore */
     }
-  }, []);
+  }, [permissionStatus]);
 
   /** 🚀 Автоинициализация */
   useEffect(() => {
@@ -105,7 +107,12 @@ export function useUserLocation() {
     location,
     address,
     loading,
+
     permissionDenied,
-    requestLocation, // кнопка "Обновить"
+    permissionStatus,
+
+    requestLocation, // 👉 вызывается ТОЛЬКО на Main или по кнопке
+    openSettings,
+    silentRefresh,
   };
 }

@@ -50,6 +50,7 @@ export default function BranchPickerScreen() {
     loading: loadingLocation,
     permissionDenied,
     requestLocation,
+    openSettings,
   } = useUserLocation();
 
   /** 🔗 API */
@@ -58,6 +59,13 @@ export default function BranchPickerScreen() {
     lng: location?.coords.longitude ?? 0,
     lat: location?.coords.latitude ?? 0,
   });
+
+  const [showPermissionOverlay, setShowPermissionOverlay] = useState(true);
+  useEffect(() => {
+    if (permissionDenied) {
+      setShowPermissionOverlay(true);
+    }
+  }, [permissionDenied]);
 
   const branches = useMemo(
     () => (Array.isArray(rawBranches) ? rawBranches : []),
@@ -77,11 +85,23 @@ export default function BranchPickerScreen() {
 
   /** 📏 Расстояние */
   const computeDistances = useCallback(() => {
+    // ⛔ нет геолокации — просто показываем все филиалы
+    if (!location && branches.length) {
+      setBranchesWithDistance(
+        branches.map((b) => ({ ...b, distanceKm: null }))
+      );
+      return;
+    }
+
     if (!location || !branches.length) return;
+
     const computed = branches.map((branch) => {
       const lat = Number(branch.lat);
       const lng = Number(branch.lng);
-      if (isNaN(lat) || isNaN(lng)) return { ...branch, distanceKm: null };
+
+      if (isNaN(lat) || isNaN(lng)) {
+        return { ...branch, distanceKm: null };
+      }
 
       const distanceMeters = getDistance(
         {
@@ -90,12 +110,14 @@ export default function BranchPickerScreen() {
         },
         { latitude: lat, longitude: lng }
       );
+
       return { ...branch, distanceKm: distanceMeters / 1000 };
     });
 
     const sorted = computed.sort(
       (a, b) => (a.distanceKm ?? 99999) - (b.distanceKm ?? 99999)
     );
+
     setBranchesWithDistance(sorted);
   }, [branches, location]);
 
@@ -103,6 +125,7 @@ export default function BranchPickerScreen() {
     computeDistances();
   }, [branches, location]);
 
+  /** 30 км зона */
   const nearbyBranches = useMemo(
     () =>
       branchesWithDistance.filter(
@@ -177,8 +200,17 @@ export default function BranchPickerScreen() {
               </Text>
             </View>
           </View>
-
-          <Pressable style={s.refreshBtn} onPress={() => requestLocation()}>
+          <Pressable
+            style={s.refreshBtn}
+            onPress={() => {
+              if (permissionDenied) {
+                // если ранее закрыли — снова показываем overlay
+                setShowPermissionOverlay(true);
+              } else {
+                requestLocation();
+              }
+            }}
+          >
             <Text style={s.refreshText}>{t("nearby.refresh", "Обновить")}</Text>
           </Pressable>
         </View>
@@ -265,27 +297,43 @@ export default function BranchPickerScreen() {
         isRateLocked={isRateLocked}
       />
 
-      {/* Permission denied */}
-      {permissionDenied && (
+      {/* ==== PERMISSION OVERLAY ==== */}
+      {permissionDenied && showPermissionOverlay && (
         <View style={s.permissionOverlay}>
           <Ionicons
             name="alert-circle-outline"
             size={48}
             color={colors.primary}
           />
+
           <Text style={s.permissionTitle}>
             {t("nearby.locationDisabled", "Геолокация отключена")}
           </Text>
+
           <Text style={s.permissionDesc}>
             {t(
               "nearby.locationPermissionDescription",
-              "Чтобы показать ближайшие филиалы, разрешите доступ к местоположению"
+              "Разрешите доступ к геолокации в настройках, чтобы увидеть ближайшие филиалы"
             )}
           </Text>
 
-          <Pressable style={s.retryBtn} onPress={() => requestLocation()}>
+          {/* Открыть настройки */}
+          <Pressable style={s.retryBtn} onPress={openSettings}>
             <Text style={s.retryText}>
-              {t("nearby.tryAgain", "Попробовать снова")}
+              {t("nearby.openSettings", "Открыть настройки")}
+            </Text>
+          </Pressable>
+
+          {/* Закрыть */}
+          <Pressable
+            style={[
+              s.retryBtn,
+              { backgroundColor: "transparent", marginTop: 8 },
+            ]}
+            onPress={() => setShowPermissionOverlay(false)}
+          >
+            <Text style={[s.retryText, { color: colors.subtext }]}>
+              {t("common.close", "Закрыть")}
             </Text>
           </Pressable>
         </View>

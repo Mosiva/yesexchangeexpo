@@ -117,6 +117,7 @@ const LocalTime = () => {
 };
 export default function MainScreen() {
   const { location, permissionDenied } = useUserLocation();
+
   const [refreshing, setRefreshing] = useState(false);
   const { colors, theme } = useTheme();
   const isLight = theme === "light";
@@ -404,7 +405,7 @@ export default function MainScreen() {
   const filteredExchangeRates = exchangeRates.filter(
     (c) => c.currency.code !== "KZT"
   );
-  
+
   const prevSentBranchId = useRef<number | null>(null);
 
   const [setPreferredBranch] = useSetPreferredBranchMutation();
