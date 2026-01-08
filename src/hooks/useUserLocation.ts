@@ -1,7 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Linking from "expo-linking";
 import * as Location from "expo-location";
-import { useCallback, useEffect, useState } from "react";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AppState, AppStateStatus } from "react-native";
 
 const STORAGE_KEY = "USER_LAST_LOCATION";
 
@@ -17,6 +19,8 @@ export function useUserLocation() {
     useState<Location.PermissionStatus | null>(null);
 
   const permissionDenied = permissionStatus === "denied";
+
+  const appState = useRef<AppStateStatus>(AppState.currentState);
 
   /* ------------------------------------------------------------------ */
   /* 💾 Загрузка последней сохранённой локации (БЕЗ permission UI) */
@@ -116,6 +120,25 @@ export function useUserLocation() {
       return false;
     }
   }, []);
+  
+  useEffect(() => {
+    const subscription = AppState.addEventListener(
+      "change",
+      async (nextState) => {
+        if (
+          appState.current.match(/inactive|background/) &&
+          nextState === "active"
+        ) {
+          // 👈 пользователь вернулся в приложение
+          await tryGetLocation();
+        }
+
+        appState.current = nextState;
+      }
+    );
+
+    return () => subscription.remove();
+  }, [tryGetLocation]);
 
   /* ------------------------------------------------------------------ */
   /* 🚀 Автоинициализация (БЕЗ permission UI) */
