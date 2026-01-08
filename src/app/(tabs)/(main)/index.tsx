@@ -522,11 +522,11 @@ export default function MainScreen() {
                     "Определяем ближайший филиал..."
                   )}
                 </Text>
-              ) : permissionDenied ? (
+              ) : permissionDenied && !isBranchManuallySelected ? (
                 <Text style={styles.addrHint}>
                   {t("main.defaultBranch", "Филиал по умолчанию (Астана)")}
                 </Text>
-              ) : isNearestBranchError ? (
+              ) : isNearestBranchError && !isBranchManuallySelected ? (
                 <Text style={styles.addrHint}>
                   {t(
                     "main.errorDeterminingNearestBranch",
