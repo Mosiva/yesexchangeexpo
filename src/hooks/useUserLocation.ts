@@ -22,6 +22,28 @@ export function useUserLocation() {
 
   const appState = useRef<AppStateStatus>(AppState.currentState);
 
+  const resolveAddress = useCallback(
+    async (coords: Location.LocationObjectCoords) => {
+      try {
+        const [reverse] = await Location.reverseGeocodeAsync(coords);
+
+        if (reverse) {
+          const city = reverse.city ?? reverse.region ?? "";
+          const street = reverse.street ?? "";
+
+          setAddress(
+            city || street
+              ? `${city}${street ? `, ${street}` : ""}`
+              : "Не определено"
+          );
+        }
+      } catch {
+        setAddress("Не определено");
+      }
+    },
+    []
+  );
+
   /* ------------------------------------------------------------------ */
   /* 💾 Загрузка последней сохранённой локации (БЕЗ permission UI) */
   /* ------------------------------------------------------------------ */
@@ -79,24 +101,11 @@ export function useUserLocation() {
       setLocation(current);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(current));
 
-      const [reverse] = await Location.reverseGeocodeAsync(current.coords);
-
-      if (reverse) {
-        const city = reverse.city ?? reverse.region ?? "";
-        const street = reverse.street ?? "";
-
-        setAddress(
-          city || street
-            ? `${city}${street ? `, ${street}` : ""}`
-            : "Не определено"
-        );
-      }
-    } catch (e) {
-      console.error("❌ requestLocation error", e);
+      await resolveAddress(current.coords);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [resolveAddress]);
 
   /* ------------------------------------------------------------------ */
   /* 🟢 NEARBY: тихая попытка получить координаты (БЕЗ permission UI) */
@@ -115,12 +124,15 @@ export function useUserLocation() {
 
       setLocation(current);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+
+      await resolveAddress(current.coords);
+
       return true;
     } catch {
       return false;
     }
-  }, []);
-  
+  }, [resolveAddress]);
+
   useEffect(() => {
     const subscription = AppState.addEventListener(
       "change",

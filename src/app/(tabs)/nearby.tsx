@@ -55,11 +55,9 @@ export default function NearbyScreen() {
     tryGetLocation,
   } = useUserLocation();
 
-  useFocusEffect(
-    useCallback(() => {
-      tryGetLocation();
-    }, [tryGetLocation])
-  );
+  useEffect(() => {
+    tryGetLocation();
+  }, []);
 
   const [showPermissionOverlay, setShowPermissionOverlay] = useState(true);
   useEffect(() => {
