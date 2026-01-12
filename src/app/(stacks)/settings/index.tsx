@@ -25,7 +25,7 @@ export default function SettingsScreen() {
 
   const s = makeStyles(colors);
   const isLight = theme === "light";
-  const version = "1.0.0";
+  const version = "1.0.1";
 
   const onShare = async () => {
     try {
