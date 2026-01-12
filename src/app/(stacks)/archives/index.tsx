@@ -39,7 +39,7 @@ export default function ArchivesScreen() {
     isLoading: isNbkRatesLoading,
     isError: isNbkRatesError,
   } = useNbkRatesQuery({
-    from: ymdLocal(new Date(Date.now() - 24 * 3600 * 1000)), // вчера (локально)
+    from: ymdLocal(new Date()), // вчера (локально)
     to: ymdLocal(new Date()), // сегодня (локально)
     limit: 30,
   });

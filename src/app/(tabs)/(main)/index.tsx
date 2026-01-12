@@ -167,7 +167,6 @@ export default function MainScreen() {
     }
   );
 
-  const yesterdayDate = getYesterdayDate();
   const todayDate = getTodayDate();
 
   const {
@@ -176,9 +175,9 @@ export default function MainScreen() {
     isLoading: isNbkRatesLoading,
     isError: isNbkRatesError,
   } = useNbkRatesQuery({
-    from: yesterdayDate,
+    from: todayDate,
     to: todayDate,
-    limit: 30,
+    limit: 100,
   });
 
   const branches = React.useMemo(() => {
