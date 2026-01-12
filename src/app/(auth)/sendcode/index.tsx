@@ -56,17 +56,28 @@ export default function SendCodeScreen() {
 
   const handleChange = (text: string, index: number) => {
     const onlyDigits = text.replace(/\D/g, "");
+    if (!onlyDigits) return;
+
     const next = [...digits];
-    if (onlyDigits.length <= 1) {
-      next[index] = onlyDigits;
+
+    // 🔥 Вставка сразу всего кода (iOS auto-fill / paste)
+    if (onlyDigits.length > 1) {
+      const chars = onlyDigits.slice(0, 6).split("");
+      for (let i = 0; i < 6; i++) {
+        next[i] = chars[i] ?? "";
+      }
       setDigits(next);
-      if (onlyDigits && index < 5) inputsRef.current[index + 1]?.focus();
+      inputsRef.current[5]?.focus();
       return;
     }
-    const chars = onlyDigits.slice(0, 6 - index).split("");
-    for (let i = 0; i < chars.length; i++) next[index + i] = chars[i];
+
+    // обычный ввод по 1 цифре
+    next[index] = onlyDigits;
     setDigits(next);
-    inputsRef.current[Math.min(index + chars.length, 5)]?.focus();
+
+    if (index < 5) {
+      inputsRef.current[index + 1]?.focus();
+    }
   };
 
   const handleKeyPress = (e: any, index: number) => {
@@ -166,7 +177,6 @@ export default function SendCodeScreen() {
             inputMode="numeric"
             textContentType="oneTimeCode"
             autoComplete="one-time-code"
-            maxLength={1}
             textAlign="center"
             placeholder="-"
             placeholderTextColor={colors.subtext}
