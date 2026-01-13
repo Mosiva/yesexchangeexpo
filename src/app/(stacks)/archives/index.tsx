@@ -68,7 +68,7 @@ export default function ArchivesScreen() {
     return (Array.isArray(todayOnly) ? todayOnly : []).map((r: any) => ({
       code: r.currency?.code ?? "",
       value: r.rate,
-      delta: Number(r.changePercent) || 0,
+      delta: Number(r.change.toFixed(2)) || 0,
       label: t("archives.nbkRate", "Курс НБ РК"),
       name: r.currency?.name ?? "",
     }));

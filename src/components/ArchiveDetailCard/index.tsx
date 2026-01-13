@@ -7,7 +7,7 @@ import { useTheme } from "../../hooks/useTheme";
 import CurrencyFlag from "../CurrencyFlag";
 
 import FxLineChart from "../FxLineChart";
-type NbkRow = { ts: string; rate: number; changePercent: number };
+type NbkRow = { ts: string; rate: number; changePercent: number; change?: number };
 
 type Row = {
   ts: string;
@@ -234,23 +234,26 @@ export default function ArchiveDetailCard({
                     {latestNbkRates ? latestNbkRates.rate : "-"}
                   </Text>
                   {latestNbkRates?.changePercent !== undefined &&
-                    latestNbkRates.changePercent > 0 && (
+                    latestNbkRates.changePercent > 0 &&
+                    latestNbkRates.change !== undefined && (
                       <Text style={[styles.delta, styles.deltaUp]}>
                         {" "}
-                        +{latestNbkRates.changePercent} ▲
+                        +{latestNbkRates.change.toFixed(2)} ▲
                       </Text>
                     )}
                   {latestNbkRates?.changePercent !== undefined &&
-                    latestNbkRates.changePercent < 0 && (
+                    latestNbkRates.changePercent < 0 &&
+                    latestNbkRates.change !== undefined && (
                       <Text style={[styles.delta, styles.deltaDown]}>
-                        {latestNbkRates.changePercent} ▼
+                        {latestNbkRates.change.toFixed(2)} ▼
                       </Text>
                     )}
-                  {latestNbkRates?.changePercent === 0 && (
-                    <Text style={[styles.delta, { color: colors.subtext }]}>
-                      {latestNbkRates.changePercent} ＝
-                    </Text>
-                  )}
+                  {latestNbkRates?.changePercent === 0 &&
+                    latestNbkRates.change !== undefined && (
+                      <Text style={[styles.delta, { color: colors.subtext }]}>
+                        {latestNbkRates.change.toFixed(2)} ＝
+                      </Text>
+                    )}
                 </View>
                 <Text style={styles.caption}>
                   {t("archive.nbkRate", "Курс НБРК")}

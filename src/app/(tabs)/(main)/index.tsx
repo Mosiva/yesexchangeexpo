@@ -236,7 +236,7 @@ export default function MainScreen() {
     return latestRows.map((r: any) => ({
       code: r.currency?.code ?? "",
       value: r.rate,
-      delta: Number(r.changePercent) || 0,
+      delta: Number(r.change) || 0,
       label: t("main.nbkRatesLabel", "Курс НБ РК"),
       name: r.currency?.name ?? "",
     }));

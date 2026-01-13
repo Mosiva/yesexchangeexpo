@@ -124,6 +124,7 @@ export default function ArchiveDetailScreen() {
           ts: isoDate,
           rate: Number(r.rate),
           changePercent: Number(r.changePercent),
+          change: r.change !== undefined ? Number(r.change) : undefined,
         };
       })
     : [];
