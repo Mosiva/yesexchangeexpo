@@ -156,21 +156,15 @@ function Sparkline({
       : DEFAULT_NEUTRAL_IMG);
 
   return (
-    <View style={styles.sparkWrap}>
+    <View
+      style={[
+        styles.sparkWrap,
+        trend === "up" && styles.sparkWrapUp,
+        trend === "same" && styles.sparkWrapNeutral,
+      ]}
+    >
       <Image source={src} style={styles.chartImg} resizeMode="cover" />
-      <View
-        style={[
-          styles.sparkDot,
-          {
-            backgroundColor:
-              trend === "up"
-                ? "#10A44A"
-                : trend === "down"
-                ? "#DC3545"
-                : "#9CA3AF", // серый цвет для нейтрального
-          },
-        ]}
-      />
+      <View />
     </View>
   );
 }
@@ -238,15 +232,21 @@ const makeStyles = (colors: any) =>
       width: "100%",
       height: "100%",
     },
-    sparkDot: {
-      position: "absolute",
-      right: 6,
-      top: 6,
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-    },
-
     moreBtn: { alignItems: "center", paddingVertical: 16 },
     moreText: { color: colors.subtext, fontSize: 14, fontWeight: "700" },
+    sparkWrapNeutral: {
+      width: 150,
+      height: 85,
+      borderRadius: 12,
+      overflow: "hidden",
+      justifyContent: "center",
+    },
+    sparkWrapUp: {
+      width: 160,
+      height: 94,
+      overflow: "hidden",
+      justifyContent: "center",
+      borderEndEndRadius : 12,
+      borderStartEndRadius : 0,
+    },
   });
