@@ -2,7 +2,7 @@ export default {
   expo: {
     name: "Yes Exchange",
     slug: "yesexchangeexpo",
-    version: "1.0.2",
+    version: "1.0.3",
     orientation: "portrait",
     icon: "./assets/images/iconorange.png",
     scheme: "yesexchangeexpo",
@@ -23,7 +23,7 @@ export default {
 
     android: {
       package: "com.mosiva.yesexchangeexpo",
-      versionCode: 31,
+      versionCode: 32,
       googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
