@@ -12,7 +12,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.yesx.sailet.kz"
+        "EXPO_PUBLIC_API_URL": "https://api.mob.yes-exchange.com"
       },
       "distribution": "internal"
     },
