@@ -1,6 +1,6 @@
 export default {
   expo: {
-    name: "Yesexchange",
+    name: "Yes Exchange",
     slug: "yesexchangeexpo",
     version: "1.0.2",
     orientation: "portrait",

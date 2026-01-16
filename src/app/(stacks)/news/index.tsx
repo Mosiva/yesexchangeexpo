@@ -18,13 +18,11 @@ import { useTheme } from "../../../hooks/useTheme";
 import { useNewsQuery } from "../../../services/yesExchange";
 
 // ---------- Tabs ----------
-const TABS = ["All", "YesNews", "Kase", "Zakon.kz"] as const;
+const TABS = ["All", "YesNews"] as const;
 type TabKey = (typeof TABS)[number];
 
 const SOURCE_MAP: Record<TabKey, string | null> = {
   YesNews: "YesNews",
-  Kase: "KASE",
-  "Zakon.kz": "Zakon.kz",
   All: null,
 };
 
@@ -72,8 +70,6 @@ export default function NewsScreen() {
   const TAB_LABELS: Record<TabKey, string> = {
     All: t("news.tabAll", "All"),
     YesNews: t("news.tabYesNews", "YesNews"),
-    Kase: t("news.tabKase", "KASE"),
-    "Zakon.kz": t("news.tabZakon", "Zakon.kz"),
   };
 
   // ---------- Convert to list items ----------
@@ -219,8 +215,9 @@ const makeStyles = (colors: any) =>
       gap: 14,
       marginTop: 8,
       marginBottom: 12,
-      justifyContent: "center",
-      alignItems: "center",
+      marginLeft: 16,
+      justifyContent: "flex-start",
+      alignItems: "flex-start",
     },
 
     tab: {
