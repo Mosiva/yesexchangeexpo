@@ -2,15 +2,15 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Image,
   ImageSourcePropType,
   Pressable,
   StyleSheet,
   Text,
-  View,
+  View
 } from "react-native";
 import { useTheme } from "../../hooks/useTheme";
 import CurrencyFlag from "../CurrencyFlag";
+import SparklineChart from "../SparklineChart";
 
 /* ================== Types ================== */
 type Item = {
@@ -21,6 +21,10 @@ type Item = {
   flagSource?: ImageSourcePropType; // or local/remote image
   label?: string; // default: "Курс НБ РК"
   chartSource?: ImageSourcePropType; // optional custom sparkline image
+  history?: {
+    date: string;
+    rate: number;
+  }[];
 };
 
 type Props = {
@@ -133,41 +137,15 @@ function RateCard({ item, branchId }: { item: Item; branchId?: string }) {
       </View>
 
       {/* Right side */}
-      <Sparkline trend={trend} chartSource={item.chartSource} />
+      <SparklineChart
+        trend={trend}
+        data={(item.history ?? []).map(h => h.rate)}
+      />
     </Pressable>
   );
 }
 
-function Sparkline({
-  trend,
-  chartSource,
-}: {
-  trend: "up" | "down" | "same";
-  chartSource?: ImageSourcePropType;
-}) {
-  const { colors } = useTheme();
-  const styles = makeStyles(colors);
-  const src =
-    chartSource ??
-    (trend === "up"
-      ? DEFAULT_UP_IMG
-      : trend === "down"
-      ? DEFAULT_DOWN_IMG
-      : DEFAULT_NEUTRAL_IMG);
 
-  return (
-    <View
-      style={[
-        styles.sparkWrap,
-        trend === "up" && styles.sparkWrapUp,
-        trend === "same" && styles.sparkWrapNeutral,
-      ]}
-    >
-      <Image source={src} style={styles.chartImg} resizeMode="cover" />
-      <View />
-    </View>
-  );
-}
 
 /* ------------------------------ helpers ------------------------------ */
 function formatNum(n: number | string) {
@@ -246,7 +224,7 @@ const makeStyles = (colors: any) =>
       height: 94,
       overflow: "hidden",
       justifyContent: "center",
-      borderEndEndRadius : 12,
-      borderStartEndRadius : 0,
+      borderEndEndRadius: 12,
+      borderStartEndRadius: 0,
     },
   });

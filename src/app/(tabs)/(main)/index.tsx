@@ -235,7 +235,10 @@ export default function MainScreen() {
       delta: Number(r.change) || 0,
       label: t("main.nbkRatesLabel", "Курс НБ РК"),
       name: r.currency?.name ?? "",
-    }));
+      history: Array.isArray(r.history)
+      ? r.history.slice(0, 6)
+      : [],
+  }));
   }, [rawNbkRatesHistory]);
 
   const newsItems = React.useMemo(() => {
