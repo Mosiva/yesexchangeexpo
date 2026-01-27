@@ -16,7 +16,7 @@ import {
 import LineUpDownChartCard from "../../../components/LineUpDownChartCard";
 import { Skeleton } from "../../../components/skeleton";
 import { useTheme } from "../../../hooks/useTheme";
-import { useNbkRatesQuery } from "../../../services/yesExchange";
+import { useNbkRatesHistoryQuery } from "../../../services/yesExchange";
 import {
   dmyLocal,
   pickLatestPerCode,
@@ -34,22 +34,18 @@ export default function ArchivesScreen() {
   const { branchId } = useLocalSearchParams<{ branchId: string }>();
 
   const {
-    data: rawNbkRates,
-    refetch: refetchNbkRates,
-    isLoading: isNbkRatesLoading,
-    isError: isNbkRatesError,
-  } = useNbkRatesQuery({
-    from: ymdLocal(new Date()), // вчера (локально)
-    to: ymdLocal(new Date()), // сегодня (локально)
-    limit: 30,
-  });
+    data: rawNbkRatesHistory,
+    refetch: refetchNbkRatesHistory,
+    isLoading: isNbkRatesHistoryLoading,
+    isError: isNbkRatesHistoryError,
+  } = useNbkRatesHistoryQuery({});
 
   // 1) Фильтруем только сегодняшние записи
   const todayYMD = ymdLocal();
   const todayDMY = dmyLocal();
 
   const todayOnly = useMemo(() => {
-    const arr = Array.isArray(rawNbkRates) ? rawNbkRates : [];
+    const arr = Array.isArray(rawNbkRatesHistory) ? rawNbkRatesHistory : [];
     const todays = arr.filter((r: any) => {
       const s = String(r?.date ?? "");
       return s === todayYMD || s === todayDMY;
@@ -61,7 +57,7 @@ export default function ArchivesScreen() {
     }
     // На всякий: если по одному коду пришли и сегодня/вчера, оставим только сегодняшнюю запись
     return pickLatestPerCode(todays);
-  }, [rawNbkRates, todayYMD, todayDMY]);
+  }, [rawNbkRatesHistory, todayYMD, todayDMY]);
 
   // 3) Приводим к items для LineUpDownChartCard
   const nbkItems = useMemo(() => {
@@ -87,8 +83,8 @@ export default function ArchivesScreen() {
 
   // === Обновление данных ===
   const refetchAllData = useCallback(async () => {
-    await refetchNbkRates();
-  }, [refetchNbkRates]);
+    await refetchNbkRatesHistory();
+  }, [refetchNbkRatesHistory]);
 
   useFocusEffect(
     useCallback(() => {
@@ -143,23 +139,23 @@ export default function ArchivesScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
-          isNbkRatesLoading ? (
+          isNbkRatesHistoryLoading ? (
             <View style={styles.skeletonContainer}>
               <Skeleton width="100%" height={60} style={styles.skeletonItem} />
               <Skeleton width="100%" height={60} style={styles.skeletonItem} />
               <Skeleton width="100%" height={60} style={styles.skeletonItem} />
             </View>
-          ) : isNbkRatesError ? (
+          ) : isNbkRatesHistoryError ? (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>
                 {t(
-                  "archives.errorLoadingNbkRates",
-                  "Ошибка загрузки курсов НБК"
+                  "archives.errorLoadingNbkRatesHistory",
+                  "Ошибка загрузки истории курсов НБК"
                 )}
               </Text>
               <TouchableOpacity
                 style={styles.retryButton}
-                onPress={() => refetchNbkRates()}
+                onPress={() => refetchNbkRatesHistory()}
               >
                 <Text style={styles.retryButtonText}>
                   {t("archives.retry", "Повторить")}

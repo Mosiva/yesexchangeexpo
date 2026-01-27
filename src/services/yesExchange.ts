@@ -259,7 +259,7 @@ export const yesExchangeApi = restApi.injectEndpoints({
     // --- НБК (история одной валюты для графика) ---
     nbkRatesHistory: build.query<
       NbkHistoryResponseDto,
-      { currencyCode: string; days?: number } // days: 1..90 (опционально)
+      { currencyCode?: string; days?: number } // days: 1..90 (опционально)
     >({
       query: (params) => ({
         url: "/api/v1/nbk/exchange-rates/history",

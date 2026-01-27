@@ -31,10 +31,10 @@ import {
   useBranchesQuery,
   useExchangeRatesCurrentQuery,
   useGetFavoriteCurrenciesQuery,
-  useNbkRatesQuery,
+  useNbkRatesHistoryQuery,
   useNearestBranchQuery,
   useNewsQuery,
-  useSetPreferredBranchMutation,
+  useSetPreferredBranchMutation
 } from "../../../services/yesExchange";
 import { useBranchStore } from "../../../store/useBranchStore";
 import { CurrencyCode } from "../../../types/api";
@@ -170,15 +170,11 @@ export default function MainScreen() {
   const todayDate = getTodayDate();
 
   const {
-    data: rawNbkRates,
-    refetch: refetchNbkRates,
-    isLoading: isNbkRatesLoading,
-    isError: isNbkRatesError,
-  } = useNbkRatesQuery({
-    from: todayDate,
-    to: todayDate,
-    limit: 100,
-  });
+    data: rawNbkRatesHistory,
+    refetch: refetchNbkRatesHistory,
+    isLoading: isNbkRatesHistoryLoading,
+    isError: isNbkRatesHistoryError,
+  } = useNbkRatesHistoryQuery({});
 
   const branches = React.useMemo(() => {
     return Array.isArray(rawBranches) ? rawBranches : [];
@@ -220,7 +216,7 @@ export default function MainScreen() {
 
   // ✅ NBRK items safe filtered (only today)
   const nbkItems = React.useMemo(() => {
-    const arr = Array.isArray(rawNbkRates) ? rawNbkRates : [];
+    const arr = Array.isArray(rawNbkRatesHistory) ? rawNbkRatesHistory : [];
 
     const todayYMD = ymdLocal();
     const todayDMY = dmyLocal();
@@ -240,7 +236,7 @@ export default function MainScreen() {
       label: t("main.nbkRatesLabel", "Курс НБ РК"),
       name: r.currency?.name ?? "",
     }));
-  }, [rawNbkRates]);
+  }, [rawNbkRatesHistory]);
 
   const newsItems = React.useMemo(() => {
     return news.map((n) => ({
@@ -365,14 +361,14 @@ export default function MainScreen() {
   const refetchAllData = useCallback(async () => {
     await Promise.all([
       refetchBranches(),
-      refetchNbkRates(),
+      refetchNbkRatesHistory(),
       refetchExchangeRates(),
       refetchNearestBranch(),
       refetchNews(),
     ]);
   }, [
     refetchBranches,
-    refetchNbkRates,
+    refetchNbkRatesHistory,
     refetchExchangeRates,
     refetchNearestBranch,
     refetchNews,
@@ -644,20 +640,20 @@ export default function MainScreen() {
         ) : (
           <NewsMainCardList items={newsItems} initial={3} />
         )
-      ) : isNbkRatesLoading ? (
+      ) : isNbkRatesHistoryLoading ? (
         <View style={styles.skeletonContainer}>
           <Skeleton width="90%" height={60} style={styles.skeletonItem} />
           <Skeleton width="90%" height={60} style={styles.skeletonItem} />
           <Skeleton width="90%" height={60} style={styles.skeletonItem} />
         </View>
-      ) : isNbkRatesError ? (
+      ) : isNbkRatesHistoryError ? (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>
-            {t("main.errorLoadingNbkRates", "Ошибка загрузки курсов НБК")}
+            {t("main.errorLoadingNbkRatesHistory", "Ошибка загрузки истории курсов НБК")}
           </Text>
           <TouchableOpacity
             style={styles.retryButton}
-            onPress={() => refetchNbkRates()}
+            onPress={() => refetchNbkRatesHistory()}
           >
             <Text style={styles.retryButtonText}>
               {t("main.retry", "Повторить")}
@@ -714,7 +710,7 @@ export default function MainScreen() {
                   style={[
                     styles.dropdownItem,
                     selectedBranch?.id === item.id &&
-                      styles.dropdownItemSelected,
+                    styles.dropdownItemSelected,
                   ]}
                   onPress={() => handleBranchSelect(item)}
                 >
