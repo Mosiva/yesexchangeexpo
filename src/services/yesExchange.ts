@@ -28,6 +28,7 @@ import type {
   HealthCheckResponseDto,
   LoginDto,
   LogoutResponseDto,
+  NbkHistoryResponseDto,
   // nbk
   NbkRateDto,
   // news
@@ -250,6 +251,18 @@ export const yesExchangeApi = restApi.injectEndpoints({
     >({
       query: (params) => ({
         url: "/api/v1/nbk/exchange-rates",
+        method: "GET",
+        params,
+      }),
+    }),
+
+    // --- НБК (история одной валюты для графика) ---
+    nbkRatesHistory: build.query<
+      NbkHistoryResponseDto,
+      { currencyCode: string; days?: number } // days: 1..90 (опционально)
+    >({
+      query: (params) => ({
+        url: "/api/v1/nbk/exchange-rates/history",
         method: "GET",
         params,
       }),
@@ -492,6 +505,7 @@ export const {
 
   // nbk
   useNbkRatesQuery,
+  useNbkRatesHistoryQuery,
 
   // bookings (auth)
   useBookingsQuery,

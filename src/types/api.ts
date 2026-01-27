@@ -254,6 +254,23 @@ export type NbkRateDto = {
   date: string; // dd.MM.yyyy
 };
 
+// --- НБК (история) DTOs ---
+export type NbkHistoryPointDto = {
+  date: string;          // dd.MM.yyyy
+  rate: number;          // курс в тенге
+  change?: number;       // абсолютное изменение vs предыдущий день
+  changePercent?: number;// % изменение vs предыдущий день
+  trend?: Trend;         // 'up' | 'down' | 'same'
+};
+
+export type NbkHistoryResponseDto = {
+  currency: CurrencyDto;       // информация о валюте
+  change: number;              // изменение за последний день
+  changePercent: number;       // % изменение за последний день
+  trend: Trend;                // общий тренд
+  history: NbkHistoryPointDto[]; // точки истории (новые первыми)
+};
+
 // --- Booking DTOs ---
 
 export type BookingStatus =
