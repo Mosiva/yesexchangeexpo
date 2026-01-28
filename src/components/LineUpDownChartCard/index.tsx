@@ -20,6 +20,7 @@ type Item = {
   flagEmoji?: string; // optional emoji flag
   flagSource?: ImageSourcePropType; // or local/remote image
   label?: string; // default: "Курс НБ РК"
+  trend: "up" | "down" | "same";
   chartSource?: ImageSourcePropType; // optional custom sparkline image
   history?: {
     date: string;
@@ -34,11 +35,6 @@ type Props = {
   expanded?: boolean;
   branchId?: string;
 };
-
-/* ================== Defaults ================== */
-const DEFAULT_UP_IMG = require("../../../assets/images/upline.png");
-const DEFAULT_DOWN_IMG = require("../../../assets/images/downline.png");
-const DEFAULT_NEUTRAL_IMG = require("../../../assets/images/neutral.png");
 
 /* ================== Component ================== */
 export default function LineUpDownChartCard({
@@ -81,8 +77,7 @@ export default function LineUpDownChartCard({
 
 /* ------------------------ subcomponents ------------------------ */
 function RateCard({ item, branchId }: { item: Item; branchId?: string }) {
-  const trend: "up" | "down" | "same" =
-    item.delta === 0 ? "same" : item.delta > 0 ? "up" : "down";
+  const trend = item.trend;
   const router = useRouter();
   const { t } = useTranslation();
   const { colors } = useTheme();

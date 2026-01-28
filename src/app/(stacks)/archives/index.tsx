@@ -67,6 +67,7 @@ export default function ArchivesScreen() {
       delta: Number(r.change.toFixed(2)) || 0,
       label: t("archives.nbkRate", "Курс НБ РК"),
       name: r.currency?.name ?? "",
+      trend: r.trend ?? "same",
       history: Array.isArray(r.history)
       ? r.history.slice(0, 6)
       : [],
