@@ -76,7 +76,7 @@ export default function ReserveScreen() {
       </View>
 
       {/* Gold reservation */}
-      <Pressable style={s.wideCard}>
+      {/* <Pressable style={s.wideCard}>
         <View style={s.rowLeft}>
           <View style={s.iconBadge}>
             <MaterialCommunityIcons
@@ -94,7 +94,7 @@ export default function ReserveScreen() {
             </Text>
           </View>
         </View>
-      </Pressable>
+      </Pressable> */}
 
       {/* History row */}
       {!isGuest ? (
