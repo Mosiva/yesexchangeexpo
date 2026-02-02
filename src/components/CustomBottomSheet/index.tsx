@@ -310,24 +310,24 @@ const CustomBottomSheet = forwardRef<
           )}
 
           {/* Bottom Sheet */}
-          <GestureDetector gesture={panGesture}>
-            <Animated.View
-              style={[
-                styles.container,
-                backgroundStyle,
-                style,
-                animatedStyle,
-              ]}
-            >
-              {/* Handle */}
-              <View style={[styles.handleContainer, handleStyle]}>
+          <Animated.View
+            style={[
+              styles.container,
+              backgroundStyle,
+              style,
+              animatedStyle,
+            ]}
+          >
+            {/* Handle - только здесь работает жест свайпа */}
+            <GestureDetector gesture={panGesture}>
+              <Animated.View style={[styles.handleContainer, handleStyle]}>
                 <View style={[styles.handle, handleIndicatorStyle]} />
-              </View>
+              </Animated.View>
+            </GestureDetector>
 
-              {/* Content */}
-              {children}
-            </Animated.View>
-          </GestureDetector>
+            {/* Content - здесь скролл работает свободно */}
+            {children}
+          </Animated.View>
         </View>
       </BottomSheetContext.Provider>
     );
@@ -361,9 +361,9 @@ export function CustomBottomSheetFlatList<T>(
     <FlatList
       ref={flatListRef}
       {...props}
+      style={[{ flex: 1 }, props.style]}
       scrollEnabled={scrollEnabled}
-      bounces={false}
-      overScrollMode="never"
+      nestedScrollEnabled={true}
     />
   );
 }
@@ -439,12 +439,15 @@ const styles = StyleSheet.create({
   },
   handleContainer: {
     alignItems: "center",
-    paddingVertical: 12,
+    justifyContent: "center",
+    paddingVertical: 16,
+    width: "100%",
+    minHeight: 40,
   },
   handle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
+    width: 60,
+    height: 5,
+    borderRadius: 3,
     backgroundColor: "#E0E0E0",
   },
   contentContainer: {
