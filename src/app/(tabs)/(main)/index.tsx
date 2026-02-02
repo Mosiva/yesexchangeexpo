@@ -363,19 +363,30 @@ export default function MainScreen() {
 
   // === Обновление данных ===
   const refetchAllData = useCallback(async () => {
-    await Promise.all([
+    const promises: Promise<unknown>[] = [
       refetchBranches(),
       refetchNbkRatesHistory(),
-      refetchExchangeRates(),
-      refetchNearestBranch(),
       refetchNews(),
-    ]);
+    ];
+
+    if (selectedBranch?.id && !isBranchesLoading) {
+      promises.push(refetchExchangeRates());
+    }
+
+    if (location) {
+      promises.push(refetchNearestBranch());
+    }
+
+    await Promise.all(promises);
   }, [
     refetchBranches,
     refetchNbkRatesHistory,
     refetchExchangeRates,
     refetchNearestBranch,
     refetchNews,
+    selectedBranch?.id,
+    isBranchesLoading,
+    location,
   ]);
 
   useFocusEffect(

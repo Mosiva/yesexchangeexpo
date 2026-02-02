@@ -9,24 +9,18 @@ import React, {
   useState,
 } from "react";
 import {
+  Animated,
   Dimensions,
   FlatList,
   FlatListProps,
   Keyboard,
+  PanResponder,
   Pressable,
   StyleProp,
   StyleSheet,
   View,
   ViewStyle,
 } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -97,15 +91,6 @@ const parseSnapPoint = (
   return parseFloat(snapPoint);
 };
 
-const SPRING_CONFIG = {
-  damping: 50,
-  stiffness: 500,
-  mass: 1,
-  overshootClamping: true,
-  restDisplacementThreshold: 0.01,
-  restSpeedThreshold: 0.01,
-};
-
 // ============================================================================
 // Main Component: CustomBottomSheet
 // ============================================================================
@@ -133,8 +118,9 @@ const CustomBottomSheet = forwardRef<
     ref
   ) => {
     const [scrollEnabled, setScrollEnabled] = useState(true);
+    const [currentSnapIndex, setCurrentSnapIndex] = useState(index);
 
-    // Parse snap points to pixel values (using SCREEN_HEIGHT, not shared value)
+    // Parse snap points to pixel values
     const snapPoints = useMemo(() => {
       return snapPointsProp.map((sp) => parseSnapPoint(sp, SCREEN_HEIGHT));
     }, [snapPointsProp]);
@@ -144,148 +130,142 @@ const CustomBottomSheet = forwardRef<
       return snapPoints.map((height) => SCREEN_HEIGHT - height);
     }, [snapPoints]);
 
-    // Closed position (fully hidden below screen)
+    // Closed position
     const closedPosition = SCREEN_HEIGHT;
 
-    // Initial position
-    const initialPosition = animateOnMount
-      ? closedPosition
-      : (snapPositions[index] ?? closedPosition);
+    // Animated value for translateY
+    const translateY = useRef(
+      new Animated.Value(
+        animateOnMount ? closedPosition : (snapPositions[index] ?? closedPosition)
+      )
+    ).current;
 
-    // Current position (translateY)
-    const translateY = useSharedValue(initialPosition);
+    // Store current position for pan gesture
+    const lastPosition = useRef(
+      animateOnMount ? closedPosition : (snapPositions[index] ?? closedPosition)
+    );
 
-    // Track current snap index
-    const currentIndex = useSharedValue(index);
+    // Animate to position
+    const animateToPosition = (position: number, callback?: () => void) => {
+      Animated.spring(translateY, {
+        toValue: position,
+        damping: 50,
+        stiffness: 500,
+        mass: 1,
+        useNativeDriver: true,
+      }).start(() => {
+        lastPosition.current = position;
+        callback?.();
+      });
+    };
 
-    // Store gesture start position
-    const startY = useSharedValue(0);
+    // Find nearest snap point
+    const findNearestSnapIndex = (currentY: number, velocity: number): number => {
+      let nearestIndex = 0;
+      let minDistance = Math.abs(currentY - snapPositions[0]);
 
-    // Store snap positions in shared value for worklet access
-    const snapPositionsShared = useSharedValue(snapPositions);
+      for (let i = 1; i < snapPositions.length; i++) {
+        const distance = Math.abs(currentY - snapPositions[i]);
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestIndex = i;
+        }
+      }
 
-    // Update shared snap positions when they change
-    useEffect(() => {
-      snapPositionsShared.value = snapPositions;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [snapPositions]);
+      // Adjust based on velocity
+      if (Math.abs(velocity) > 0.5) {
+        if (velocity > 0) {
+          nearestIndex = Math.max(0, nearestIndex - 1);
+        } else {
+          nearestIndex = Math.min(snapPositions.length - 1, nearestIndex + 1);
+        }
+      }
+
+      return nearestIndex;
+    };
+
+    // Pan responder for handle
+    const panResponder = useRef(
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderGrant: () => {
+          if (keyboardBlurBehavior === "restore") {
+            Keyboard.dismiss();
+          }
+        },
+        onPanResponderMove: (_, gestureState) => {
+          const newY = lastPosition.current + gestureState.dy;
+          const minY = snapPositions[snapPositions.length - 1];
+          const maxY = enablePanDownToClose ? closedPosition : snapPositions[0];
+          const clampedY = Math.max(minY, Math.min(maxY, newY));
+          translateY.setValue(clampedY);
+        },
+        onPanResponderRelease: (_, gestureState) => {
+          const currentY = lastPosition.current + gestureState.dy;
+          const velocity = gestureState.vy;
+
+          // Check if should close
+          if (enablePanDownToClose && velocity > 0.5 && currentY > snapPositions[0]) {
+            animateToPosition(closedPosition, () => {
+              setCurrentSnapIndex(-1);
+              onClose?.();
+            });
+            return;
+          }
+
+          const nearestIndex = findNearestSnapIndex(currentY, velocity);
+          animateToPosition(snapPositions[nearestIndex], () => {
+            setCurrentSnapIndex(nearestIndex);
+            onChange?.(nearestIndex);
+          });
+        },
+      })
+    ).current;
 
     // Animate to initial position on mount
     useEffect(() => {
       if (animateOnMount && snapPositions[index] !== undefined) {
-        translateY.value = withSpring(snapPositions[index], SPRING_CONFIG);
-        currentIndex.value = index;
+        setTimeout(() => {
+          animateToPosition(snapPositions[index], () => {
+            setCurrentSnapIndex(index);
+          });
+        }, 100);
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    // Callbacks for worklet
-    const handleClose = () => {
-      onClose?.();
-    };
-
-    const handleChange = (idx: number) => {
-      onChange?.(idx);
-    };
-
-    const dismissKeyboard = () => {
-      Keyboard.dismiss();
-    };
-
-    // Pan gesture
-    const panGesture = Gesture.Pan()
-      .onStart(() => {
-        startY.value = translateY.value;
-        if (keyboardBlurBehavior === "restore") {
-          runOnJS(dismissKeyboard)();
-        }
-      })
-      .onUpdate((event) => {
-        const positions = snapPositionsShared.value;
-        const newY = startY.value + event.translationY;
-
-        // Limit upward movement to highest snap point
-        const minY = positions[positions.length - 1];
-        const maxY = enablePanDownToClose ? closedPosition : positions[0];
-
-        translateY.value = Math.max(minY, Math.min(maxY, newY));
-      })
-      .onEnd((event) => {
-        const positions = snapPositionsShared.value;
-        const currentY = translateY.value;
-        const velocity = event.velocityY;
-
-        // Find nearest snap point
-        let nearestIndex = 0;
-        let minDistance = Math.abs(currentY - positions[0]);
-
-        for (let i = 1; i < positions.length; i++) {
-          const distance = Math.abs(currentY - positions[i]);
-          if (distance < minDistance) {
-            minDistance = distance;
-            nearestIndex = i;
-          }
-        }
-
-        // Adjust based on velocity
-        if (Math.abs(velocity) > 500) {
-          if (velocity > 0) {
-            // Swiping down - go to smaller snap point (higher Y value)
-            nearestIndex = Math.max(0, nearestIndex - 1);
-          } else {
-            // Swiping up - go to larger snap point (lower Y value)
-            nearestIndex = Math.min(positions.length - 1, nearestIndex + 1);
-          }
-        }
-
-        // Check if should close
-        if (enablePanDownToClose && velocity > 500 && currentY > positions[0]) {
-          translateY.value = withSpring(closedPosition, SPRING_CONFIG);
-          currentIndex.value = -1;
-          runOnJS(handleClose)();
-          return;
-        }
-
-        translateY.value = withSpring(positions[nearestIndex], SPRING_CONFIG);
-        currentIndex.value = nearestIndex;
-        runOnJS(handleChange)(nearestIndex);
-      });
 
     // Imperative handle
     useImperativeHandle(ref, () => ({
       expand: () => {
         const highestSnapPosition = snapPositions[snapPositions.length - 1];
-        translateY.value = withSpring(highestSnapPosition, SPRING_CONFIG);
-        currentIndex.value = snapPositions.length - 1;
-        onChange?.(snapPositions.length - 1);
+        animateToPosition(highestSnapPosition, () => {
+          setCurrentSnapIndex(snapPositions.length - 1);
+          onChange?.(snapPositions.length - 1);
+        });
       },
       close: () => {
-        translateY.value = withSpring(closedPosition, SPRING_CONFIG);
-        currentIndex.value = -1;
-        onClose?.();
+        animateToPosition(closedPosition, () => {
+          setCurrentSnapIndex(-1);
+          onClose?.();
+        });
       },
       snapToIndex: (idx: number) => {
         if (idx >= 0 && idx < snapPositions.length) {
-          translateY.value = withSpring(snapPositions[idx], SPRING_CONFIG);
-          currentIndex.value = idx;
-          onChange?.(idx);
+          animateToPosition(snapPositions[idx], () => {
+            setCurrentSnapIndex(idx);
+            onChange?.(idx);
+          });
         } else if (idx === -1) {
-          translateY.value = withSpring(closedPosition, SPRING_CONFIG);
-          currentIndex.value = -1;
-          onClose?.();
+          animateToPosition(closedPosition, () => {
+            setCurrentSnapIndex(-1);
+            onClose?.();
+          });
         }
       },
       snapToPosition: (position: number) => {
-        translateY.value = withSpring(
-          SCREEN_HEIGHT - position,
-          SPRING_CONFIG
-        );
+        animateToPosition(SCREEN_HEIGHT - position);
       },
-    }));
-
-    // Animated style
-    const animatedStyle = useAnimatedStyle(() => ({
-      transform: [{ translateY: translateY.value }],
     }));
 
     // Context value
@@ -303,7 +283,7 @@ const CustomBottomSheet = forwardRef<
           {/* Backdrop */}
           {BackdropComponent && (
             <BackdropComponent
-              animatedIndex={currentIndex}
+              animatedIndex={currentSnapIndex}
               animatedPosition={translateY}
               style={StyleSheet.absoluteFill}
             />
@@ -315,17 +295,15 @@ const CustomBottomSheet = forwardRef<
               styles.container,
               backgroundStyle,
               style,
-              animatedStyle,
+              { transform: [{ translateY }] },
             ]}
           >
-            {/* Handle - только здесь работает жест свайпа */}
-            <GestureDetector gesture={panGesture}>
-              <Animated.View style={[styles.handleContainer, handleStyle]}>
-                <View style={[styles.handle, handleIndicatorStyle]} />
-              </Animated.View>
-            </GestureDetector>
+            {/* Handle - pan gesture area */}
+            <View {...panResponder.panHandlers} style={[styles.handleContainer, handleStyle]}>
+              <View style={[styles.handle, handleIndicatorStyle]} />
+            </View>
 
-            {/* Content - здесь скролл работает свободно */}
+            {/* Content */}
             {children}
           </Animated.View>
         </View>
@@ -370,8 +348,8 @@ export function CustomBottomSheetFlatList<T>(
 
 // CustomBottomSheetBackdrop
 export type CustomBottomSheetBackdropProps = {
-  animatedIndex: Animated.SharedValue<number>;
-  animatedPosition: Animated.SharedValue<number>;
+  animatedIndex: number;
+  animatedPosition: Animated.Value;
   style?: StyleProp<ViewStyle>;
   appearsOnIndex?: number;
   disappearsOnIndex?: number;
@@ -390,25 +368,19 @@ export const CustomBottomSheetBackdrop: React.FC<
   onPress,
   opacity = 0.5,
 }) => {
-  const animatedStyle = useAnimatedStyle(() => {
-    const isVisible = animatedIndex.value >= appearsOnIndex;
-    return {
-      opacity: withTiming(isVisible ? opacity : 0, { duration: 200 }),
-    };
-  });
-
-  const handlePress = () => {
-    if (pressBehavior === "none") return;
-    onPress?.();
-  };
+  const isVisible = animatedIndex >= appearsOnIndex;
 
   return (
     <Animated.View
-      style={[styles.backdrop, style, animatedStyle]}
-      pointerEvents={pressBehavior === "none" ? "none" : "box-none"}
+      style={[
+        styles.backdrop,
+        style,
+        { opacity: isVisible ? opacity : 0 },
+      ]}
+      pointerEvents={isVisible && pressBehavior !== "none" ? "auto" : "none"}
     >
       {pressBehavior !== "none" && (
-        <Pressable style={StyleSheet.absoluteFill} onPress={handlePress} />
+        <Pressable style={StyleSheet.absoluteFill} onPress={onPress} />
       )}
     </Animated.View>
   );
