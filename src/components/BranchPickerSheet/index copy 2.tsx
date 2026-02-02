@@ -1,4 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import BottomSheet, {
+  BottomSheetFlatList,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,11 +24,6 @@ import {
 import ImageView from "react-native-image-viewing";
 import { useTheme } from "../../hooks/useTheme";
 import BranchScheduleBlock from "../BranchScheduleBlock";
-import CustomBottomSheet, {
-  CustomBottomSheetFlatList,
-  CustomBottomSheetRef,
-  CustomBottomSheetView,
-} from "../CustomBottomSheet";
 
 const ORANGE = "#F58220";
 
@@ -79,7 +78,7 @@ export default function BranchPickerSheet({
   const { t } = useTranslation();
   const { colors, theme } = useTheme();
   const s = makeStyles(colors);
-  const sheetRef = useRef<CustomBottomSheetRef>(null);
+  const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["35%", "85%"], []);
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"nearby" | "all">("nearby");
@@ -311,7 +310,7 @@ export default function BranchPickerSheet({
   };
   const [showAllPhotos, setShowAllPhotos] = useState(false);
   return (
-    <CustomBottomSheet
+    <BottomSheet
       ref={sheetRef}
       index={1}
       snapPoints={snapPoints}
@@ -319,7 +318,7 @@ export default function BranchPickerSheet({
       handleIndicatorStyle={s.handle}
       backgroundStyle={s.sheetBg}
     >
-      <CustomBottomSheetView style={s.content}>
+      <BottomSheetView style={s.content}>
         {!selectedBranch ? (
           <>
             <Text style={s.sheetTitle}>
@@ -401,7 +400,7 @@ export default function BranchPickerSheet({
                 </Text>
               </View>
             ) : (
-              <CustomBottomSheetFlatList
+              <BottomSheetFlatList
                 data={dataToShow}
                 keyExtractor={(b) => String(b.id)}
                 renderItem={renderBranchItem}
@@ -622,8 +621,8 @@ export default function BranchPickerSheet({
             )}
           </View>
         )}
-      </CustomBottomSheetView>
-    </CustomBottomSheet>
+      </BottomSheetView>
+    </BottomSheet>
   );
 }
 

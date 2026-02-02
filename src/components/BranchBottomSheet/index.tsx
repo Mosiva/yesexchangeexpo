@@ -1,17 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
-import BottomSheet, {
-    BottomSheetBackdrop,
-    BottomSheetView,
-} from "@gorhom/bottom-sheet";
 import React, { useMemo, useRef, useState } from "react";
 import {
-    FlatList,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
+import CustomBottomSheet, {
+  CustomBottomSheetBackdrop,
+  CustomBottomSheetRef,
+  CustomBottomSheetView,
+} from "../CustomBottomSheet";
 
 const ORANGE = "#F58220";
 const TEXT = "#111827";
@@ -55,7 +56,7 @@ export default function BranchBottomSheet({
 }: {
   onSelectBranch: (branch: any) => void;
 }) {
-  const sheetRef = useRef<BottomSheet>(null);
+  const sheetRef = useRef<CustomBottomSheetRef>(null);
   const snapPoints = useMemo(() => ["35%", "85%"], []);
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"nearby" | "all">("nearby");
@@ -103,7 +104,7 @@ export default function BranchBottomSheet({
   );
 
   return (
-    <BottomSheet
+    <CustomBottomSheet
       ref={sheetRef}
       index={1}
       snapPoints={snapPoints}
@@ -113,7 +114,7 @@ export default function BranchBottomSheet({
       handleIndicatorStyle={styles.handleIndicator}
       backgroundStyle={styles.sheetBg}
       backdropComponent={(p) => (
-        <BottomSheetBackdrop
+        <CustomBottomSheetBackdrop
           {...p}
           appearsOnIndex={1}
           disappearsOnIndex={-1}
@@ -122,7 +123,7 @@ export default function BranchBottomSheet({
         />
       )}
     >
-      <BottomSheetView style={styles.sheetContent}>
+      <CustomBottomSheetView style={styles.sheetContent}>
         <Text style={styles.sheetTitle}>
           Выберите офис, в который хотите{"\n"}оставить заявку
         </Text>
@@ -173,8 +174,8 @@ export default function BranchBottomSheet({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         />
-      </BottomSheetView>
-    </BottomSheet>
+      </CustomBottomSheetView>
+    </CustomBottomSheet>
   );
 }
 

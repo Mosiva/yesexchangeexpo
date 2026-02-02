@@ -1,8 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import BottomSheet, {
-  BottomSheetFlatList,
-  BottomSheetView,
-} from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -24,6 +20,11 @@ import {
 import ImageView from "react-native-image-viewing";
 import { useTheme } from "../../hooks/useTheme";
 import BranchScheduleBlock from "../BranchScheduleBlock";
+import CustomBottomSheet, {
+  CustomBottomSheetFlatList,
+  CustomBottomSheetRef,
+  CustomBottomSheetView,
+} from "../CustomBottomSheet";
 
 const ORANGE = "#F58220";
 
@@ -78,7 +79,7 @@ export default function BranchPickerSheet({
   const { t } = useTranslation();
   const { colors, theme } = useTheme();
   const s = makeStyles(colors);
-  const sheetRef = useRef<BottomSheet>(null);
+  const sheetRef = useRef<CustomBottomSheetRef>(null);
   const snapPoints = useMemo(() => ["35%", "85%"], []);
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"nearby" | "all">("nearby");
@@ -111,7 +112,7 @@ export default function BranchPickerSheet({
 
       try {
         str = decodeURIComponent(escape(str));
-      } catch {}
+      } catch { }
 
       // ✅ Нормализация круглосуточно
       if (/круглосуточно/i.test(str)) {
@@ -144,9 +145,8 @@ export default function BranchPickerSheet({
 
     // ✅ 1. Если все дни одинаковые
     if (allDays.every((v) => v === allDays[0])) {
-      shortSchedule = `${t("branchPickerSheet.mondayToSunday", "пн–вс")}: ${
-        allDays[0]
-      }`;
+      shortSchedule = `${t("branchPickerSheet.mondayToSunday", "пн–вс")}: ${allDays[0]
+        }`;
     }
     // ✅ 2. Если пн–сб одинаковые, а вс другое
     else if (
@@ -155,26 +155,23 @@ export default function BranchPickerSheet({
     ) {
       const sunday = fullSchedule.Воскресенье;
       if (/выход/i.test(sunday)) {
-        shortSchedule = `${t("branchPickerSheet.mondayToSaturday", "пн–сб")}: ${
-          allDays[0]
-        }, ${t("branchPickerSheet.sunday", "вс")}: ${t(
-          "branchPickerSheet.closed",
-          "выходной"
-        )}`;
+        shortSchedule = `${t("branchPickerSheet.mondayToSaturday", "пн–сб")}: ${allDays[0]
+          }, ${t("branchPickerSheet.sunday", "вс")}: ${t(
+            "branchPickerSheet.closed",
+            "выходной"
+          )}`;
       } else {
-        shortSchedule = `${t("branchPickerSheet.mondayToSaturday", "пн–сб")}: ${
-          allDays[0]
-        }, ${t("branchPickerSheet.sunday", "вс")}: ${sunday}`;
+        shortSchedule = `${t("branchPickerSheet.mondayToSaturday", "пн–сб")}: ${allDays[0]
+          }, ${t("branchPickerSheet.sunday", "вс")}: ${sunday}`;
       }
     }
     // ✅ 3. Иначе — fallback
     else {
-      shortSchedule = `${t("branchPickerSheet.mondayToFriday", "пн–пт")}: ${
-        fullSchedule.Понедельник
-      }, ${t("branchPickerSheet.saturday", "сб")}: ${fullSchedule.Суббота}, ${t(
-        "branchPickerSheet.sunday",
-        "вс"
-      )}: ${fullSchedule.Воскресенье}`;
+      shortSchedule = `${t("branchPickerSheet.mondayToFriday", "пн–пт")}: ${fullSchedule.Понедельник
+        }, ${t("branchPickerSheet.saturday", "сб")}: ${fullSchedule.Суббота}, ${t(
+          "branchPickerSheet.sunday",
+          "вс"
+        )}: ${fullSchedule.Воскресенье}`;
     }
 
     return (
@@ -201,8 +198,8 @@ export default function BranchPickerSheet({
           <Text style={s.itemTitle}>
             {safeDecode(
               item.city ??
-                item.title ??
-                t("branchPickerSheet.noName", "Без названия")
+              item.title ??
+              t("branchPickerSheet.noName", "Без названия")
             )}
           </Text>
           <Text style={s.itemAddress} numberOfLines={1}>
@@ -310,7 +307,7 @@ export default function BranchPickerSheet({
   };
   const [showAllPhotos, setShowAllPhotos] = useState(false);
   return (
-    <BottomSheet
+    <CustomBottomSheet
       ref={sheetRef}
       index={1}
       snapPoints={snapPoints}
@@ -318,7 +315,7 @@ export default function BranchPickerSheet({
       handleIndicatorStyle={s.handle}
       backgroundStyle={s.sheetBg}
     >
-      <BottomSheetView style={s.content}>
+      <CustomBottomSheetView style={s.content}>
         {!selectedBranch ? (
           <>
             <Text style={s.sheetTitle}>
@@ -390,17 +387,17 @@ export default function BranchPickerSheet({
                 >
                   {tab === "nearby"
                     ? t(
-                        "branchPickerSheet.noNearbyBranches",
-                        "Нет филиалов поблизости"
-                      )
+                      "branchPickerSheet.noNearbyBranches",
+                      "Нет филиалов поблизости"
+                    )
                     : t(
-                        "branchPickerSheet.noBranchesFound",
-                        "Филиалы не найдены"
-                      )}
+                      "branchPickerSheet.noBranchesFound",
+                      "Филиалы не найдены"
+                    )}
                 </Text>
               </View>
             ) : (
-              <BottomSheetFlatList
+              <CustomBottomSheetFlatList
                 data={dataToShow}
                 keyExtractor={(b) => String(b.id)}
                 renderItem={renderBranchItem}
@@ -414,15 +411,19 @@ export default function BranchPickerSheet({
             )}
           </>
         ) : (
-          <View style={{ flex: 1, marginBottom: 30 }}>
+          <ScrollView 
+            style={{ flex: 1 }} 
+            contentContainerStyle={{ paddingBottom: 30 }}
+            showsVerticalScrollIndicator={false}
+          >
             {/* --- ДЕТАЛИ ФИЛИАЛА --- */}
             <View style={s.header}>
               <View style={{ flex: 1 }}>
                 <Text style={s.title}>
                   {safeDecode(
                     selectedBranch.city ??
-                      selectedBranch.title ??
-                      t("branchPickerSheet.branch", "Филиал")
+                    selectedBranch.title ??
+                    t("branchPickerSheet.branch", "Филиал")
                   )}
                 </Text>
                 <Text style={s.address}>
@@ -612,17 +613,17 @@ export default function BranchPickerSheet({
                 <Text style={s.ctaText}>
                   {isRateLocked
                     ? t(
-                        "branchPickerSheet.bookByRate",
-                        "Забронировать по курсу"
-                      )
+                      "branchPickerSheet.bookByRate",
+                      "Забронировать по курсу"
+                    )
                     : t("branchPickerSheet.bookHere", "Забронировать тут")}
                 </Text>
               </Pressable>
             )}
-          </View>
+          </ScrollView>
         )}
-      </BottomSheetView>
-    </BottomSheet>
+      </CustomBottomSheetView>
+    </CustomBottomSheet>
   );
 }
 
@@ -713,7 +714,7 @@ const makeStyles = (colors: any) =>
     scheduleRow: { flexDirection: "row", justifyContent: "space-between" },
     day: { fontWeight: "700", color: colors.text },
     hours: { color: colors.text },
-    row: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
+    row: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 5 },
     itemTime: { color: colors.subtext },
     shareRow: {
       flexDirection: "row",

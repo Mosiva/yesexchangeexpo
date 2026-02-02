@@ -1,10 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import React, { useEffect, useMemo, useRef } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import CustomBottomSheet, {
-    CustomBottomSheetRef,
-    CustomBottomSheetView,
-} from "../CustomBottomSheet";
 
 const ORANGE = "#F58220";
 const TEXT = "#111827";
@@ -27,7 +24,7 @@ export default function BranchDetailsSheet({
   branch,
   onClose,
 }: BranchDetailsProps) {
-  const sheetRef = useRef<CustomBottomSheetRef>(null);
+  const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["70%"], []);
 
   useEffect(() => {
@@ -41,7 +38,7 @@ export default function BranchDetailsSheet({
   if (!branch) return null;
 
   return (
-    <CustomBottomSheet
+    <BottomSheet
       ref={sheetRef}
       snapPoints={snapPoints}
       enablePanDownToClose={true}
@@ -49,7 +46,7 @@ export default function BranchDetailsSheet({
       handleIndicatorStyle={styles.handle}
       backgroundStyle={styles.sheetBg}
     >
-      <CustomBottomSheetView style={styles.container}>
+      <BottomSheetView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
@@ -96,8 +93,8 @@ export default function BranchDetailsSheet({
         <Pressable style={styles.cta}>
           <Text style={styles.ctaText}>Забронировать тут</Text>
         </Pressable>
-      </CustomBottomSheetView>
-    </CustomBottomSheet>
+      </BottomSheetView>
+    </BottomSheet>
   );
 }
 
