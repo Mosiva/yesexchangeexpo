@@ -7,7 +7,7 @@ export default {
     icon: "./assets/images/iconorange.png",
     scheme: "yesexchangeexpo",
     userInterfaceStyle: "automatic",
-    newArchEnabled: true,
+    newArchEnabled: false,
 
     ios: {
       supportsTablet: true,
