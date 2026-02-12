@@ -80,7 +80,7 @@ export default function BranchPickerSheet({
   const { colors, theme } = useTheme();
   const s = makeStyles(colors);
   const sheetRef = useRef<CustomBottomSheetRef>(null);
-  const snapPoints = useMemo(() => ["50%", "86%"], []);
+  const snapPoints = useMemo(() => ["46%", "86%"], []);
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"nearby" | "all">("nearby");
 
