@@ -53,6 +53,7 @@ export default {
     plugins: [
       "expo-router",
       "expo-notifications",
+      "@react-native-firebase/app",
       [
         "expo-splash-screen",
         {
