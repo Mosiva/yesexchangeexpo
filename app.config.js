@@ -7,8 +7,7 @@ export default {
     icon: "./assets/images/iconorange.png",
     scheme: "yesexchangeexpo",
     userInterfaceStyle: "automatic",
-    newArchEnabled: false,
-
+    newArchEnabled: true,
     ios: {
       supportsTablet: true,
       buildNumber: "34",
@@ -74,7 +73,7 @@ export default {
         "expo-build-properties",
         {
           ios: {
-            useFrameworks: "static"
+            useFrameworks: "static",
           }
         }
       ]
