@@ -12,17 +12,8 @@ import store from "store";
 import useCachedResources from "../hooks/useCachedResources";
 import { ThemeProvider } from "../providers/ThemeProvider";
 
-import { useEffect } from "react";
-import { initFirebase, logAnalyticsEvent } from "../lib/firebase";
-
 export default function RootLayout() {
   const isReady = useCachedResources();
-
-  useEffect(() => {
-    initFirebase().then(() => {
-      logAnalyticsEvent("app_open");
-    });
-  }, []);
 
   if (!isReady) {
     return null;
