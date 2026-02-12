@@ -70,6 +70,14 @@ export default {
             "Приложению нужен доступ к вашей геолокации для определения ближайших филиалов.",
         },
       ],
+      [
+        "expo-build-properties",
+        {
+          ios: {
+            useFrameworks: "static"
+          }
+        }
+      ]
     ],
 
     experiments: {
