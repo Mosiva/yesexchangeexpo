@@ -27,6 +27,9 @@ export default function NewsDetail() {
     refetch,
   } = useNewsByIdQuery({ id: numericId }, { skip: !numericId });
 
+  console.log("id:", id);
+  console.log("numericId:", numericId);
+
   const { theme, colors } = useTheme();
   const isLight = theme === "light";
 

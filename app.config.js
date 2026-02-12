@@ -11,8 +11,9 @@ export default {
 
     ios: {
       supportsTablet: true,
-      buildNumber: "33",
+      buildNumber: "34",
       bundleIdentifier: "com.mosiva.yesexchangeexpo",
+      googleServicesFile: process.env.GOOGLE_SERVICES_INFO_PLIST,
       infoPlist: {
         NSLocationWhenInUseUsageDescription:
           "Ваше местоположение нужно, чтобы показать ближайшие филиалы обмена валют.",
@@ -23,7 +24,7 @@ export default {
 
     android: {
       package: "com.mosiva.yesexchangeexpo",
-      versionCode: 33,
+      versionCode: 34,
       googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
