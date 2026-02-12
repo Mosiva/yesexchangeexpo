@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -15,6 +15,7 @@ import {
 import NewsMainCardList from "../../../components/NewsMainCardList.tsx";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { useTheme } from "../../../hooks/useTheme";
+import { logAnalyticsEvent } from "../../../lib/firebase";
 import { useNewsQuery } from "../../../services/yesExchange";
 
 // ---------- Tabs ----------
@@ -41,20 +42,24 @@ export default function NewsScreen() {
 
   const selectedSource = SOURCE_MAP[active];
 
+  useEffect(() => {
+    logAnalyticsEvent("view_news_screen");
+  }, []);
+
   // ---------- QUERY PARAMS ----------
   const queryParams =
     debouncedQuery.trim().length > 0
       ? {
-          limit: 100,
-          search: debouncedQuery.trim(),
-          searchBy: ["title"] as ("title" | "content")[],
-        }
+        limit: 100,
+        search: debouncedQuery.trim(),
+        searchBy: ["title"] as ("title" | "content")[],
+      }
       : selectedSource
-      ? {
+        ? {
           limit: 100,
           "filter.source": [selectedSource],
         }
-      : { limit: 100 };
+        : { limit: 100 };
 
   // ---------- API ----------
   const {
@@ -138,7 +143,10 @@ export default function NewsScreen() {
           return (
             <TouchableOpacity
               key={t}
-              onPress={() => setActive(t)}
+              onPress={() => {
+                setActive(t);
+                logAnalyticsEvent("change_news_tab", { tab: t });
+              }}
               style={[styles.tab, focused && styles.tabActive]}
             >
               <Text style={[styles.tabText, focused && styles.tabTextActive]}>
