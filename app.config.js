@@ -53,6 +53,7 @@ export default {
     plugins: [
       "expo-router",
       "expo-notifications",
+      "@react-native-firebase/app",
       [
         "expo-splash-screen",
         {
@@ -69,6 +70,15 @@ export default {
             "Приложению нужен доступ к вашей геолокации для определения ближайших филиалов.",
         },
       ],
+      [
+        "expo-build-properties",
+        {
+          ios: {
+            useFrameworks: "static",
+            buildReactNativeFromSource: true
+          }
+        }
+      ]
     ],
 
     experiments: {
