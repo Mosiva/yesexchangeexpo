@@ -10,7 +10,7 @@ export default {
     newArchEnabled: true,
     ios: {
       supportsTablet: true,
-      buildNumber: "35",
+      buildNumber: "36",
       bundleIdentifier: "com.mosiva.yesexchangeexpo",
       googleServicesFile: process.env.GOOGLE_SERVICES_INFO_PLIST,
       infoPlist: {
@@ -23,7 +23,7 @@ export default {
 
     android: {
       package: "com.mosiva.yesexchangeexpo",
-      versionCode: 35,
+      versionCode: 36,
       googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
@@ -37,11 +37,12 @@ export default {
         },
       },
       permissions: [
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
       ],
+      blockedPermissions: [
+        "com.google.android.gms.permission.AD_ID"
+      ]
     },
 
     web: {
