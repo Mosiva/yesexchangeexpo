@@ -2,7 +2,7 @@ export default {
   expo: {
     name: "Yes Exchange",
     slug: "yesexchangeexpo",
-    version: "1.0.4",
+    version: "1.0.5",
     orientation: "portrait",
     icon: "./assets/images/iconorange.png",
     scheme: "yesexchangeexpo",
@@ -10,7 +10,7 @@ export default {
     newArchEnabled: true,
     ios: {
       supportsTablet: true,
-      buildNumber: "36",
+      buildNumber: "37",
       bundleIdentifier: "com.mosiva.yesexchangeexpo",
       googleServicesFile: process.env.GOOGLE_SERVICES_INFO_PLIST,
       infoPlist: {
@@ -23,7 +23,7 @@ export default {
 
     android: {
       package: "com.mosiva.yesexchangeexpo",
-      versionCode: 36,
+      versionCode: 37,
       googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",

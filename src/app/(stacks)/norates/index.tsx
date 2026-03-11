@@ -253,15 +253,6 @@ export default function ReserveNoRateScreen() {
         return;
       }
     }
-    // ✅ Найдём курс тенге (KZT)
-    const kztRate = currencies.find((c) => c.code === "KZT");
-    if (!kztRate) {
-      Alert.alert(
-        t("norates.error", "Ошибка"),
-        t("norates.kztRateNotFound", "Не найден курс KZT.")
-      );
-      return;
-    }
 
     const payload = {
       branchId: Number(branchIdParam),

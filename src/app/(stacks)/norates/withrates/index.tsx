@@ -44,8 +44,8 @@ const BORDER = "#ECECEC";
 const fmt = (n: number) =>
   isFinite(n)
     ? n
-        .toLocaleString("ru-RU", { maximumFractionDigits: 0 })
-        .replace(/\u00A0/g, " ")
+      .toLocaleString("ru-RU", { maximumFractionDigits: 0 })
+      .replace(/\u00A0/g, " ")
     : "";
 
 const parse = (s: string) =>
@@ -337,15 +337,7 @@ export default function ReserveWithRateScreen() {
       );
       return;
     }
-    // ✅ Найдём курс тенге (KZT)
-    const kztRate = currencies.find((c) => c.code === "KZT");
-    if (!kztRate) {
-      Alert.alert(
-        t("norates.withrates.error", "Ошибка"),
-        t("norates.withrates.kztRateNotFound", "Не найден курс KZT.")
-      );
-      return;
-    }
+
     const payload = {
       branchId: Number(branchIdParam),
       exchangeRateId: to.id, // выбранная валюта
@@ -548,19 +540,19 @@ export default function ReserveWithRateScreen() {
               <Text style={styles.discountLabel}>
                 {mode === "buy"
                   ? `${t(
-                      "norates.withrates.withDiscount",
-                      "С"
-                    )} ${finalPercent}% ${t(
-                      "norates.withrates.discount",
-                      "скидкой"
-                    )}:`
+                    "norates.withrates.withDiscount",
+                    "С"
+                  )} ${finalPercent}% ${t(
+                    "norates.withrates.discount",
+                    "скидкой"
+                  )}:`
                   : `${t(
-                      "norates.withrates.withPremium",
-                      "С"
-                    )} ${finalPercent}% ${t(
-                      "norates.withrates.premium",
-                      "наценкой"
-                    )}:`}
+                    "norates.withrates.withPremium",
+                    "С"
+                  )} ${finalPercent}% ${t(
+                    "norates.withrates.premium",
+                    "наценкой"
+                  )}:`}
               </Text>
 
               <Text style={styles.discountValue}>
@@ -782,8 +774,8 @@ function FXRow({
             const formatted =
               isFinite(num) && cleaned !== ""
                 ? num
-                    .toLocaleString("ru-RU", { maximumFractionDigits: 2 })
-                    .replace(/\u00A0/g, " ")
+                  .toLocaleString("ru-RU", { maximumFractionDigits: 2 })
+                  .replace(/\u00A0/g, " ")
                 : cleaned;
             onChangeText(formatted);
           }}
