@@ -75,7 +75,7 @@ export default function NearbyScreen() {
 
   const branches = useMemo(
     () => (Array.isArray(rawBranches) ? rawBranches : []),
-    [rawBranches]
+    [rawBranches],
   );
 
   /** 🔄 Рефетч при фокусе */
@@ -86,14 +86,14 @@ export default function NearbyScreen() {
   useFocusEffect(
     useCallback(() => {
       refetchAllData();
-    }, [refetchAllData])
+    }, [refetchAllData]),
   );
 
   const computeDistances = useCallback(() => {
     // ⛔ нет геолокации — просто показываем все филиалы
     if (!location && branches.length) {
       setBranchesWithDistance(
-        branches.map((b) => ({ ...b, distanceKm: null }))
+        branches.map((b) => ({ ...b, distanceKm: null })),
       );
       return;
     }
@@ -113,14 +113,14 @@ export default function NearbyScreen() {
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
         },
-        { latitude: lat, longitude: lng }
+        { latitude: lat, longitude: lng },
       );
 
       return { ...branch, distanceKm: distanceMeters / 1000 };
     });
 
     const sorted = computed.sort(
-      (a, b) => (a.distanceKm ?? 99999) - (b.distanceKm ?? 99999)
+      (a, b) => (a.distanceKm ?? 99999) - (b.distanceKm ?? 99999),
     );
 
     setBranchesWithDistance(sorted);
@@ -134,9 +134,9 @@ export default function NearbyScreen() {
   const nearbyBranches = useMemo(
     () =>
       branchesWithDistance.filter(
-        (b) => b.distanceKm !== null && b.distanceKm <= 30
+        (b) => b.distanceKm !== null && b.distanceKm <= 30,
       ),
-    [branchesWithDistance]
+    [branchesWithDistance],
   );
 
   /** 🎯 Анимация */
@@ -172,7 +172,7 @@ export default function NearbyScreen() {
           latitudeDelta: 0.03,
           longitudeDelta: 0.03,
         },
-        500
+        500,
       );
     }
   };
@@ -197,8 +197,8 @@ export default function NearbyScreen() {
                 {loadingLocation
                   ? t("nearby.loading", "Определяем...")
                   : permissionDenied
-                  ? t("nearby.permissionDenied", "Доступ запрещён")
-                  : address || t("nearby.noAddress", "Адрес не определён")}
+                    ? t("nearby.permissionDenied", "Доступ запрещён")
+                    : address || t("nearby.noAddress", "Адрес не определён")}
               </Text>
             </View>
           </View>
@@ -251,6 +251,7 @@ export default function NearbyScreen() {
               title={branch.city}
               description={branch.address}
               onPress={() => handleSelectBranch(branch)}
+              tracksViewChanges={false}
             >
               <Animated.View
                 style={{
@@ -305,7 +306,7 @@ export default function NearbyScreen() {
           <Text style={s.permissionDesc}>
             {t(
               "nearby.locationPermissionDescription",
-              "Разрешите доступ к геолокации в настройках, чтобы увидеть ближайшие филиалы"
+              "Разрешите доступ к геолокации в настройках, чтобы увидеть ближайшие филиалы",
             )}
           </Text>
 

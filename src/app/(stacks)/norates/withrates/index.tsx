@@ -29,6 +29,7 @@ import CurrencyFlag from "../../../../components/CurrencyFlag";
 import { useDiscountCalculator } from "../../../../hooks/useDiscountCalculator";
 import { useTheme } from "../../../../hooks/useTheme";
 import { useAuth } from "../../../../providers/Auth";
+import { logBookingCreated } from "../../../../services/analytics";
 import {
   useCreateBookingMutation,
   useCreateGuestBookingMutation,
@@ -356,8 +357,18 @@ export default function ReserveWithRateScreen() {
       } else {
         response = await doCreateBooking(payload).unwrap();
       }
-      const bookingId = (response as BookingDto).id;
-      const bookingBitrixId = (response as BookingDto).number;
+      const booking = response as BookingDto;
+      const bookingId = booking.id;
+      const bookingBitrixId = booking.number;
+
+      await logBookingCreated({
+        booking,
+        mode,
+        foreignCurrencyCode: to.code,
+        foreignAmount: computed.to,
+        kztAmount: computed.from,
+      });
+
       const displayAmount = fmt(toAmount);
       const displayCurrency = to.code;
 
