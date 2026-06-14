@@ -1,10 +1,10 @@
 # CLAUDE.md
 
-## Проект
+## Project
 
 Expo Router · React Native 0.81 · TypeScript strict · Expo SDK 54
 
-## Запуск
+## Run
 
 ```bash
 npm run start      # Metro bundler
@@ -13,89 +13,89 @@ npm run ios        # iOS
 npm run lint       # ESLint
 ```
 
-## Структура
+## Structure
 
-- Роуты: `src/app/` — группы `(auth)`, `(tabs)`, `(stacks)`
-- Компоненты: `src/components/ComponentName/index.tsx`
+- Routes: `src/app/` — groups `(auth)`, `(tabs)`, `(stacks)`
+- Components: `src/components/ComponentName/index.tsx`
 - API: `src/api.tsx` (base) + `src/services/` (endpoints)
-- Стейт: RTK Query → серверный, Zustand → UI, Context → Auth/Theme
-- Типы: `src/types/index.ts` (app) + `src/types/api.ts` (DTO)
+- State: RTK Query → server, Zustand → UI, Context → Auth/Theme
+- Types: `src/types/index.ts` (app) + `src/types/api.ts` (DTO)
 - i18n: `src/local/translations/` → en / ru / kz
 
-## Алиасы импортов
+## Import aliases
 
 `components`, `store`, `utils`, `api`, `providers`, `services`
 
-## Главные правила
+## Core rules
 
-- Цвета только из `useTheme()` — никаких хардкодных значений
-- Стили через `StyleSheet.create` + `makeStyles(colors)`
-- Строки через `useTranslation()` → добавлять в en + ru + kz
-- Header конфиг в `_layout.tsx`, не в экране
-- Провайдеры только в `src/app/_layout.tsx`
-- Серверный стейт — RTK Query, не Zustand
-- Не уверен в API библиотеки — сверься через context7, не пиши по памяти
-
----
-
-## Два слоя: процесс и знание проекта
-
-Работа делится на два независимых слоя. Они дополняют друг друга, не заменяют.
-
-**Слой 1 — ПРОЦЕСС (как работать).** Ведёт плагин **superpowers**.
-Отвечает за дисциплину: прояснить → спроектировать → план → код → тесты → self-review.
-Активируется сам в начале сессии — вручную вызывать не нужно.
-
-**Слой 2 — ЗНАНИЕ ПРОЕКТА (что и по каким правилам строить).** Ведут личные Skills.
-Отвечают за правила именно этого проекта: тема, i18n, RTK Query, структура папок.
-superpowers их НЕ знает — это знание живёт только в Skills и в этом файле.
+- Colors only from `useTheme()` — no hardcoded values
+- Styles via `StyleSheet.create` + `makeStyles(colors)`
+- Strings via `useTranslation()` → add to en + ru + kz
+- Header config in `_layout.tsx`, not in the screen
+- Providers only in `src/app/_layout.tsx`
+- Server state → RTK Query, not Zustand
+- Unsure about a library's API — verify via context7, don't write from memory
 
 ---
 
-## Установленные плагины
+## Two layers: process vs project knowledge
 
-**MCP-серверы (дают tools):**
+Work splits into two independent layers. They complement each other, they don't replace each other.
 
-- **context7** — актуальная документация библиотек. Используй перед кодом с незнакомым/обновлённым API (RTK Query, Expo Router).
-- **figma** — чтение дизайнов по URL/node-id. Движок для skill `/ui-from-figma`.
-- **codegraph** — граф кодовой базы: связи между файлами, импортами, функциями. Используй перед рефактором/изменением — найти где используется компонент/DTO и что сломается.
+**Layer 1 — PROCESS (how to work).** Driven by the **superpowers** plugin.
+Owns discipline: clarify → design → plan → code → test → self-review.
+Auto-activates at the start of a session — no need to invoke it manually.
 
-**Skills-плагин (даёт скиллы, не MCP-tools):**
-
-- **superpowers** — движок процесса. Навязывает план → тесты → ревью. Авто-активируется при разработке фичи. Покрывает тестирование и проверку качества целиком (отдельного skill для тестов нет).
-
----
-
-## Личные Skills (знание проекта)
-
-- `/ui-from-figma` — создание UI из Figma по правилам проекта (тема, i18n, структура). Использует figma MCP.
-- `/backend-integration` — подключение API через RTK Query `injectEndpoints`. Использует context7 для проверки сигнатур.
-- `/research-docs` — исследование архитектуры и документации проекта.
+**Layer 2 — PROJECT KNOWLEDGE (what to build and by which rules).** Driven by personal Skills.
+Owns the rules of this specific project: theme, i18n, RTK Query, folder structure.
+superpowers does NOT know these — this knowledge lives only in the Skills and in this file.
 
 ---
 
-## Кто что делает (наглядно)
+## Installed plugins
 
-| Задача                                                | Кто ведёт                           |
-| ----------------------------------------------------- | ----------------------------------- |
-| Спланировать перед кодом                              | superpowers                         |
-| Написать тесты, self-review                           | superpowers                         |
-| Цвета из `useTheme()`, стили `makeStyles`             | `/ui-from-figma`                    |
-| Строки в en/ru/kz через `useTranslation()`            | `/ui-from-figma`                    |
-| Читать дизайн из Figma                                | figma MCP (внутри `/ui-from-figma`) |
-| Добавить RTK Query endpoint                           | `/backend-integration`              |
-| Проверить API библиотеки                              | context7                            |
-| Найти где используется компонент/DTO перед изменением | codegraph (точные связи)            |
-| Разобраться в архитектуре/правилах проекта            | `/research-docs` (обзор + контекст) |
+**MCP servers (provide tools):**
+
+- **context7** — up-to-date library docs. Use before writing code against an unfamiliar/updated API (RTK Query, Expo Router).
+- **figma** — read designs by URL/node-id. Engine for the `/ui-from-figma` skill.
+- **codegraph** — codebase graph: relationships between files, imports, functions. Use before a refactor/change — find where a component/DTO is used and what will break.
+
+**Skills plugin (provides skills, not MCP tools):**
+
+- **superpowers** — process engine. Enforces plan → tests → review. Auto-activates during feature development. Covers testing and quality verification entirely (no separate skill for tests).
 
 ---
 
-## Типичный флоу фичи
+## Personal Skills (project knowledge)
 
-1. Описываешь задачу → **superpowers** сам начинает с вопросов и плана
-2. UI → `/ui-from-figma` (подставляет правила проекта в код)
-3. API → `/backend-integration` (RTK Query endpoint + типы)
-4. Тесты и ревью → ведёт **superpowers** на этапе verify
+- `/ui-from-figma` — build UI from Figma following project rules (theme, i18n, structure). Uses the figma MCP.
+- `/backend-integration` — connect API via RTK Query `injectEndpoints`. Uses context7 to verify signatures.
+- `/research-docs` — research the project's architecture and documentation.
 
-Если задача чисто визуальная (новый экран из Figma) и superpowers тянет в TDD —
-сначала UI через `/ui-from-figma`, тесты добавляются на этапе verify.
+---
+
+## Who does what (at a glance)
+
+| Task                                                  | Owner                                 |
+| ----------------------------------------------------- | ------------------------------------- |
+| Plan before coding                                    | superpowers                           |
+| Write tests, self-review                              | superpowers                           |
+| Colors from `useTheme()`, styles via `makeStyles`     | `/ui-from-figma`                      |
+| Strings in en/ru/kz via `useTranslation()`            | `/ui-from-figma`                      |
+| Read designs from Figma                               | figma MCP (inside `/ui-from-figma`)   |
+| Add an RTK Query endpoint                             | `/backend-integration`                |
+| Verify a library's API                                | context7                              |
+| Find where a component/DTO is used before changing it | codegraph (precise relationships)     |
+| Understand architecture/project rules                 | `/research-docs` (overview + context) |
+
+---
+
+## Typical feature flow
+
+1. Describe the task → **superpowers** starts with questions and a plan on its own
+2. UI → `/ui-from-figma` (injects project rules into the code)
+3. API → `/backend-integration` (RTK Query endpoint + types)
+4. Tests and review → driven by **superpowers** at the verify stage
+
+If the task is purely visual (a new screen from Figma) and superpowers pulls toward TDD —
+build the UI first via `/ui-from-figma`; tests are added at the verify stage.
